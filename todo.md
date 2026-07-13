@@ -75,3 +75,7 @@
 - [x] Fix `/dashboard` profile query so a missing profile returns an explicit null value instead of undefined.
 - [x] Add regression coverage for authenticated users without an existing profile row.
 - [x] Verify `/dashboard` loads without TanStack Query undefined-data errors and save the fix checkpoint.
+- [x] Extend the property virtual tour with morning, noon, afternoon, evening, night, and midnight controls.
+- [x] Provide a distinct, accessible visual atmosphere and active-state label for every virtual-tour time period.
+- [x] Add regression coverage and verify the time controls on desktop and mobile property detail views.
+- [x] Save and deliver the enhanced six-period virtual-tour checkpoint.
