@@ -87,3 +87,9 @@
 - [x] Prevent sky, moon, star, and city-light overlays from covering interior walls, cabinetry, stairs, ceilings, and furniture.
 - [x] Add regression coverage for scene-specific exterior mask geometry and verify every gallery view visually.
 - [x] Run tests, type checking, and production build, then save and deliver the exterior-only lighting checkpoint.
+- [x] Replace the rectangular virtual-view Night and Midnight panel with opening-shaped masking that follows the visible exterior area.
+- [x] Center and correctly frame both Building and Floor plate geometry in the immersive-model viewport at initial load and after mode changes.
+- [x] Require an explicit click or keyboard activation before immersive-model wheel zoom captures input.
+- [x] Prevent page scrolling while wheel zoom is active inside the immersive model and restore normal page scrolling when it is inactive or loses focus.
+- [x] Add regression coverage and visually verify the corrected virtual view, Building mode, Floor plate mode, and wheel interaction.
+- [x] Run tests, type checking, production build, then save and deliver the virtual-view and immersive-model fixes.

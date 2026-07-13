@@ -1,16 +1,21 @@
 export type TourExteriorMask = {
   clipPath: string;
   label: "exterior-scene" | "window-opening";
+  opacity: number;
+  maskImage?: string;
 };
 
 const EXTERIOR_SCENE_MASK: TourExteriorMask = {
   clipPath: "inset(0)",
   label: "exterior-scene",
+  opacity: 1,
 };
 
 const CENTRAL_WINDOW_MASK: TourExteriorMask = {
-  clipPath: "polygon(34% 58%, 69% 58%, 69% 80%, 34% 80%)",
+  clipPath: "polygon(35.5% 60.5%, 68.5% 60.5%, 68.5% 75.5%, 35.5% 75.5%)",
   label: "window-opening",
+  opacity: 0.72,
+  maskImage: "linear-gradient(to bottom, transparent 57.5%, #000 62%, #000 72%, transparent 77%)",
 };
 
 /**

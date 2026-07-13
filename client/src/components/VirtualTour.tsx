@@ -45,6 +45,9 @@ export function VirtualTour({ title, gallery, tourUrl }: { title: string; galler
       style={{
         background: period.exteriorView,
         clipPath: exteriorMask.clipPath,
+        opacity: exteriorMask.opacity,
+        maskImage: exteriorMask.maskImage,
+        WebkitMaskImage: exteriorMask.maskImage,
         mixBlendMode: period.exteriorBlendMode,
       }}
     />}

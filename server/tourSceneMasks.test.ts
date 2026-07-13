@@ -10,8 +10,10 @@ describe("virtual tour exterior masks", () => {
 
   it("bounds the residential exterior treatment to the central open view", () => {
     expect(getTourExteriorMask("/manus-storage/office-building_b7b74f98.jpg")).toEqual({
-      clipPath: "polygon(34% 58%, 69% 58%, 69% 80%, 34% 80%)",
+      clipPath: "polygon(35.5% 60.5%, 68.5% 60.5%, 68.5% 75.5%, 35.5% 75.5%)",
       label: "window-opening",
+      opacity: 0.72,
+      maskImage: "linear-gradient(to bottom, transparent 57.5%, #000 62%, #000 72%, transparent 77%)",
     });
   });
 
@@ -19,6 +21,7 @@ describe("virtual tour exterior masks", () => {
     expect(getTourExteriorMask("/manus-storage/warehouse-exterior_25db9dac.jpg")).toEqual({
       clipPath: "inset(0)",
       label: "exterior-scene",
+      opacity: 1,
     });
   });
 });
