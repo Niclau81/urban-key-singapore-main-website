@@ -10,6 +10,8 @@ import Home from "./pages/Home";
 import MapIntelligence from "./pages/MapIntelligence";
 import PropertyDetail from "./pages/PropertyDetail";
 import Assistants from "./pages/Assistants";
+import AgentLogin from "./pages/AgentLogin";
+import AgentPortal from "./pages/AgentPortal";
 
 function Router() {
   return <Switch>
@@ -19,6 +21,8 @@ function Router() {
     <Route path="/map" component={MapIntelligence} />
     <Route path="/property/:id" component={PropertyDetail} />
     <Route path="/assistants" component={Assistants} />
+    <Route path="/agent" component={AgentLogin} />
+    <Route path="/agent/portal" component={AgentPortal} />
     <Route path="/404" component={NotFound} />
     <Route component={NotFound} />
   </Switch>;

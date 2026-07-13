@@ -46,3 +46,15 @@
 - [x] Verify responsive discovery, detail, map, dashboard, tests, type checking, and production build after the expansion.
 - [x] Save and deliver the updated commercial and industrial property project checkpoint.
 - [x] Remove duplicate React keys from commercial tags and galleries, then recheck runtime logs.
+- [x] Add a dedicated sign-in entry page for property agents and co-brokers.
+- [x] Protect the agent/co-broker portal with the existing OAuth authentication flow.
+- [x] Add deployment-safe property image uploads backed by S3 storage.
+- [x] Extend managed listings with editable description, address, MRT, commercial specifications, and uploaded image metadata.
+- [x] Add typed backend procedures for updating listing details while enforcing listing ownership.
+- [x] Build a responsive agent/co-broker property workspace for creating, editing, uploading, and changing listing status.
+- [x] Add loading, empty, success, validation, and error states for the complete listing workflow.
+- [x] Add Vitest coverage for listing ownership, update validation, and uploaded media persistence.
+- [x] Verify sign-in, listing creation, image upload, editing, status changes, accessibility, responsiveness, tests, type checking, and production build.
+- [x] Save and deliver the agent and co-broker portal checkpoint.
+- [x] Add explicit automated coverage for authenticated listing status transitions and validation failures.
+- [x] Record portal-specific accessibility and runtime findings after exercising the sign-in, editor, upload, edit, and status interfaces.

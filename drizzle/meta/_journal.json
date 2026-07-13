@@ -29,6 +29,13 @@
       "when": 1783924115497,
       "tag": "0003_swift_genesis",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1783925615074,
+      "tag": "0004_tan_daredevil",
+      "breakpoints": true
     }
   ]
 }

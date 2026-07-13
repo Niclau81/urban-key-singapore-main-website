@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { enquiries, InsertUser, propertyListings, savedListings, userProfiles, users } from "../drizzle/schema";
+import { enquiries, InsertUser, propertyListingImages, propertyListings, savedListings, userProfiles, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -91,11 +91,16 @@ export async function createEnquiry(userId: number, propertyId: string, message:
 export async function listManagedProperties(userId: number) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(propertyListings).where(eq(propertyListings.userId, userId)).orderBy(desc(propertyListings.createdAt));
+  const listings = await db.select().from(propertyListings).where(eq(propertyListings.userId, userId)).orderBy(desc(propertyListings.createdAt));
+  const images = await db.select().from(propertyListingImages).where(eq(propertyListingImages.userId, userId)).orderBy(propertyListingImages.sortOrder, propertyListingImages.id);
+  return listings.map(listing => ({ ...listing, images: images.filter(image => image.listingId === listing.id) }));
 }
 
 export async function createManagedProperty(userId: number, input: {
   title: string;
+  description?: string;
+  address?: string;
+  mrtName?: string;
   mode: "Sell" | "Rent-Out";
   district: string;
   propertyType: string;
@@ -121,9 +126,73 @@ export async function createManagedProperty(userId: number, input: {
   return { id: Number(result[0].insertId), userId, ...input, status: "draft" as const, createdAt: new Date(), updatedAt: new Date() };
 }
 
+export async function isManagedPropertyOwner(userId: number, id: number) {
+  const db = await getDb();
+  if (!db) return false;
+  const rows = await db.select({ id: propertyListings.id }).from(propertyListings).where(and(eq(propertyListings.id, id), eq(propertyListings.userId, userId))).limit(1);
+  return rows.length > 0;
+}
+
+export async function updateManagedProperty(userId: number, id: number, input: {
+  title: string;
+  description?: string;
+  address?: string;
+  mrtName?: string;
+  mode: "Sell" | "Rent-Out";
+  district: string;
+  propertyType: string;
+  price: number;
+  size: number;
+  mrtMinutes: number;
+  tenure: string;
+  commercialUsage?: string;
+  floorLoading?: number;
+  ceilingHeight?: number;
+  loadingAccess?: string;
+  parkingLots?: number;
+  availableFrom?: string;
+}) {
+  const db = await getDb();
+  if (!db) return false;
+  const result = await db.update(propertyListings).set({
+    ...input,
+    description: input.description || null,
+    address: input.address || null,
+    mrtName: input.mrtName || null,
+    commercialUsage: input.commercialUsage || null,
+    floorLoading: input.floorLoading?.toString() ?? null,
+    ceilingHeight: input.ceilingHeight?.toString() ?? null,
+    loadingAccess: input.loadingAccess || null,
+    parkingLots: input.parkingLots ?? null,
+    availableFrom: input.availableFrom || null,
+  }).where(and(eq(propertyListings.id, id), eq(propertyListings.userId, userId)));
+  return Number(result[0].affectedRows) > 0;
+}
+
+export async function addManagedPropertyImage(userId: number, listingId: number, image: {
+  storageKey: string;
+  url: string;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+  sortOrder: number;
+}) {
+  const db = await getDb();
+  if (!db) return { id: 0, userId, listingId, ...image, createdAt: new Date() };
+  const result = await db.insert(propertyListingImages).values({ userId, listingId, ...image });
+  return { id: Number(result[0].insertId), userId, listingId, ...image, createdAt: new Date() };
+}
+
+export async function removeManagedPropertyImage(userId: number, listingId: number, imageId: number) {
+  const db = await getDb();
+  if (!db) return false;
+  const result = await db.delete(propertyListingImages).where(and(eq(propertyListingImages.id, imageId), eq(propertyListingImages.listingId, listingId), eq(propertyListingImages.userId, userId)));
+  return Number(result[0].affectedRows) > 0;
+}
+
 export async function updateManagedPropertyStatus(userId: number, id: number, status: "draft" | "active" | "paused") {
   const db = await getDb();
-  if (!db) return { id, status };
-  await db.update(propertyListings).set({ status }).where(and(eq(propertyListings.id, id), eq(propertyListings.userId, userId)));
-  return { id, status };
+  if (!db) return false;
+  const result = await db.update(propertyListings).set({ status }).where(and(eq(propertyListings.id, id), eq(propertyListings.userId, userId)));
+  return Number(result[0].affectedRows) > 0;
 }

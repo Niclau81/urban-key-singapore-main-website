@@ -42,6 +42,9 @@ export const propertyListings = mysqlTable("propertyListings", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
   title: varchar("title", { length: 180 }).notNull(),
+  description: text("description"),
+  address: varchar("address", { length: 240 }),
+  mrtName: varchar("mrtName", { length: 120 }),
   mode: mysqlEnum("mode", ["Sell", "Rent-Out"]).notNull(),
   district: varchar("district", { length: 80 }).notNull(),
   propertyType: varchar("propertyType", { length: 80 }).notNull(),
@@ -60,9 +63,23 @@ export const propertyListings = mysqlTable("propertyListings", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
+export const propertyListingImages = mysqlTable("propertyListingImages", {
+  id: int("id").autoincrement().primaryKey(),
+  listingId: int("listingId").notNull(),
+  userId: int("userId").notNull(),
+  storageKey: varchar("storageKey", { length: 768 }).notNull(),
+  url: text("url").notNull(),
+  fileName: varchar("fileName", { length: 255 }).notNull(),
+  mimeType: varchar("mimeType", { length: 80 }).notNull(),
+  fileSize: int("fileSize").notNull(),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type UserProfile = typeof userProfiles.$inferSelect;
 export type SavedListing = typeof savedListings.$inferSelect;
 export type Enquiry = typeof enquiries.$inferSelect;
 export type PropertyListing = typeof propertyListings.$inferSelect;
+export type PropertyListingImage = typeof propertyListingImages.$inferSelect;

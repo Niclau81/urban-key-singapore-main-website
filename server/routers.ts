@@ -1,13 +1,35 @@
 import { COOKIE_NAME } from "@shared/const";
 import { properties, propertyHistoryDisclaimer } from "@shared/propertyData";
+import { TRPCError } from "@trpc/server";
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { invokeLLM } from "./_core/llm";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
+import { storagePut } from "./storage";
 
 const messageSchema = z.object({ role: z.enum(["system", "user", "assistant"]), content: z.string().min(1).max(5000) });
+const listingInputSchema = z.object({
+  title: z.string().trim().min(4).max(180),
+  description: z.string().trim().max(4000).optional(),
+  address: z.string().trim().max(240).optional(),
+  mrtName: z.string().trim().max(120).optional(),
+  mode: z.enum(["Sell", "Rent-Out"]),
+  district: z.string().min(2).max(80),
+  propertyType: z.string().min(2).max(80),
+  price: z.number().int().positive(),
+  size: z.number().int().positive(),
+  mrtMinutes: z.number().int().min(0).max(60),
+  tenure: z.string().min(2).max(60),
+  commercialUsage: z.string().trim().min(2).max(160).optional(),
+  floorLoading: z.number().positive().max(100).optional(),
+  ceilingHeight: z.number().positive().max(30).optional(),
+  loadingAccess: z.string().trim().min(2).max(180).optional(),
+  parkingLots: z.number().int().min(0).max(10000).optional(),
+  availableFrom: z.string().max(24).optional(),
+});
 
 export const appRouter = router({
   system: systemRouter,
@@ -72,23 +94,46 @@ export const appRouter = router({
   }),
   listing: router({
     listMine: protectedProcedure.query(({ ctx }) => db.listManagedProperties(ctx.user.id)),
-    create: protectedProcedure.input(z.object({
-      title: z.string().min(4).max(180),
-      mode: z.enum(["Sell", "Rent-Out"]),
-      district: z.string().min(2).max(80),
-      propertyType: z.string().min(2).max(80),
-      price: z.number().int().positive(),
-      size: z.number().int().positive(),
-      mrtMinutes: z.number().int().min(0).max(60),
-      tenure: z.string().min(2).max(60),
-      commercialUsage: z.string().min(2).max(160).optional(),
-      floorLoading: z.number().positive().max(100).optional(),
-      ceilingHeight: z.number().positive().max(30).optional(),
-      loadingAccess: z.string().min(2).max(180).optional(),
-      parkingLots: z.number().int().min(0).max(10000).optional(),
-      availableFrom: z.string().max(24).optional(),
-    })).mutation(({ ctx, input }) => db.createManagedProperty(ctx.user.id, input)),
-    updateStatus: protectedProcedure.input(z.object({ id: z.number().int().positive(), status: z.enum(["draft", "active", "paused"]) })).mutation(({ ctx, input }) => db.updateManagedPropertyStatus(ctx.user.id, input.id, input.status)),
+    create: protectedProcedure.input(listingInputSchema).mutation(({ ctx, input }) => db.createManagedProperty(ctx.user.id, input)),
+    update: protectedProcedure.input(listingInputSchema.extend({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+      const { id, ...listing } = input;
+      const updated = await db.updateManagedProperty(ctx.user.id, id, listing);
+      if (!updated) throw new TRPCError({ code: "NOT_FOUND", message: "Listing not found or unavailable to this account" });
+      return { id };
+    }),
+    updateStatus: protectedProcedure.input(z.object({ id: z.number().int().positive(), status: z.enum(["draft", "active", "paused"]) })).mutation(async ({ ctx, input }) => {
+      const updated = await db.updateManagedPropertyStatus(ctx.user.id, input.id, input.status);
+      if (!updated) throw new TRPCError({ code: "NOT_FOUND", message: "Listing not found or unavailable to this account" });
+      return input;
+    }),
+    uploadImage: protectedProcedure.input(z.object({
+      id: z.number().int().positive(),
+      fileName: z.string().min(1).max(255),
+      mimeType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+      base64: z.string().min(1).max(8_500_000),
+    })).mutation(async ({ ctx, input }) => {
+      if (!await db.isManagedPropertyOwner(ctx.user.id, input.id)) throw new TRPCError({ code: "NOT_FOUND", message: "Listing not found or unavailable to this account" });
+      const data = Buffer.from(input.base64, "base64");
+      if (!data.length || data.length > 6 * 1024 * 1024) throw new TRPCError({ code: "BAD_REQUEST", message: "Each image must be smaller than 6 MB" });
+      const existing = await db.listManagedProperties(ctx.user.id);
+      const listing = existing.find(item => item.id === input.id);
+      if ((listing?.images.length ?? 0) >= 6) throw new TRPCError({ code: "BAD_REQUEST", message: "Each listing supports up to 6 images" });
+      const extension = input.mimeType === "image/png" ? "png" : input.mimeType === "image/webp" ? "webp" : "jpg";
+      const stored = await storagePut(`property-listings/${ctx.user.id}/${input.id}/${randomUUID()}.${extension}`, data, input.mimeType);
+      return db.addManagedPropertyImage(ctx.user.id, input.id, {
+        storageKey: stored.key,
+        url: stored.url,
+        fileName: input.fileName,
+        mimeType: input.mimeType,
+        fileSize: data.length,
+        sortOrder: listing?.images.length ?? 0,
+      });
+    }),
+    removeImage: protectedProcedure.input(z.object({ id: z.number().int().positive(), imageId: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+      const removed = await db.removeManagedPropertyImage(ctx.user.id, input.id, input.imageId);
+      if (!removed) throw new TRPCError({ code: "NOT_FOUND", message: "Image not found or unavailable to this account" });
+      return { imageId: input.imageId };
+    }),
   }),
   ai: router({
     chat: publicProcedure.input(z.object({
