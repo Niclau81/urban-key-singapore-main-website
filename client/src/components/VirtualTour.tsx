@@ -28,14 +28,32 @@ export function VirtualTour({ title, gallery, tourUrl }: { title: string; galler
       title={`${title} panoramic virtual tour`}
       allowFullScreen
       className="h-full w-full transition-[filter] duration-500"
-      style={{ filter: period.filter }}
+      style={{ filter: period.sceneFilter }}
     /> : <img
       src={gallery[index]}
       alt={`${title} virtual view ${index + 1}`}
       className="h-full w-full object-cover transition-[filter] duration-500"
-      style={{ filter: period.filter }}
+      style={{ filter: period.sceneFilter }}
     />}
-    <div className="pointer-events-none absolute inset-0 transition-[background] duration-500" style={{ background: period.overlay }} />
+    <div
+      aria-hidden="true"
+      data-tour-layer="exterior-window"
+      className="pointer-events-none absolute bottom-[8%] right-0 top-[9%] w-[38%] transition-[background] duration-500 sm:w-[35%]"
+      style={{
+        background: period.exteriorView,
+        clipPath: "polygon(13% 0, 100% 0, 100% 100%, 4% 96%)",
+        maskImage: "linear-gradient(to right, transparent 0%, black 22%, black 100%)",
+        WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 22%, black 100%)",
+        mixBlendMode: period.exteriorBlendMode,
+      }}
+    />
+    <div
+      aria-hidden="true"
+      data-tour-layer="interior-light"
+      className="pointer-events-none absolute inset-0 transition-[background] duration-500"
+      style={{ background: period.interiorLight, mixBlendMode: "screen" }}
+    />
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#071a17]/72 via-[#071a17]/18 to-transparent" />
 
     <div className="absolute left-3 right-3 top-3 flex flex-col gap-2 sm:left-4 sm:right-4 sm:top-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex w-fit items-center gap-2 rounded-full bg-[#10231e]/78 px-3 py-2 text-[10px] font-bold uppercase tracking-[.14em] text-white backdrop-blur">
@@ -73,7 +91,7 @@ export function VirtualTour({ title, gallery, tourUrl }: { title: string; galler
           <span className="size-2 rounded-full" style={{ backgroundColor: period.accent }} />
           <p className="font-display text-2xl">{period.label} perspective</p>
         </div>
-        <p className="mt-1 text-xs text-white/75">{period.timeRange} · {period.description} · Simulated lighting preview</p>
+        <p className="mt-1 text-xs text-white/75">{period.timeRange} · {period.description} · Exterior view and interior lighting preview</p>
       </div>
       {!tourUrl && <div className="hidden gap-1.5 sm:flex">{gallery.map((_, itemIndex) => <button key={itemIndex} onClick={() => setIndex(itemIndex)} className={`h-1.5 rounded-full transition-all ${itemIndex === index ? "w-7 bg-[#d5ae72]" : "w-1.5 bg-white/45"}`} aria-label={`View image ${itemIndex + 1}`} />)}</div>}
     </div>

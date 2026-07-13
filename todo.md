@@ -79,3 +79,7 @@
 - [x] Provide a distinct, accessible visual atmosphere and active-state label for every virtual-tour time period.
 - [x] Add regression coverage and verify the time controls on desktop and mobile property detail views.
 - [x] Save and deliver the enhanced six-period virtual-tour checkpoint.
+- [x] Replace global evening, night, and midnight photo darkening with localized virtual-tour scene lighting.
+- [x] Change exterior window views across all six periods while preserving readable, realistically illuminated interiors.
+- [x] Add regression coverage and visually verify exterior skies and interior lighting at evening, night, and midnight.
+- [x] Save and deliver the corrected virtual-tour scene-lighting checkpoint.

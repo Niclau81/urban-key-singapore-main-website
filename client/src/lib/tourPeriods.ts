@@ -14,8 +14,10 @@ export type TourPeriod = {
   label: string;
   timeRange: string;
   description: string;
-  filter: string;
-  overlay: string;
+  sceneFilter: string;
+  exteriorView: string;
+  exteriorBlendMode: "color" | "normal";
+  interiorLight: string;
   accent: string;
 };
 
@@ -25,9 +27,12 @@ export const TOUR_PERIODS: TourPeriod[] = [
     label: "Morning",
     timeRange: "6–10am",
     description: "Soft sunrise warmth",
-    filter: "brightness(1.04) saturate(.9) sepia(.08) contrast(.98)",
-    overlay:
-      "radial-gradient(circle at 18% 18%, rgba(255,219,163,.38), transparent 34%), linear-gradient(to top, rgba(23,56,47,.2), transparent 52%)",
+    sceneFilter: "brightness(1.02) saturate(.98) contrast(1.01)",
+    exteriorView:
+      "radial-gradient(circle at 74% 24%, rgba(255,226,164,.95) 0 3%, transparent 12%), linear-gradient(155deg, rgba(250,194,126,.78), rgba(159,207,226,.68) 48%, rgba(216,232,224,.42))",
+    exteriorBlendMode: "color",
+    interiorLight:
+      "radial-gradient(circle at 14% 12%, rgba(255,222,165,.2), transparent 24%), radial-gradient(circle at 52% 18%, rgba(255,236,199,.12), transparent 22%)",
     accent: "#f2c985",
   },
   {
@@ -35,9 +40,12 @@ export const TOUR_PERIODS: TourPeriod[] = [
     label: "Noon",
     timeRange: "10am–2pm",
     description: "Clear overhead daylight",
-    filter: "brightness(1.09) saturate(.96) contrast(1.02)",
-    overlay:
-      "radial-gradient(circle at 52% 5%, rgba(255,248,214,.3), transparent 32%), linear-gradient(to top, rgba(6,34,38,.14), transparent 46%)",
+    sceneFilter: "brightness(1.04) saturate(1) contrast(1.01)",
+    exteriorView:
+      "radial-gradient(circle at 52% 10%, rgba(255,252,218,.94) 0 3%, transparent 12%), linear-gradient(165deg, rgba(125,200,235,.74), rgba(204,231,238,.46) 58%, rgba(241,239,210,.28))",
+    exteriorBlendMode: "color",
+    interiorLight:
+      "radial-gradient(circle at 48% 5%, rgba(255,250,221,.13), transparent 28%), linear-gradient(115deg, rgba(255,255,255,.07), transparent 42%)",
     accent: "#f7df9f",
   },
   {
@@ -45,9 +53,12 @@ export const TOUR_PERIODS: TourPeriod[] = [
     label: "Afternoon",
     timeRange: "2–5pm",
     description: "Warm directional light",
-    filter: "brightness(1.01) saturate(1.04) sepia(.1) contrast(1.01)",
-    overlay:
-      "radial-gradient(circle at 78% 30%, rgba(240,175,94,.3), transparent 35%), linear-gradient(to top, rgba(45,43,26,.2), transparent 48%)",
+    sceneFilter: "brightness(1.01) saturate(1.02) contrast(1.02)",
+    exteriorView:
+      "radial-gradient(circle at 78% 30%, rgba(255,210,132,.9) 0 4%, transparent 15%), linear-gradient(160deg, rgba(116,180,216,.62), rgba(237,181,112,.64) 70%, rgba(231,151,92,.38))",
+    exteriorBlendMode: "color",
+    interiorLight:
+      "radial-gradient(circle at 70% 17%, rgba(255,209,137,.18), transparent 28%), radial-gradient(circle at 24% 22%, rgba(255,235,196,.1), transparent 25%)",
     accent: "#e7b56c",
   },
   {
@@ -55,9 +66,12 @@ export const TOUR_PERIODS: TourPeriod[] = [
     label: "Evening",
     timeRange: "5–8pm",
     description: "Golden-hour ambience",
-    filter: "brightness(.76) saturate(.92) sepia(.16) contrast(1.07)",
-    overlay:
-      "radial-gradient(circle at 76% 28%, rgba(237,158,84,.35), transparent 31%), linear-gradient(to top, rgba(15,38,42,.55), rgba(55,38,46,.08))",
+    sceneFilter: "brightness(1) saturate(1.01) contrast(1.03)",
+    exteriorView:
+      "radial-gradient(circle at 72% 48%, rgba(255,172,92,.96) 0 3%, transparent 13%), linear-gradient(165deg, rgba(81,103,150,.76), rgba(226,127,91,.82) 56%, rgba(70,57,91,.62))",
+    exteriorBlendMode: "normal",
+    interiorLight:
+      "radial-gradient(circle at 19% 13%, rgba(255,205,124,.32), transparent 25%), radial-gradient(circle at 56% 17%, rgba(255,221,155,.24), transparent 22%), radial-gradient(circle at 47% 76%, rgba(255,189,102,.16), transparent 28%)",
     accent: "#df9b63",
   },
   {
@@ -65,9 +79,12 @@ export const TOUR_PERIODS: TourPeriod[] = [
     label: "Night",
     timeRange: "8pm–12am",
     description: "City-light atmosphere",
-    filter: "brightness(.45) saturate(.7) hue-rotate(8deg) contrast(1.08)",
-    overlay:
-      "radial-gradient(circle at 72% 28%, rgba(228,188,118,.24), transparent 24%), linear-gradient(to top, rgba(8,22,35,.68), rgba(8,22,35,.12))",
+    sceneFilter: "brightness(.98) saturate(.98) contrast(1.04)",
+    exteriorView:
+      "radial-gradient(circle at 18% 82%, rgba(255,199,101,.85) 0 1%, transparent 2.2%), radial-gradient(circle at 48% 72%, rgba(255,216,139,.75) 0 1%, transparent 2%), radial-gradient(circle at 78% 78%, rgba(255,184,96,.78) 0 1%, transparent 2.2%), linear-gradient(170deg, rgba(15,38,70,.94), rgba(8,22,43,.9) 66%, rgba(35,39,53,.78))",
+    exteriorBlendMode: "normal",
+    interiorLight:
+      "radial-gradient(circle at 16% 12%, rgba(255,196,104,.42), transparent 24%), radial-gradient(circle at 53% 16%, rgba(255,220,144,.35), transparent 22%), radial-gradient(circle at 48% 78%, rgba(255,181,83,.22), transparent 28%)",
     accent: "#d5ae72",
   },
   {
@@ -75,9 +92,12 @@ export const TOUR_PERIODS: TourPeriod[] = [
     label: "Midnight",
     timeRange: "12–6am",
     description: "Deep nocturnal calm",
-    filter: "brightness(.3) saturate(.54) hue-rotate(16deg) contrast(1.16)",
-    overlay:
-      "radial-gradient(circle at 80% 18%, rgba(184,207,232,.18), transparent 21%), linear-gradient(to top, rgba(3,12,28,.8), rgba(5,17,36,.3))",
+    sceneFilter: "brightness(.96) saturate(.94) contrast(1.05)",
+    exteriorView:
+      "radial-gradient(circle at 70% 14%, rgba(211,227,244,.86) 0 4%, transparent 12%), radial-gradient(circle at 22% 28%, rgba(255,255,255,.65) 0 .45%, transparent 1.2%), radial-gradient(circle at 52% 20%, rgba(255,255,255,.6) 0 .4%, transparent 1.1%), radial-gradient(circle at 83% 33%, rgba(255,255,255,.58) 0 .45%, transparent 1.2%), linear-gradient(170deg, rgba(5,17,42,.98), rgba(2,10,28,.94) 72%, rgba(18,27,44,.86))",
+    exteriorBlendMode: "normal",
+    interiorLight:
+      "radial-gradient(circle at 16% 12%, rgba(255,185,83,.38), transparent 23%), radial-gradient(circle at 53% 16%, rgba(255,210,122,.32), transparent 21%), radial-gradient(circle at 47% 78%, rgba(255,165,66,.2), transparent 27%)",
     accent: "#a9c2df",
   },
 ];
