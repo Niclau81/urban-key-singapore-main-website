@@ -2,8 +2,10 @@ import { Box, Layers3, MousePointer2, Rotate3D } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import {
+  getBoundedModelPanOffset,
   getModelInteractionAfterBlur,
   getModelInteractionAfterKey,
+  getModelPanDelta,
   getNextModelZoomDistance,
   IMMERSIVE_MODEL_VIEW_CONFIG,
   type ImmersiveModelView,
@@ -103,7 +105,9 @@ export function BuildingViewer() {
     scene.add(sun);
 
     const target = new THREE.Vector3();
+    const frameCenter = new THREE.Vector3();
     let zoomBounds = { min: 4, max: 22 };
+    let maxPanDistance = 3;
     let currentView: ImmersiveModelView = "tower";
 
     const resizeRenderer = () => {
@@ -118,7 +122,8 @@ export function BuildingViewer() {
       group.updateMatrixWorld(true);
       const bounds = new THREE.Box3().setFromObject(group);
       const size = bounds.getSize(new THREE.Vector3());
-      bounds.getCenter(target);
+      bounds.getCenter(frameCenter);
+      target.copy(frameCenter);
 
       const config = IMMERSIVE_MODEL_VIEW_CONFIG[currentView];
       const verticalFov = THREE.MathUtils.degToRad(camera.fov);
@@ -133,6 +138,7 @@ export function BuildingViewer() {
       camera.updateProjectionMatrix();
       camera.lookAt(target);
       zoomBounds = { min: distance * 0.55, max: distance * 1.9 };
+      maxPanDistance = Math.max(size.x, size.y, size.z) * config.panLimitRatio;
     };
 
     const applyView = (nextView: ImmersiveModelView) => {
@@ -146,19 +152,58 @@ export function BuildingViewer() {
     applyView("tower");
 
     let dragging = false;
+    let dragMode: "pan" | "rotate" = "pan";
     let previousX = 0;
+    let previousY = 0;
     const onDown = (event: PointerEvent) => {
       if (!interactionRef.current) return;
       dragging = true;
+      dragMode = event.shiftKey || event.button === 1 || event.button === 2 ? "rotate" : "pan";
       previousX = event.clientX;
+      previousY = event.clientY;
       renderer.domElement.setPointerCapture(event.pointerId);
     };
     const onMove = (event: PointerEvent) => {
       if (!dragging || !interactionRef.current) return;
-      group.rotation.y += (event.clientX - previousX) * 0.009;
+      const deltaX = event.clientX - previousX;
+      const deltaY = event.clientY - previousY;
+
+      if (dragMode === "rotate") {
+        group.rotation.y += deltaX * 0.009;
+      } else {
+        const panDelta = getModelPanDelta({
+          active: true,
+          deltaX,
+          deltaY,
+          viewportHeight: renderer.domElement.clientHeight,
+          cameraDistance: camera.position.distanceTo(target),
+          verticalFovDegrees: camera.fov,
+        });
+        const cameraRight = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
+        const cameraUp = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 1);
+        const requestedOffset = cameraRight.multiplyScalar(panDelta.x).add(cameraUp.multiplyScalar(panDelta.y));
+        const requestedTarget = target.clone().add(requestedOffset);
+        const requestedPan = requestedTarget.sub(frameCenter);
+        const boundedPan = getBoundedModelPanOffset({
+          x: requestedPan.x,
+          y: requestedPan.y,
+          z: requestedPan.z,
+          maxDistance: maxPanDistance,
+        });
+        const boundedTarget = frameCenter.clone().add(new THREE.Vector3(boundedPan.x, boundedPan.y, boundedPan.z));
+        const appliedOffset = boundedTarget.clone().sub(target);
+        camera.position.add(appliedOffset);
+        target.copy(boundedTarget);
+        camera.lookAt(target);
+      }
+
       previousX = event.clientX;
+      previousY = event.clientY;
     };
     const onUp = () => { dragging = false; };
+    const onContextMenu = (event: MouseEvent) => {
+      if (interactionRef.current) event.preventDefault();
+    };
     const onWheel = (event: WheelEvent) => {
       if (!interactionRef.current) return;
       event.preventDefault();
@@ -179,6 +224,7 @@ export function BuildingViewer() {
     renderer.domElement.addEventListener("pointermove", onMove);
     renderer.domElement.addEventListener("pointerup", onUp);
     renderer.domElement.addEventListener("pointercancel", onUp);
+    renderer.domElement.addEventListener("contextmenu", onContextMenu);
     mount.addEventListener("wheel", onWheel, { passive: false });
 
     const resizeObserver = new ResizeObserver(() => {
@@ -203,6 +249,7 @@ export function BuildingViewer() {
       renderer.domElement.removeEventListener("pointermove", onMove);
       renderer.domElement.removeEventListener("pointerup", onUp);
       renderer.domElement.removeEventListener("pointercancel", onUp);
+      renderer.domElement.removeEventListener("contextmenu", onContextMenu);
       runtimeRef.current = null;
       renderer.dispose();
       scene.traverse(object => {
@@ -240,7 +287,7 @@ export function BuildingViewer() {
         if (nextInteraction !== interactionRef.current) setInteraction(nextInteraction);
       }}
       className={`h-[460px] w-full cursor-grab outline-none transition-shadow active:cursor-grabbing ${interactive ? "ring-2 ring-inset ring-[#b68a4c]" : ""}`}
-      aria-label={`Interactive conceptual 3D ${view === "tower" ? "building" : "floor plate"} model. ${interactive ? "Controls active; drag to rotate, use the mouse wheel to zoom, and press Escape to release scrolling." : "Click or press Enter to activate model controls."}`}
+      aria-label={`Interactive conceptual 3D ${view === "tower" ? "building" : "floor plate"} model. ${interactive ? "Controls active; drag to pan in any direction, Shift-drag or secondary-drag to rotate, use the mouse wheel to zoom, and press Escape to release scrolling." : "Click or press Enter to activate model controls."}`}
     />
 
     <div className="absolute left-4 top-4 rounded-2xl border border-white/50 bg-white/82 p-2 shadow-lg backdrop-blur-xl">
@@ -250,7 +297,7 @@ export function BuildingViewer() {
 
     <div className="pointer-events-none absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-[#10231e]/86 px-4 py-2 text-[11px] font-semibold text-white backdrop-blur">
       {interactive ? <Rotate3D className="size-4 text-[#d5ae72]" /> : <MousePointer2 className="size-4 text-[#d5ae72]" />}
-      {interactive ? "Drag to rotate · Scroll to zoom · Esc to release" : "Click model to enable rotate and zoom"}
+      {interactive ? "Drag to pan · Shift-drag to rotate · Scroll to zoom · Esc to release" : "Click model to enable pan, rotate and zoom"}
     </div>
   </div>;
 }

@@ -27,3 +27,7 @@ Pending in this QA pass: corrected Night rendering on the central exterior-openi
 - The selected Night scene now darkens only the distant central bay/open-view area with feathered edges.
 - The former hard rectangular panel is absent: the sofa, chairs, shelving, ceiling, side walls, kitchen surfaces, and foreground floor remain unobstructed.
 - The active state and caption both confirm **Night perspective**, so the verified rendering is the requested nocturnal mode rather than a daytime fallback.
+
+## Current timed-sky defect reference
+
+The affected `/manus-storage/office-interior_791afa97.jpg` source image is 1499×1064. Its exterior sky is visible only through the narrow glazed band on the right side of the room, approximately from 72%–94% of image width and 43%–67% of image height, with sloping top and bottom boundaries created by the ceiling line and stair structure. The current scene-mask map returns `null` for this image, so selecting Evening, Night, or Midnight cannot alter that visible sky.

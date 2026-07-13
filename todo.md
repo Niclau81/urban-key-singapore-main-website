@@ -93,3 +93,9 @@
 - [x] Prevent page scrolling while wheel zoom is active inside the immersive model and restore normal page scrolling when it is inactive or loses focus.
 - [x] Add regression coverage and visually verify the corrected virtual view, Building mode, Floor plate mode, and wheel interaction.
 - [x] Run tests, type checking, production build, then save and deliver the virtual-view and immersive-model fixes.
+- [x] Map the affected interior scene’s actual window panes so Morning through Midnight treatments visibly update only the exterior sky seen through the glass.
+- [x] Ensure Evening, Night, and Midnight replace the bright daytime sky without covering window frames, ceilings, walls, stairs, or room surfaces.
+- [x] Add activated horizontal, vertical, and diagonal drag-to-pan controls for both Building and Floor plate immersive modes while preserving rotation and wheel zoom.
+- [x] Constrain model panning to safe bounds and reset or refit the target correctly when switching model modes.
+- [x] Add regression coverage and visually verify timed window skies plus multidirectional panning in Building and Floor plate modes.
+- [x] Run tests, type checking, production build, then save and deliver the timed-sky and model-pan fixes.
