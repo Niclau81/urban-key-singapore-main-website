@@ -83,3 +83,7 @@
 - [x] Change exterior window views across all six periods while preserving readable, realistically illuminated interiors.
 - [x] Add regression coverage and visually verify exterior skies and interior lighting at evening, night, and midnight.
 - [x] Save and deliver the corrected virtual-tour scene-lighting checkpoint.
+- [x] Constrain Evening, Night, and Midnight effects to the actual exterior window or open-view region in each tour image.
+- [x] Prevent sky, moon, star, and city-light overlays from covering interior walls, cabinetry, stairs, ceilings, and furniture.
+- [x] Add regression coverage for scene-specific exterior mask geometry and verify every gallery view visually.
+- [x] Run tests, type checking, and production build, then save and deliver the exterior-only lighting checkpoint.

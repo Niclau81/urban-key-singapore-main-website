@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { TOUR_PERIODS, getTourPeriod, type TourPeriodId } from "@/lib/tourPeriods";
+import { getTourExteriorMask } from "@/lib/tourSceneMasks";
 import { ChevronLeft, ChevronRight, CloudSun, Moon, MoonStar, Move3D, Sun, Sunrise, Sunset } from "lucide-react";
 import { useState } from "react";
 
@@ -16,6 +17,7 @@ export function VirtualTour({ title, gallery, tourUrl }: { title: string; galler
   const [periodId, setPeriodId] = useState<TourPeriodId>("noon");
   const [index, setIndex] = useState(0);
   const period = getTourPeriod(periodId);
+  const exteriorMask = tourUrl ? null : getTourExteriorMask(gallery[index]);
   const next = (step: number) => setIndex(current => (current + step + gallery.length) % gallery.length);
 
   return <div
@@ -35,18 +37,17 @@ export function VirtualTour({ title, gallery, tourUrl }: { title: string; galler
       className="h-full w-full object-cover transition-[filter] duration-500"
       style={{ filter: period.sceneFilter }}
     />}
-    <div
+    {exteriorMask && <div
       aria-hidden="true"
       data-tour-layer="exterior-window"
-      className="pointer-events-none absolute bottom-[8%] right-0 top-[9%] w-[38%] transition-[background] duration-500 sm:w-[35%]"
+      data-tour-exterior-region={exteriorMask.label}
+      className="pointer-events-none absolute inset-0 transition-[background] duration-500"
       style={{
         background: period.exteriorView,
-        clipPath: "polygon(13% 0, 100% 0, 100% 100%, 4% 96%)",
-        maskImage: "linear-gradient(to right, transparent 0%, black 22%, black 100%)",
-        WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 22%, black 100%)",
+        clipPath: exteriorMask.clipPath,
         mixBlendMode: period.exteriorBlendMode,
       }}
-    />
+    />}
     <div
       aria-hidden="true"
       data-tour-layer="interior-light"
