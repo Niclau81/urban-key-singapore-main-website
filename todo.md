@@ -1,0 +1,37 @@
+# Project TODO
+
+- [x] Define a premium visual design system with refined typography, spacing, color, shadows, and motion.
+- [x] Build a responsive public marketplace shell with Buy, Sell, Rent, and Rent-Out entry modes.
+- [x] Implement property search and filters for district, property type, price, size, MRT proximity, and tenure.
+- [x] Create polished property cards, saved-listing actions, enquiry actions, and detailed property pages.
+- [x] Integrate the provided Google Maps component as the mapping engine.
+- [x] Add Singapore district overlays, neighborhood boundaries, property pins, clustering behavior, and MRT proximity visualization.
+- [x] Add an interactive 3D-style map mode with tilted perspective and building rendering where supported by Google Maps.
+- [x] Build an interactive Three.js or Babylon.js building viewer for each property detail experience.
+- [x] Add a virtual tour section with iframe-ready panoramic walkthrough support and image-carousel fallback.
+- [x] Add day and night modes to the virtual tour experience.
+- [x] Create a property and unit history panel with positive and negative curated mock records.
+- [x] Display a prominent disclaimer explaining that incident history is illustrative, user-reported, and requires independent verification.
+- [x] Create unit and nearby transaction tables with sale and rental history.
+- [x] Add historical price-trend charts and transaction summary metrics.
+- [x] Display owner information only as anonymized initials, ownership duration, and property count.
+- [x] Implement a buyer and tenant AI assistant using server-side LLM completions and listing-aware recommendations.
+- [x] Implement an agent and co-broker AI assistant using server-side LLM completions for market insight, matching, listing advice, and negotiation support.
+- [x] Integrate user authentication using the provided OAuth flow.
+- [x] Add role-oriented profiles for Buyer/Tenant, Seller/Landlord, and Agent/Co-broker.
+- [x] Build a personal dashboard for saved listings, enquiries, and listed properties.
+- [x] Create database models and typed backend procedures for profiles, listings, saved properties, enquiries, and AI requests where persistence is required.
+- [x] Add representative curated demonstration listings and transaction records without fabricating user reviews or testimonials.
+- [x] Write Vitest coverage for core backend procedures and privacy safeguards.
+- [x] Verify desktop and mobile layouts, accessibility, loading states, errors, and interactive controls.
+- [x] Visually inspect the completed marketplace and correct layout or contrast issues.
+- [x] Verify the Google Maps loader recovers from proxy failures and never presents a blank canvas.
+- [x] Run type checking, tests, and production build successfully.
+- [ ] Save one final project checkpoint and deliver the working prototype.
+- [x] Add user-facing minimum-size and maximum-MRT-walk filters and connect them to property search.
+- [x] Add persistent user-managed property listings with typed create, list, and status-management procedures.
+- [x] Add a seller, landlord, and agent dashboard section for creating and managing their listed properties.
+- [x] Finish and verify every remaining user-facing control with a working action or explicit feedback.
+- [x] Run an automated accessibility audit and verify focus, keyboard, loading, empty, and error states on key pages.
+- [x] Improve the analytical intelligence styling and contextual density on Explore, Assistants, and Dashboard utility pages.
+- [x] Exercise the Google Maps failure path and visually confirm the branded fallback replaces a blank canvas.
