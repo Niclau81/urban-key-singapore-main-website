@@ -27,7 +27,7 @@
 - [x] Visually inspect the completed marketplace and correct layout or contrast issues.
 - [x] Verify the Google Maps loader recovers from proxy failures and never presents a blank canvas.
 - [x] Run type checking, tests, and production build successfully.
-- [ ] Save one final project checkpoint and deliver the working prototype.
+- [x] Save one final project checkpoint and deliver the working prototype.
 - [x] Add user-facing minimum-size and maximum-MRT-walk filters and connect them to property search.
 - [x] Add persistent user-managed property listings with typed create, list, and status-management procedures.
 - [x] Add a seller, landlord, and agent dashboard section for creating and managing their listed properties.
@@ -35,3 +35,14 @@
 - [x] Run an automated accessibility audit and verify focus, keyboard, loading, empty, and error states on key pages.
 - [x] Improve the analytical intelligence styling and contextual density on Explore, Assistants, and Dashboard utility pages.
 - [x] Exercise the Google Maps failure path and visually confirm the branded fallback replaces a blank canvas.
+- [x] Extend property categories with Office, Shophouse, Warehouse, Office Building, and Factory Building.
+- [x] Support the new commercial and industrial categories across Buy, Sell, Rent, and Rent-Out discovery modes.
+- [x] Add representative commercial and industrial demonstration listings without fabricated reviews or testimonials.
+- [x] Add commercial filters and listing fields for usage, floor loading, ceiling height, loading access, parking, and availability where relevant.
+- [x] Adapt property cards and detail pages to show commercial and industrial specifications instead of residential bedroom and bathroom metrics when appropriate.
+- [x] Extend seller, landlord, and agent listing creation workflows with commercial and industrial property types and fields.
+- [x] Update map discovery and both LLM assistant contexts with commercial and industrial listings.
+- [x] Add automated coverage for commercial and industrial category filters across transaction modes.
+- [x] Verify responsive discovery, detail, map, dashboard, tests, type checking, and production build after the expansion.
+- [x] Save and deliver the updated commercial and industrial property project checkpoint.
+- [x] Remove duplicate React keys from commercial tags and galleries, then recheck runtime logs.

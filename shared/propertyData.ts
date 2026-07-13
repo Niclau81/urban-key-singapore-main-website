@@ -1,5 +1,13 @@
 export type ListingMode = "Buy" | "Sell" | "Rent" | "Rent-Out";
 
+export const residentialPropertyTypes = ["Condominium", "Apartment"] as const;
+export const commercialPropertyTypes = ["Office", "Shophouse", "Warehouse", "Office Building", "Factory Building"] as const;
+export const propertyTypes = [...residentialPropertyTypes, ...commercialPropertyTypes] as const;
+
+export function isCommercialPropertyType(type: string) {
+  return commercialPropertyTypes.includes(type as (typeof commercialPropertyTypes)[number]);
+}
+
 export type PropertyTransaction = {
   date: string;
   type: "Sale" | "Rent";
@@ -45,17 +53,30 @@ export type Property = {
   };
   incidents: PropertyIncident[];
   transactions: PropertyTransaction[];
+  isCommercial?: boolean;
+  commercialUsage?: string;
+  floorLoading?: number;
+  ceilingHeight?: number;
+  loadingAccess?: string;
+  parkingLots?: number;
+  availableFrom?: string;
+  grossFloorArea?: number;
 };
 
 const images = {
-  marinaInterior: "/manus-storage/marina-interior_64621436.jpg",
-  marinaSkyline: "/manus-storage/marina-skyline_8ccbeb9b.jpg",
-  interlace: "/manus-storage/interlace-aerial_74c51dd9.jpg",
-  tower: "/manus-storage/tower-concept_b7f9a5b6.jpg",
-  luxuryInterior: "/manus-storage/luxury-interior_f4a25a40.jpg",
+  marinaInterior: "/manus-storage/office-interior_791afa97.jpg",
+  marinaSkyline: "/manus-storage/office-building_b7b74f98.jpg",
+  interlace: "/manus-storage/shophouse-office_0083057a.jpg",
+  tower: "/manus-storage/office-building_b7b74f98.jpg",
+  luxuryInterior: "/manus-storage/office-interior_791afa97.jpg",
+  office: "/manus-storage/office-interior_791afa97.jpg",
+  shophouse: "/manus-storage/shophouse-office_0083057a.jpg",
+  warehouse: "/manus-storage/warehouse-exterior_25db9dac.jpg",
+  factoryBuilding: "/manus-storage/factory-interior_71f18145.jpg",
+  officeBuilding: "/manus-storage/office-building_b7b74f98.jpg",
 };
 
-export const properties: Property[] = [
+const residentialProperties: Property[] = [
   {
     id: "marina-cove-28-08",
     title: "Marina Cove Residence",
@@ -163,8 +184,79 @@ export const properties: Property[] = [
   },
 ];
 
-export const districts = ["All districts", "D01 · Marina Bay", "D04 · Harbourfront", "D10 · Tanglin"];
+const commercialSeed = [
+  ["tanjong-pagar-office-18", "Anson Exchange Office Suite", "D02 · Tanjong Pagar", "10 Anson Road", "Office", "Rent", 4680000, 23800, 3680, "99-year", "Tanjong Pagar MRT", 3, 1.2758, 103.8464, images.office, "Office · Professional services", 3, 2.8, "Shared service bay", 3, "2026-09-01"],
+  ["robinson-office-09", "Robinson Green Workplace", "D01 · Marina Bay", "88 Robinson Road", "Office", "Buy", 5980000, 29200, 4210, "Freehold", "Shenton Way MRT", 4, 1.2793, 103.8489, images.office, "Office · Corporate headquarters", 3.5, 3, "Basement service bay", 4, "2026-10-15"],
+  ["keong-saik-shophouse", "Keong Saik Conservation House", "D02 · Tanjong Pagar", "41 Keong Saik Road", "Shophouse", "Sell", 12800000, 42000, 4860, "Freehold", "Outram Park MRT", 6, 1.2805, 103.8414, images.shophouse, "F&B · Retail · Office", 4, 3.6, "Rear service lane", 0, "2026-12-01"],
+  ["joo-chiat-shophouse", "Joo Chiat Creative Shophouse", "D15 · East Coast", "112 Joo Chiat Road", "Shophouse", "Rent-Out", 6200000, 21800, 3280, "Freehold", "Marine Parade MRT", 9, 1.3087, 103.9039, images.shophouse, "Retail · Studio · Office", 3.5, 3.3, "Sheltered rear access", 1, "2026-08-15"],
+  ["tuas-logistics-park", "Tuas Logistics Hub", "D22 · Jurong", "31 Tuas South Avenue 8", "Warehouse", "Rent", 9800000, 68000, 28400, "30-year", "Tuas Link MRT", 12, 1.3108, 103.6318, images.warehouse, "Warehouse · Logistics", 15, 12, "4 dock levellers · 2 drive-in bays", 18, "2026-11-01"],
+  ["changi-airfreight-warehouse", "Changi Airfreight Warehouse", "D17 · Changi", "7 Changi North Street 1", "Warehouse", "Rent-Out", 12800000, 74500, 31600, "30-year", "Tampines East MRT", 15, 1.3658, 103.9715, images.warehouse, "Warehouse · Airfreight", 20, 10.5, "6 loading bays · secure yard", 22, "2027-01-01"],
+  ["paya-lebar-office-building", "Paya Lebar Enterprise House", "D14 · Geylang", "62 Paya Lebar Road", "Office Building", "Sell", 48800000, 198000, 42800, "Freehold", "Paya Lebar MRT", 3, 1.3182, 103.8928, images.officeBuilding, "Office building · Retail podium", 4, 3.2, "Dedicated service lane", 36, "2027-03-01"],
+  ["one-north-office-building", "One-North Innovation Building", "D05 · Buona Vista", "23 Fusionopolis Way", "Office Building", "Buy", 63800000, 242000, 58600, "60-year", "one-north MRT", 2, 1.2997, 103.7875, images.officeBuilding, "Office building · R&D support", 5, 3.4, "Dedicated basement loading bay", 52, "2027-06-01"],
+  ["woodlands-factory-building", "Woodlands Advanced Manufacturing Centre", "D25 · Woodlands", "18 Woodlands Sector 1", "Factory Building", "Sell", 23800000, 126000, 67200, "30-year", "Woodlands North MRT", 13, 1.4582, 103.7862, images.factoryBuilding, "B2 Factory · Advanced manufacturing", 25, 6.5, "3 goods lifts · 4 loading bays", 48, "2027-02-01"],
+  ["jurong-factory-building", "Jurong Precision Factory", "D22 · Jurong", "5 Pioneer Sector Walk", "Factory Building", "Rent-Out", 17800000, 98500, 51400, "30-year", "Pioneer MRT", 14, 1.3136, 103.6814, images.factoryBuilding, "B2 Factory · Precision engineering", 30, 8, "Drive-in production bays · 2 loading docks", 34, "2026-10-01"],
+] as const;
+
+const commercialProperties: Property[] = commercialSeed.map((item, index) => {
+  const [id, title, district, address, type, mode, price, monthlyRent, size, tenure, mrt, mrtMinutes, latitude, longitude, image, commercialUsage, floorLoading, ceilingHeight, loadingAccess, parkingLots, availableFrom] = item;
+  const gallery = type === "Shophouse"
+    ? [images.shophouse, images.office, images.warehouse]
+    : type === "Office" || type === "Office Building"
+      ? [image, images.office, images.marinaSkyline]
+      : [image, images.warehouse, images.factoryBuilding];
+  return {
+    id,
+    title,
+    district,
+    address,
+    type,
+    mode,
+    price,
+    monthlyRent,
+    beds: 0,
+    baths: type === "Office" ? 2 : type === "Shophouse" ? 4 : 8,
+    size,
+    tenure,
+    mrt,
+    mrtMinutes,
+    latitude,
+    longitude,
+    image,
+    gallery,
+    description: type === "Office"
+      ? "A professionally configured workplace with efficient floor plates, flexible meeting areas, and strong transport connectivity for owner-occupiers or corporate tenants."
+      : type === "Shophouse"
+        ? "A character-rich conservation property with prominent frontage, adaptable upper floors, and practical service access for curated commercial uses."
+        : type === "Warehouse"
+          ? "A logistics-ready facility with high-clearance storage, robust floor loading, secure yard circulation, and practical ancillary office space."
+          : type === "Office Building"
+            ? "A whole-building commercial opportunity with adaptable office floors, dedicated service access, and established business-district connectivity."
+            : "A production-ready industrial facility with reinforced floors, high-capacity loading infrastructure, and self-contained administrative accommodation.",
+    tags: Array.from(new Set([type, commercialUsage.split(" · ")[0], `${parkingLots} parking lots`])),
+    isCommercial: true,
+    commercialUsage,
+    floorLoading,
+    ceilingHeight,
+    loadingAccess,
+    parkingLots,
+    availableFrom,
+    grossFloorArea: size,
+    owner: { initials: ["C.W.", "R.H.", "L.S.", "P.N.", "T.K.", "E.G.", "B.Y.", "V.C.", "N.J.", "S.F."][index], ownershipYears: 5 + (index % 9), propertyCount: 2 + (index % 6) },
+    incidents: [
+      { year: "2025", category: "positive", title: "Planned asset works completed", detail: "A curated demonstration record notes completion of scheduled common-area or building-services maintenance.", source: "Curated demo record" },
+      { year: "2022", category: index % 3 === 0 ? "negative" : "neutral", title: index % 3 === 0 ? "Short access disruption reported" : "Routine inspection recorded", detail: index % 3 === 0 ? "An unverified demonstration report references a temporary historical access disruption. No active restriction is shown." : "Illustrative inspection activity was recorded as completed; current conditions require independent verification.", source: index % 3 === 0 ? "Unverified demo report" : "Curated demo record" },
+    ],
+    transactions: [
+      { date: "2025-08-18", type: mode === "Rent" || mode === "Rent-Out" ? "Rent" : "Sale", property: title, unit: type.includes("Building") || type === "Shophouse" ? "Whole" : "Representative unit", price: mode === "Rent" || mode === "Rent-Out" ? Math.round(monthlyRent * 0.94) : Math.round(price * 0.95), psf: mode === "Rent" || mode === "Rent-Out" ? Number(((monthlyRent * 0.94) / size).toFixed(2)) : Math.round((price * 0.95) / size) },
+      { date: "2023-04-11", type: mode === "Rent" || mode === "Rent-Out" ? "Sale" : "Rent", property: title, unit: "Comparable", price: mode === "Rent" || mode === "Rent-Out" ? Math.round(price * 0.89) : Math.round(monthlyRent * 0.88), psf: mode === "Rent" || mode === "Rent-Out" ? Math.round((price * 0.89) / size) : Number(((monthlyRent * 0.88) / size).toFixed(2)) },
+      { date: "2021-01-23", type: mode === "Rent" || mode === "Rent-Out" ? "Rent" : "Sale", property: title, unit: "Comparable", price: mode === "Rent" || mode === "Rent-Out" ? Math.round(monthlyRent * 0.78) : Math.round(price * 0.82), psf: mode === "Rent" || mode === "Rent-Out" ? Number(((monthlyRent * 0.78) / size).toFixed(2)) : Math.round((price * 0.82) / size) },
+    ],
+  };
+});
+
+export const properties: Property[] = [...residentialProperties, ...commercialProperties];
+
+export const districts = ["All districts", "D01 · Marina Bay", "D02 · Tanjong Pagar", "D04 · Harbourfront", "D05 · Buona Vista", "D10 · Tanglin", "D14 · Geylang", "D15 · East Coast", "D17 · Changi", "D22 · Jurong", "D25 · Woodlands"];
 
 export const propertyHistoryDisclaimer =
   "Property and unit history shown here is curated demonstration data, may include unverified resident reports, and must not be treated as a factual allegation. Users should independently verify all material information through official records, the property owner, managing agent, and qualified advisers before making any decision.";
-

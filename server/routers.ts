@@ -28,18 +28,24 @@ export const appRouter = router({
       minSize: z.number().optional(),
       maxMrtMinutes: z.number().optional(),
       tenure: z.string().optional(),
+      commercialUsage: z.string().optional(),
+      minFloorLoading: z.number().optional(),
+      minCeilingHeight: z.number().optional(),
       search: z.string().optional(),
     }).optional()).query(({ input }) => properties.filter(property => {
       if (!input) return true;
-      const price = property.mode === "Rent" ? property.monthlyRent ?? property.price : property.price;
-      const haystack = `${property.title} ${property.address} ${property.district} ${property.mrt}`.toLowerCase();
-      return (!input.mode || input.mode === property.mode || input.mode === "Sell" || input.mode === "Rent-Out")
+      const price = property.mode === "Rent" || property.mode === "Rent-Out" ? property.monthlyRent ?? property.price : property.price;
+      const haystack = `${property.title} ${property.address} ${property.district} ${property.type} ${property.mrt} ${property.commercialUsage ?? ""}`.toLowerCase();
+      return (!input.mode || input.mode === property.mode)
         && (!input.district || input.district === "All districts" || property.district === input.district)
         && (!input.propertyType || input.propertyType === "All types" || property.type === input.propertyType)
         && (!input.maxPrice || price <= input.maxPrice)
         && (!input.minSize || property.size >= input.minSize)
         && (!input.maxMrtMinutes || property.mrtMinutes <= input.maxMrtMinutes)
         && (!input.tenure || input.tenure === "Any tenure" || property.tenure === input.tenure)
+        && (!input.commercialUsage || input.commercialUsage === "Any usage" || property.commercialUsage?.toLowerCase().includes(input.commercialUsage.toLowerCase()))
+        && (!input.minFloorLoading || (property.floorLoading ?? 0) >= input.minFloorLoading)
+        && (!input.minCeilingHeight || (property.ceilingHeight ?? 0) >= input.minCeilingHeight)
         && (!input.search || haystack.includes(input.search.toLowerCase()));
     })),
     detail: publicProcedure.input(z.object({ id: z.string() })).query(({ input }) => {
@@ -75,6 +81,12 @@ export const appRouter = router({
       size: z.number().int().positive(),
       mrtMinutes: z.number().int().min(0).max(60),
       tenure: z.string().min(2).max(60),
+      commercialUsage: z.string().min(2).max(160).optional(),
+      floorLoading: z.number().positive().max(100).optional(),
+      ceilingHeight: z.number().positive().max(30).optional(),
+      loadingAccess: z.string().min(2).max(180).optional(),
+      parkingLots: z.number().int().min(0).max(10000).optional(),
+      availableFrom: z.string().max(24).optional(),
     })).mutation(({ ctx, input }) => db.createManagedProperty(ctx.user.id, input)),
     updateStatus: protectedProcedure.input(z.object({ id: z.number().int().positive(), status: z.enum(["draft", "active", "paused"]) })).mutation(({ ctx, input }) => db.updateManagedPropertyStatus(ctx.user.id, input.id, input.status)),
   }),
@@ -90,16 +102,23 @@ export const appRouter = router({
         price: property.price,
         monthlyRent: property.monthlyRent,
         type: property.type,
+        mode: property.mode,
         beds: property.beds,
         size: property.size,
         tenure: property.tenure,
         mrt: property.mrt,
         mrtMinutes: property.mrtMinutes,
         tags: property.tags,
+        commercialUsage: property.commercialUsage,
+        floorLoading: property.floorLoading,
+        ceilingHeight: property.ceilingHeight,
+        loadingAccess: property.loadingAccess,
+        parkingLots: property.parkingLots,
+        availableFrom: property.availableFrom,
       }));
       const system = input.mode === "buyer"
-        ? `You are UrbanKey Concierge, a careful Singapore property discovery assistant. Recommend only from the provided demonstration catalog and explain fit, trade-offs, price, commute, tenure, and next steps. Never invent a listing or claim a recommendation guarantees suitability. Catalog: ${JSON.stringify(catalog)}`
-        : `You are UrbanKey Pro, an assistant for Singapore property agents and co-brokers. Use the provided demonstration catalog for comparative market observations, co-broking angles, listing positioning, and principled negotiation suggestions. Do not provide legal or financial advice and never reveal or infer private owner identity. Catalog: ${JSON.stringify(catalog)}`;
+        ? `You are UrbanKey Concierge, a careful Singapore residential, commercial, and industrial property discovery assistant. Recommend only from the provided demonstration catalog and explain fit, transaction mode, permitted or intended usage, floor loading, ceiling height, loading access, parking, price, commute, tenure, and next steps when relevant. Never invent a listing or claim a recommendation guarantees suitability, zoning approval, or regulatory compliance. Catalog: ${JSON.stringify(catalog)}`
+        : `You are UrbanKey Pro, an assistant for Singapore residential, commercial, and industrial property agents and co-brokers. Use the provided demonstration catalog for comparative market observations, commercial-use matching, operational specification checks, co-broking angles, listing positioning, and principled negotiation suggestions. Do not provide legal or financial advice, do not claim regulatory approval, and never reveal or infer private owner identity. Catalog: ${JSON.stringify(catalog)}`;
       const response = await invokeLLM({ messages: [{ role: "system", content: system }, ...input.messages] });
       const content = response.choices?.[0]?.message?.content;
       if (typeof content !== "string" || !content.trim()) throw new Error("The assistant did not return a response");

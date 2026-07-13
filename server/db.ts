@@ -103,10 +103,21 @@ export async function createManagedProperty(userId: number, input: {
   size: number;
   mrtMinutes: number;
   tenure: string;
+  commercialUsage?: string;
+  floorLoading?: number;
+  ceilingHeight?: number;
+  loadingAccess?: string;
+  parkingLots?: number;
+  availableFrom?: string;
 }) {
   const db = await getDb();
   if (!db) return { id: 0, userId, ...input, status: "draft" as const, createdAt: new Date(), updatedAt: new Date() };
-  const result = await db.insert(propertyListings).values({ userId, ...input });
+  const result = await db.insert(propertyListings).values({
+    userId,
+    ...input,
+    floorLoading: input.floorLoading?.toString(),
+    ceilingHeight: input.ceilingHeight?.toString(),
+  });
   return { id: Number(result[0].insertId), userId, ...input, status: "draft" as const, createdAt: new Date(), updatedAt: new Date() };
 }
 

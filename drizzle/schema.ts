@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import { decimal, int, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -49,6 +49,12 @@ export const propertyListings = mysqlTable("propertyListings", {
   size: int("size").notNull(),
   mrtMinutes: int("mrtMinutes").notNull(),
   tenure: varchar("tenure", { length: 60 }).notNull(),
+  commercialUsage: varchar("commercialUsage", { length: 160 }),
+  floorLoading: decimal("floorLoading", { precision: 7, scale: 2 }),
+  ceilingHeight: decimal("ceilingHeight", { precision: 6, scale: 2 }),
+  loadingAccess: varchar("loadingAccess", { length: 180 }),
+  parkingLots: int("parkingLots"),
+  availableFrom: varchar("availableFrom", { length: 24 }),
   status: mysqlEnum("status", ["draft", "active", "paused"]).default("draft").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

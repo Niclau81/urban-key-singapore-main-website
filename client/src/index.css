@@ -84,7 +84,10 @@
 .text-white\/50 { color: rgb(255 255 255 / 72%) !important; }
 .text-white\/45 { color: rgb(255 255 255 / 72%) !important; }
 .map-property-pin { position: relative; border: 2px solid white; border-radius: 999px; background: #17382f; padding: 8px 12px; color: white; font: 700 11px "DM Sans", sans-serif; box-shadow: 0 8px 25px rgba(15,37,31,.28); white-space: nowrap; }
+.map-property-pin small { margin-right: 6px; font-size: 7px; letter-spacing: .08em; opacity: .72; }
 .map-property-pin::after { content: ""; position: absolute; left: 50%; bottom: -5px; width: 8px; height: 8px; background: #17382f; transform: translateX(-50%) rotate(45deg); border-right: 1px solid white; border-bottom: 1px solid white; }
+.map-property-pin.commercial { background: #a66a2c; }
+.map-property-pin.commercial::after { background: #a66a2c; }
 .map-cluster-pin { display: grid; width: 66px; height: 66px; place-items: center; align-content: center; border: 4px solid rgba(255,255,255,.82); border-radius: 50%; background: #c99d60; color: #10231e; box-shadow: 0 12px 35px rgba(15,37,31,.35); }
 .map-cluster-pin strong { font-size: 18px; line-height: 1; }
 .map-cluster-pin span { margin-top: 2px; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
