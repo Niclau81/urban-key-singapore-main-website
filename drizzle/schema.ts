@@ -5,6 +5,7 @@ export const users = mysqlTable("users", {
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -21,6 +22,49 @@ export const userProfiles = mysqlTable("userProfiles", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, table => ({ userIdUnique: uniqueIndex("userProfiles_userId_unique").on(table.userId) }));
+
+export const agentProfiles = mysqlTable("agentProfiles", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  accountType: mysqlEnum("accountType", ["agent", "co_broker"]).notNull(),
+  firstName: varchar("firstName", { length: 100 }).notNull(),
+  middleName: varchar("middleName", { length: 100 }),
+  lastName: varchar("lastName", { length: 100 }).notNull(),
+  contactNumber: varchar("contactNumber", { length: 32 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  companyName: varchar("companyName", { length: 180 }).notNull(),
+  companyAddress: varchar("companyAddress", { length: 320 }).notNull(),
+  postalCode: varchar("postalCode", { length: 12 }),
+  agentLicenseNumber: varchar("agentLicenseNumber", { length: 80 }).notNull(),
+  jobTitle: varchar("jobTitle", { length: 120 }),
+  businessRegistrationNumber: varchar("businessRegistrationNumber", { length: 80 }),
+  website: varchar("website", { length: 320 }),
+  termsAcceptedAt: timestamp("termsAcceptedAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({
+  userIdUnique: uniqueIndex("agentProfiles_userId_unique").on(table.userId),
+  licenseUnique: uniqueIndex("agentProfiles_license_unique").on(table.agentLicenseNumber),
+}));
+
+export const subscriptionOrders = mysqlTable("subscriptionOrders", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  planId: varchar("planId", { length: 40 }).notNull(),
+  termMonths: int("termMonths").notNull(),
+  status: mysqlEnum("status", ["pending", "active", "failed", "cancelled", "expired"]).default("pending").notNull(),
+  stripeCheckoutSessionId: varchar("stripeCheckoutSessionId", { length: 255 }).notNull(),
+  stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 255 }),
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
+  receiptEmail: varchar("receiptEmail", { length: 320 }).notNull(),
+  receiptEmailedAt: timestamp("receiptEmailedAt"),
+  startedAt: timestamp("startedAt"),
+  expiresAt: timestamp("expiresAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({
+  checkoutSessionUnique: uniqueIndex("subscriptionOrders_checkoutSession_unique").on(table.stripeCheckoutSessionId),
+}));
 
 export const savedListings = mysqlTable("savedListings", {
   id: int("id").autoincrement().primaryKey(),
@@ -79,6 +123,8 @@ export const propertyListingImages = mysqlTable("propertyListingImages", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type UserProfile = typeof userProfiles.$inferSelect;
+export type AgentProfile = typeof agentProfiles.$inferSelect;
+export type SubscriptionOrder = typeof subscriptionOrders.$inferSelect;
 export type SavedListing = typeof savedListings.$inferSelect;
 export type Enquiry = typeof enquiries.$inferSelect;
 export type PropertyListing = typeof propertyListings.$inferSelect;

@@ -1,5 +1,6 @@
 import { COOKIE_NAME } from "@shared/const";
 import { properties, propertyHistoryDisclaimer } from "@shared/propertyData";
+import { AUTOMATED_PAYMENT_METHODS, calculateSubscriptionPrice, getSubscriptionPlan, SUBSCRIPTION_PLANS } from "@shared/subscriptionPlans";
 import { TRPCError } from "@trpc/server";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
@@ -9,6 +10,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import { storagePut } from "./storage";
+import { createStripeCheckoutSession } from "./stripe";
 
 const messageSchema = z.object({ role: z.enum(["system", "user", "assistant"]), content: z.string().min(1).max(5000) });
 const listingInputSchema = z.object({
@@ -29,6 +31,29 @@ const listingInputSchema = z.object({
   loadingAccess: z.string().trim().min(2).max(180).optional(),
   parkingLots: z.number().int().min(0).max(10000).optional(),
   availableFrom: z.string().max(24).optional(),
+});
+
+export const agentRegistrationSchema = z.object({
+  accountType: z.enum(["agent", "co_broker"]),
+  firstName: z.string().trim().min(1).max(100),
+  middleName: z.string().trim().max(100).optional(),
+  lastName: z.string().trim().min(1).max(100),
+  contactNumber: z.string().trim().min(8).max(32),
+  email: z.string().trim().email().max(320),
+  companyName: z.string().trim().min(2).max(180),
+  companyAddress: z.string().trim().min(5).max(320),
+  postalCode: z.string().trim().regex(/^\d{6}$/, "Enter a valid 6-digit Singapore postal code").optional(),
+  agentLicenseNumber: z.string().trim().min(3).max(80),
+  jobTitle: z.string().trim().max(120).optional(),
+  businessRegistrationNumber: z.string().trim().max(80).optional(),
+  website: z.string().trim().url().max(320).optional().or(z.literal("")),
+  termsAccepted: z.literal(true),
+});
+
+export const subscriptionCheckoutSchema = z.object({
+  planId: z.string().min(1),
+  paymentMethod: z.enum(["card", "paynow"]),
+  origin: z.string().url().refine(value => ["http:", "https:"].includes(new URL(value).protocol), "Invalid checkout origin"),
 });
 
 export const appRouter = router({
@@ -83,6 +108,38 @@ export const appRouter = router({
       preferredDistricts: z.string().max(500).optional(),
       budget: z.number().int().positive().optional(),
     })).mutation(({ ctx, input }) => db.saveProfile(ctx.user.id, input)),
+  }),
+  agent: router({
+    getProfile: protectedProcedure.query(({ ctx }) => db.getAgentProfile(ctx.user.id)),
+    register: protectedProcedure.input(agentRegistrationSchema).mutation(({ ctx, input }) => {
+      const { termsAccepted: _termsAccepted, website, ...profile } = input;
+      return db.upsertAgentProfile(ctx.user.id, {
+        ...profile,
+        website: website || undefined,
+        termsAcceptedAt: new Date(),
+      });
+    }),
+  }),
+  subscription: router({
+    getPlans: publicProcedure.query(() => ({
+      plans: SUBSCRIPTION_PLANS.map(plan => ({ ...plan, ...calculateSubscriptionPrice(plan) })),
+      paymentMethods: AUTOMATED_PAYMENT_METHODS,
+    })),
+    createCheckout: protectedProcedure.input(subscriptionCheckoutSchema).mutation(async ({ ctx, input }) => {
+      const requestOrigin = ctx.req.headers.origin;
+      if (requestOrigin && new URL(input.origin).origin !== requestOrigin) throw new TRPCError({ code: "FORBIDDEN", message: "Checkout origin does not match this browser session" });
+      const profile = await db.getAgentProfile(ctx.user.id);
+      if (!profile) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Complete your professional profile before subscribing" });
+      const plan = getSubscriptionPlan(input.planId);
+      if (!plan) throw new TRPCError({ code: "BAD_REQUEST", message: "Subscription plan not found" });
+      try {
+        return await createStripeCheckoutSession({ user: ctx.user, profile, plan, paymentMethod: input.paymentMethod, origin: input.origin });
+      } catch (error) {
+        console.error("[Stripe] Checkout creation failed", error);
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Unable to start secure checkout. Please try again." });
+      }
+    }),
+    listOrders: protectedProcedure.query(({ ctx }) => db.listSubscriptionOrders(ctx.user.id)),
   }),
   saved: router({
     list: protectedProcedure.query(({ ctx }) => db.listSaved(ctx.user.id)),

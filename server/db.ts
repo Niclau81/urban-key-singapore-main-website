@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { enquiries, InsertUser, propertyListingImages, propertyListings, savedListings, userProfiles, users } from "../drizzle/schema";
+import { agentProfiles, enquiries, InsertUser, propertyListingImages, propertyListings, savedListings, subscriptionOrders, userProfiles, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -55,6 +55,103 @@ export async function saveProfile(userId: number, input: { persona: "buyer_tenan
   if (!db) return { userId, ...input };
   await db.insert(userProfiles).values({ userId, ...input }).onDuplicateKeyUpdate({ set: input });
   return getProfile(userId);
+}
+
+export type AgentProfileInput = {
+  accountType: "agent" | "co_broker";
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  contactNumber: string;
+  email: string;
+  companyName: string;
+  companyAddress: string;
+  postalCode?: string;
+  agentLicenseNumber: string;
+  jobTitle?: string;
+  businessRegistrationNumber?: string;
+  website?: string;
+  termsAcceptedAt: Date;
+};
+
+export async function getAgentProfile(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const rows = await db.select().from(agentProfiles).where(eq(agentProfiles.userId, userId)).limit(1);
+  return rows[0];
+}
+
+export async function upsertAgentProfile(userId: number, input: AgentProfileInput) {
+  const db = await getDb();
+  if (!db) return { id: 0, userId, ...input, createdAt: new Date(), updatedAt: new Date() };
+  await db.insert(agentProfiles).values({ userId, ...input }).onDuplicateKeyUpdate({ set: input });
+  return getAgentProfile(userId);
+}
+
+export async function updateUserStripeCustomerId(userId: number, stripeCustomerId: string) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(users).set({ stripeCustomerId }).where(eq(users.id, userId));
+}
+
+export async function createSubscriptionOrder(userId: number, input: {
+  planId: string;
+  termMonths: number;
+  stripeCheckoutSessionId: string;
+  receiptEmail: string;
+}) {
+  const db = await getDb();
+  if (!db) return { id: 0, userId, status: "pending" as const, ...input, createdAt: new Date(), updatedAt: new Date() };
+  const result = await db.insert(subscriptionOrders).values({ userId, status: "pending", ...input });
+  return { id: Number(result[0].insertId), userId, status: "pending" as const, ...input, createdAt: new Date(), updatedAt: new Date() };
+}
+
+export async function getSubscriptionOrderBySessionId(stripeCheckoutSessionId: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const rows = await db.select().from(subscriptionOrders).where(eq(subscriptionOrders.stripeCheckoutSessionId, stripeCheckoutSessionId)).limit(1);
+  return rows[0];
+}
+
+export async function activateSubscriptionOrder(stripeCheckoutSessionId: string, input: {
+  stripePaymentIntentId?: string;
+  stripeCustomerId?: string;
+}) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const order = await getSubscriptionOrderBySessionId(stripeCheckoutSessionId);
+  if (!order) return undefined;
+  if (order.status === "active") return order;
+
+  const startedAt = new Date();
+  const expiresAt = new Date(startedAt);
+  expiresAt.setUTCMonth(expiresAt.getUTCMonth() + order.termMonths);
+  await db.update(subscriptionOrders).set({
+    status: "active",
+    stripePaymentIntentId: input.stripePaymentIntentId ?? null,
+    stripeCustomerId: input.stripeCustomerId ?? null,
+    startedAt,
+    expiresAt,
+  }).where(eq(subscriptionOrders.id, order.id));
+  return getSubscriptionOrderBySessionId(stripeCheckoutSessionId);
+}
+
+export async function markSubscriptionReceiptEmailed(stripeCheckoutSessionId: string) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(subscriptionOrders).set({ receiptEmailedAt: new Date() }).where(eq(subscriptionOrders.stripeCheckoutSessionId, stripeCheckoutSessionId));
+}
+
+export async function failSubscriptionOrder(stripeCheckoutSessionId: string) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(subscriptionOrders).set({ status: "failed" }).where(eq(subscriptionOrders.stripeCheckoutSessionId, stripeCheckoutSessionId));
+}
+
+export async function listSubscriptionOrders(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(subscriptionOrders).where(eq(subscriptionOrders.userId, userId)).orderBy(desc(subscriptionOrders.createdAt));
 }
 
 export async function listSaved(userId: number) {

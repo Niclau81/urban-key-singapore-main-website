@@ -12,6 +12,11 @@ import PropertyDetail from "./pages/PropertyDetail";
 import Assistants from "./pages/Assistants";
 import AgentLogin from "./pages/AgentLogin";
 import AgentPortal from "./pages/AgentPortal";
+import AgentSignUp from "./pages/AgentSignUp";
+import SubscriptionPlans from "./pages/SubscriptionPlans";
+import Checkout from "./pages/Checkout";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentHistory from "./pages/PaymentHistory";
 
 function Router() {
   return <Switch>
@@ -23,6 +28,11 @@ function Router() {
     <Route path="/assistants" component={Assistants} />
     <Route path="/agent" component={AgentLogin} />
     <Route path="/agent/portal" component={AgentPortal} />
+    <Route path="/agent/signup" component={AgentSignUp} />
+    <Route path="/agent/subscribe" component={SubscriptionPlans} />
+    <Route path="/agent/checkout" component={Checkout} />
+    <Route path="/agent/payment-success" component={PaymentSuccess} />
+    <Route path="/agent/payments" component={PaymentHistory} />
     <Route path="/404" component={NotFound} />
     <Route component={NotFound} />
   </Switch>;

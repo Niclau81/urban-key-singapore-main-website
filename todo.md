@@ -58,3 +58,17 @@
 - [x] Save and deliver the agent and co-broker portal checkpoint.
 - [x] Add explicit automated coverage for authenticated listing status transitions and validation failures.
 - [x] Record portal-specific accessibility and runtime findings after exercising the sign-in, editor, upload, edit, and status interfaces.
+- [x] Add an agent/co-broker registration form with personal, contact, company, address, licence, email, and role details.
+- [x] Persist authenticated agent/co-broker professional profiles with ownership and validation safeguards.
+- [x] Add subscription terms for 1, 3, 6, 12, 24, 36, 48, 60, and 120 months.
+- [x] Implement deterministic SGD 120 monthly base pricing, term discounts, total savings, and final payable calculations.
+- [x] Build a responsive subscription comparison page showing monthly, annual, and multi-year options.
+- [x] Build a checkout summary that clearly shows regular price, discount percentage, amount saved, and final amount.
+- [x] Add secure credit-card and PayNow payment handling through the project payment integration.
+- [x] Add an iBanking payment option or a clearly disclosed secure bank-transfer alternative supported by the payment provider.
+- [x] Persist subscription orders, payment status, subscription validity, provider identifiers, and receipt metadata.
+- [x] Send an email receipt after verified successful payment without exposing payment credentials.
+- [x] Add payment success, pending, cancelled, failed, and receipt views with retry and portal navigation actions.
+- [x] Add automated coverage for registration validation, pricing calculations, ownership, payment status, and receipt generation.
+- [x] Verify accessibility, responsiveness, payment-method availability, runtime logs, tests, type checking, and production build.
+- [x] Save and deliver the agent subscription and payment checkpoint.
