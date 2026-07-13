@@ -45,9 +45,9 @@ export async function getUserByOpenId(openId: string) {
 
 export async function getProfile(userId: number) {
   const db = await getDb();
-  if (!db) return undefined;
+  if (!db) return null;
   const rows = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1);
-  return rows[0];
+  return rows[0] ?? null;
 }
 
 export async function saveProfile(userId: number, input: { persona: "buyer_tenant" | "seller_landlord" | "agent_co_broker"; preferredDistricts?: string; budget?: number }) {

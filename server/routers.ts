@@ -102,7 +102,7 @@ export const appRouter = router({
     }),
   }),
   profile: router({
-    get: protectedProcedure.query(({ ctx }) => db.getProfile(ctx.user.id)),
+    get: protectedProcedure.query(async ({ ctx }) => (await db.getProfile(ctx.user.id)) ?? null),
     save: protectedProcedure.input(z.object({
       persona: z.enum(["buyer_tenant", "seller_landlord", "agent_co_broker"]),
       preferredDistricts: z.string().max(500).optional(),

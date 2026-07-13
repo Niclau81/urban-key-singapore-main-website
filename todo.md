@@ -72,3 +72,6 @@
 - [x] Add automated coverage for registration validation, pricing calculations, ownership, payment status, and receipt generation.
 - [x] Verify accessibility, responsiveness, payment-method availability, runtime logs, tests, type checking, and production build.
 - [x] Save and deliver the agent subscription and payment checkpoint.
+- [x] Fix `/dashboard` profile query so a missing profile returns an explicit null value instead of undefined.
+- [x] Add regression coverage for authenticated users without an existing profile row.
+- [x] Verify `/dashboard` loads without TanStack Query undefined-data errors and save the fix checkpoint.
