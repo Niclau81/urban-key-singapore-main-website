@@ -1,123 +1,142 @@
 import { Button } from "@/components/ui/button";
-import { TOUR_PERIODS, getTourPeriod, type TourPeriodId } from "@/lib/tourPeriods";
-import { getTourExteriorMask } from "@/lib/tourSceneMasks";
-import { ChevronLeft, ChevronRight, CloudSun, Moon, MoonStar, Move3D, Sun, Sunrise, Sunset } from "lucide-react";
-import { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ChevronLeft, ChevronRight, Clock3, Image as ImageIcon } from "lucide-react";
+import { useMemo, useState } from "react";
 
-const periodIcons = {
-  morning: Sunrise,
-  noon: Sun,
-  afternoon: CloudSun,
-  evening: Sunset,
-  night: Moon,
-  midnight: MoonStar,
-} satisfies Record<TourPeriodId, typeof Sun>;
+type TimingPhoto = {
+  id: string;
+  label: string;
+  timeRange: string;
+  description: string;
+  src: string;
+  kind: "source" | "example-simulation";
+};
+
+const OFFICE_INTERIOR_TIMING_PHOTOS: TimingPhoto[] = [
+  {
+    id: "morning",
+    label: "Morning",
+    timeRange: "7:30 AM",
+    description: "Warm early daylight through the glazing",
+    src: "/manus-storage/office-interior-morning_19c37691.png",
+    kind: "example-simulation",
+  },
+  {
+    id: "noon",
+    label: "Noon",
+    timeRange: "12:30 PM",
+    description: "Original bright daytime presentation",
+    src: "/manus-storage/office-interior-noon_a72da44f.jpg",
+    kind: "source",
+  },
+  {
+    id: "midnight",
+    label: "Midnight",
+    timeRange: "12:00 AM",
+    description: "Warm interior lighting against a night view",
+    src: "/manus-storage/office-interior-midnight_8e9070ce.png",
+    kind: "example-simulation",
+  },
+];
+
+function getTimingPhotos(imageUrl: string): TimingPhoto[] {
+  if (imageUrl.toLowerCase().includes("office-interior_791afa97")) {
+    return OFFICE_INTERIOR_TIMING_PHOTOS;
+  }
+
+  return [{
+    id: "as-photographed",
+    label: "As photographed",
+    timeRange: "Original capture",
+    description: "No alternate timing photos are available for this view",
+    src: imageUrl,
+    kind: "source",
+  }];
+}
 
 export function VirtualTour({ title, gallery, tourUrl }: { title: string; gallery: string[]; tourUrl?: string }) {
-  const [periodId, setPeriodId] = useState<TourPeriodId>("noon");
-  const [index, setIndex] = useState(0);
-  const period = getTourPeriod(periodId);
-  const exteriorMask = tourUrl ? null : getTourExteriorMask(gallery[index]);
-  const next = (step: number) => setIndex(current => (current + step + gallery.length) % gallery.length);
+  const [timingId, setTimingId] = useState("noon");
+  const [index, setIndex] = useState(() => {
+    const photoBackedExample = gallery.findIndex(image => getTimingPhotos(image).length > 1);
+    return photoBackedExample >= 0 ? photoBackedExample : 0;
+  });
+  const timingPhotos = useMemo(() => getTimingPhotos(gallery[index]), [gallery, index]);
+  const activeTiming = timingPhotos.find(photo => photo.id === timingId) ?? timingPhotos[0];
+
+  const showImage = (nextIndex: number) => {
+    setIndex(nextIndex);
+    setTimingId("noon");
+  };
+
+  const move = (step: number) => showImage((index + step + gallery.length) % gallery.length);
 
   return <div
     className="relative h-[560px] overflow-hidden rounded-[28px] border border-[#17382f]/10 bg-[#10231e] sm:h-[520px]"
     data-tour-fallback={tourUrl ? "panoramic-iframe" : "image-carousel"}
-    data-tour-period={period.id}
+    data-tour-photo-timing={tourUrl ? "provider-controlled" : activeTiming.id}
   >
     {tourUrl ? <iframe
-      src={tourUrl}
       title={`${title} panoramic virtual tour`}
+      src={tourUrl}
+      className="h-full w-full border-0"
+      allow="fullscreen; gyroscope; accelerometer"
       allowFullScreen
-      className="h-full w-full transition-[filter] duration-500"
-      style={{ filter: period.sceneFilter }}
-    /> : exteriorMask?.composition === "photographic-aperture" ? <>
-      <div
-        aria-hidden="true"
-        data-tour-layer="period-sky-underlay"
-        data-tour-exterior-region={exteriorMask.label}
-        className="pointer-events-none absolute inset-0 transition-[background] duration-500"
-        style={{ background: period.exteriorView }}
-      />
-      <img
-        src={gallery[index]}
-        alt={`${title} virtual view ${index + 1}`}
-        data-tour-layer="photographic-foreground"
-        data-tour-exterior-region={exteriorMask.label}
-        className="absolute inset-0 h-full w-full object-cover"
-        style={{
-          maskImage: exteriorMask.foregroundMaskImage,
-          WebkitMaskImage: exteriorMask.foregroundMaskImage,
-          maskSize: "100% 100%",
-          WebkitMaskSize: "100% 100%",
-          maskRepeat: "no-repeat",
-          WebkitMaskRepeat: "no-repeat",
-        }}
-      />
-    </> : <>
-      <img
-        src={gallery[index]}
-        alt={`${title} virtual view ${index + 1}`}
-        className="h-full w-full object-cover transition-[filter] duration-500"
-        style={{ filter: period.sceneFilter }}
-      />
-      {exteriorMask && <div
-        aria-hidden="true"
-        data-tour-layer="exterior-scene"
-        data-tour-exterior-region={exteriorMask.label}
-        className="pointer-events-none absolute inset-0 transition-[background] duration-500"
-        style={{ background: period.exteriorView, opacity: exteriorMask.opacity }}
-      />}
-    </>}
-    {exteriorMask?.composition !== "photographic-aperture" && <div
-      aria-hidden="true"
-      data-tour-layer="interior-light"
-      className="pointer-events-none absolute inset-0 transition-[background] duration-500"
-      style={{ background: period.interiorLight, mixBlendMode: "screen" }}
+    /> : <img
+      key={activeTiming.src}
+      src={activeTiming.src}
+      alt={`${title} ${activeTiming.label.toLowerCase()} virtual view ${index + 1}`}
+      data-tour-layer="timed-photograph"
+      data-tour-photo-source={activeTiming.src}
+      className="absolute inset-0 h-full w-full object-cover motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300"
     />}
-    <div className="absolute left-3 right-3 top-3 flex flex-col gap-2 sm:left-4 sm:right-4 sm:top-4 sm:flex-row sm:items-start sm:justify-between">
-      <div className="flex w-fit items-center gap-2 rounded-full bg-[#10231e]/78 px-3 py-2 text-[10px] font-bold uppercase tracking-[.14em] text-white backdrop-blur">
-        <Move3D className="size-4 text-[#d5ae72]" />{tourUrl ? "Interactive 360° tour" : "360° tour-ready fallback"}
+
+    <div className="absolute left-4 right-4 top-4 z-30 flex items-start justify-between gap-3 sm:left-6 sm:right-6 sm:top-6">
+      <div className="flex items-center gap-2 rounded-full bg-[#10231e]/88 px-3 py-2 text-[10px] font-bold uppercase tracking-[.14em] text-white shadow-lg">
+        <ImageIcon className="size-3.5 text-[#d5ae72]" />
+        Photo timing
       </div>
-      <div className="max-w-full overflow-x-auto rounded-2xl border border-white/20 bg-[#10231e]/78 p-1.5 text-white shadow-lg backdrop-blur" role="toolbar" aria-label="Virtual tour time of day">
-        <div className="flex min-w-max gap-1">
-          {TOUR_PERIODS.map(option => {
-            const Icon = periodIcons[option.id];
-            const active = option.id === period.id;
-            return <button
-              key={option.id}
-              type="button"
-              onClick={() => setPeriodId(option.id)}
-              aria-label={`${option.label} view, ${option.timeRange}`}
-              aria-pressed={active}
-              className={`flex min-h-11 items-center gap-1.5 rounded-xl px-2.5 text-[10px] font-bold uppercase tracking-[.08em] transition duration-200 active:scale-[.97] ${active ? "bg-white text-[#17382f] shadow-sm" : "text-white/72 hover:bg-white/10 hover:text-white"}`}
-            >
-              <Icon className="size-3.5" style={{ color: active ? period.accent : undefined }} />
-              <span>{option.label}</span>
-            </button>;
-          })}
-        </div>
-      </div>
+
+      {!tourUrl && timingPhotos.length > 1 ? <Select value={activeTiming.id} onValueChange={setTimingId}>
+        <SelectTrigger
+          aria-label="Select an available photo timing"
+          data-tour-control="photo-timing-select"
+          className="h-10 w-[158px] rounded-full border-white/15 bg-[#10231e]/92 px-4 text-xs font-semibold text-white shadow-lg focus:ring-[#d5ae72] sm:w-[184px]"
+        >
+          <Clock3 className="mr-2 size-3.5 text-[#d5ae72]" />
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent align="end" className="border-[#17382f]/10 bg-[#f8f7f2] text-[#17382f]">
+          {timingPhotos.map(photo => <SelectItem key={photo.id} value={photo.id}>
+            <span className="flex items-center gap-2">
+              <span className="font-semibold">{photo.label}</span>
+              <span className="text-[10px] text-[#6a7d77]">{photo.timeRange}</span>
+            </span>
+          </SelectItem>)}
+        </SelectContent>
+      </Select> : <div className="rounded-full bg-[#10231e]/88 px-3 py-2 text-[10px] font-semibold text-white shadow-lg">
+        {tourUrl ? "Live panorama" : "As photographed"}
+      </div>}
     </div>
 
-    {!tourUrl && <>
-      <Button aria-label="Previous virtual tour view" onClick={() => next(-1)} size="icon" className="absolute left-3 top-[58%] -translate-y-1/2 rounded-full bg-white/88 text-[#17382f] hover:bg-white sm:left-4 sm:top-1/2"><ChevronLeft className="size-4" /></Button>
-      <Button aria-label="Next virtual tour view" onClick={() => next(1)} size="icon" className="absolute right-3 top-[58%] -translate-y-1/2 rounded-full bg-white/88 text-[#17382f] hover:bg-white sm:right-4 sm:top-1/2"><ChevronRight className="size-4" /></Button>
+    {!tourUrl && gallery.length > 1 && <>
+      <Button aria-label="Previous gallery image" onClick={() => move(-1)} size="icon" className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/90 text-[#17382f] shadow-lg hover:bg-white"><ChevronLeft className="size-4" /></Button>
+      <Button aria-label="Next gallery image" onClick={() => move(1)} size="icon" className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/90 text-[#17382f] shadow-lg hover:bg-white"><ChevronRight className="size-4" /></Button>
     </>}
 
-    <div
-      data-tour-layer="caption-content"
-      className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4 text-white sm:p-5"
-      style={{ textShadow: "0 2px 7px rgb(3 16 13 / 88%)" }}
-    >
-      <div aria-live="polite">
-        <div className="flex items-center gap-2">
-          <span className="size-2 rounded-full" style={{ backgroundColor: period.accent }} />
-          <p className="font-display text-2xl">{period.label} perspective</p>
-        </div>
-        <p className="mt-1 text-xs text-white/75">{period.timeRange} · {period.description} · Exterior view and interior lighting preview</p>
-      </div>
-      {!tourUrl && <div className="hidden gap-1.5 sm:flex">{gallery.map((_, itemIndex) => <button key={itemIndex} onClick={() => setIndex(itemIndex)} className={`h-1.5 rounded-full transition-all ${itemIndex === index ? "w-7 bg-[#d5ae72]" : "w-1.5 bg-white/45"}`} aria-label={`View image ${itemIndex + 1}`} />)}</div>}
+    <div data-tour-layer="caption-content" className="absolute bottom-5 left-5 z-20 max-w-[calc(100%-2.5rem)] text-white sm:bottom-7 sm:left-7">
+      <p className="font-display text-2xl" style={{ textShadow: "0 2px 7px rgb(3 16 13 / 88%)" }}>{tourUrl ? "Interactive panorama" : `${activeTiming.label} perspective`}</p>
+      <p className="mt-1 text-xs text-white/80" style={{ textShadow: "0 2px 6px rgb(3 16 13 / 92%)" }}>
+        {tourUrl ? "Explore the provider-hosted panoramic view" : `${activeTiming.timeRange} · ${activeTiming.description} · ${activeTiming.kind === "example-simulation" ? "Example time-specific photo" : "Source photo"}`}
+      </p>
     </div>
+
+    {!tourUrl && <div className="absolute bottom-5 right-5 z-20 hidden gap-1.5 sm:flex">
+      {gallery.map((_, itemIndex) => <button
+        key={itemIndex}
+        onClick={() => showImage(itemIndex)}
+        className={`h-1.5 rounded-full transition-all ${itemIndex === index ? "w-7 bg-[#d5ae72]" : "w-1.5 bg-white/55"}`}
+        aria-label={`View image ${itemIndex + 1}`}
+      />)}
+    </div>}
   </div>;
 }

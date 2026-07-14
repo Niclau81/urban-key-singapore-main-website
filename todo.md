@@ -122,3 +122,8 @@
 - [x] Visually verify all six periods on desktop and mobile, inspect current runtime logs, run full tests and build, then save and deliver the fix.
 - [x] Remove the full-frame bottom caption gradient that still shades the photograph above the source foreground, retaining text readability without a photo-covering layer.
 - [x] Verify on the affected office-interior scene that no `foregroundLight` or other non-control visual-treatment sibling follows the foreground photograph across all six mobile period states.
+- [x] Restart the unresponsive development services and verify the UrbanKey preview responds normally without new runtime errors.
+- [x] Replace the Virtual Viewing six-button timing strip with a compact single time selector.
+- [x] Make timing choices available only when the active gallery scene has a corresponding time-specific photo, without overlaying simulated shading on the source image.
+- [x] Produce a representative office-interior example simulation using distinct photo assets for the supported timing choices and a clear fallback for unsupported choices.
+- [x] Add regression coverage, verify desktop and mobile behavior, run the full test suite and production build, then save and deliver the selector simulation.
