@@ -104,3 +104,9 @@
 - [x] Recompose virtual-view timing so the generated sky sits beneath the source photo’s opaque window/glass/frame layer rather than tinting over the picture.
 - [x] Add regression coverage and live visual verification for orbit, pan, zoom, floor highlighting, and below-window sky layering.
 - [x] Run tests, type checking, production build, then save and deliver the corrected model and virtual-view checkpoint.
+- [x] Reproduce and fix the Interlace BuildingViewer crash when listing-floor metadata is absent or undefined.
+- [x] Verify getListingFloorIdentity is exported and imported consistently without stale HMR module failures.
+- [x] Add regression coverage for incomplete unit/property metadata and safe landed or unknown-floor behavior.
+- [x] Restart the preview cleanly and verify the Interlace route, tRPC responses, current console, and network logs contain no active errors.
+- [x] Run tests, type checking, production build, then save and deliver the runtime-error fix checkpoint.
+- [x] Add an explicit regression assertion that unparseable property and unit metadata safely returns no floor identity.

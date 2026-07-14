@@ -125,20 +125,22 @@ export function getListingFloorIdentity({
   propertyType,
   transactionUnit,
 }: {
-  propertyId: string;
-  propertyType: string;
-  transactionUnit?: string;
+  propertyId?: string | null;
+  propertyType?: string | null;
+  transactionUnit?: string | null;
 }): ListingFloorIdentity | null {
-  const normalizedType = propertyType.trim().toLowerCase();
+  const normalizedType = typeof propertyType === "string" ? propertyType.trim().toLowerCase() : "";
   if (WHOLE_PROPERTY_TYPES.some(type => normalizedType.includes(type))) return null;
 
-  const unitMatch = transactionUnit?.match(/#(\d{1,3})-(\d{1,4})/);
+  const unitMatch = typeof transactionUnit === "string" ? transactionUnit.match(/#(\d{1,3})-(\d{1,4})/) : null;
   if (unitMatch) {
     const floor = Number(unitMatch[1]);
     return floor > 0 ? { floor, unitLabel: `#${unitMatch[1]}-${unitMatch[2]}` } : null;
   }
 
-  const idMatch = propertyId.match(/-(\d{1,3})(?:-(\d{1,4}))?$/);
+  const normalizedPropertyId = typeof propertyId === "string" ? propertyId.trim() : "";
+  if (!normalizedPropertyId) return null;
+  const idMatch = normalizedPropertyId.match(/-(\d{1,3})(?:-(\d{1,4}))?$/);
   if (!idMatch) return null;
   const floor = Number(idMatch[1]);
   if (floor <= 0) return null;

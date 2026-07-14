@@ -64,6 +64,14 @@ describe("immersive model interaction", () => {
     expect(getListingFloorIdentity({ propertyId: "sentosa-bungalow", propertyType: "Detached Landed", transactionUnit: "#01-01" })).toBeNull();
   });
 
+  it("handles incomplete listing metadata without throwing during BuildingViewer render", () => {
+    expect(getListingFloorIdentity({ propertyId: "interlace-garden-06-12", propertyType: undefined })).toEqual({ floor: 6, unitLabel: "#06-12" });
+    expect(getListingFloorIdentity({ propertyId: "orchard-boulevard-19-02", propertyType: null, transactionUnit: undefined })).toEqual({ floor: 19, unitLabel: "#19-02" });
+    expect(getListingFloorIdentity({ propertyId: undefined, propertyType: undefined, transactionUnit: undefined })).toBeNull();
+    expect(getListingFloorIdentity({ propertyId: null, propertyType: null, transactionUnit: null })).toBeNull();
+    expect(getListingFloorIdentity({ propertyId: "interlace-garden-home", propertyType: "Condominium", transactionUnit: "garden-facing" })).toBeNull();
+  });
+
   it("returns horizontal, vertical, and diagonal screen-space pan deltas", () => {
     const horizontal = getModelPanDelta({ active: true, deltaX: 40, deltaY: 0, viewportHeight: 460, cameraDistance: 12, verticalFovDegrees: 38 });
     expect(horizontal.x).toBeLessThan(0);

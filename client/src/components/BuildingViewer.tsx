@@ -17,7 +17,15 @@ type ViewerRuntime = {
   applyView: (view: ImmersiveModelView) => void;
 };
 
-export function BuildingViewer({ propertyId, propertyType, transactionUnit }: { propertyId: string; propertyType: string; transactionUnit?: string }) {
+export function BuildingViewer({
+  propertyId,
+  propertyType,
+  transactionUnit,
+}: {
+  propertyId?: string | null;
+  propertyType?: string | null;
+  transactionUnit?: string | null;
+}) {
   const mountRef = useRef<HTMLDivElement>(null);
   const interactionRef = useRef(false);
   const runtimeRef = useRef<ViewerRuntime | null>(null);
