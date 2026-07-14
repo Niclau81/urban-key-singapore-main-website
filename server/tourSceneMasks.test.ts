@@ -15,14 +15,11 @@ describe("virtual tour exterior masks", () => {
         "linear-gradient(135deg, transparent 0%, #000 10%, #000 89%, transparent 100%)",
       opacity: 1,
       label: "diagonal-office-window-sky",
-      composition: "window-aperture",
+      composition: "photographic-aperture",
     });
     expect(mask?.apertureMaskImage).toContain("data:image/svg+xml");
-    expect(mask?.foregroundMaskImage).toContain("data:image/svg+xml");
-    expect(mask?.apertureMaskImage).not.toBe(mask?.foregroundMaskImage);
     expect(decodeURIComponent(mask?.apertureMaskImage ?? "")).toContain("fill='transparent'");
-    expect(decodeURIComponent(mask?.foregroundMaskImage ?? "")).toContain("<mask id='cut'>");
-    expect(decodeURIComponent(mask?.foregroundMaskImage ?? "")).toContain("mask='url(#cut)'");
+    expect(mask).not.toHaveProperty("foregroundMaskImage");
   });
 
   it("bounds the residential exterior treatment to the central open view", () => {
@@ -32,12 +29,11 @@ describe("virtual tour exterior masks", () => {
       maskImage: "linear-gradient(to bottom, transparent 58.8%, #000 61%, #000 69.8%, transparent 72.2%)",
       opacity: 1,
       label: "central-bay-view-opening",
-      composition: "window-aperture",
+      composition: "photographic-aperture",
     });
     expect(mask?.apertureMaskImage).toContain("data:image/svg+xml");
-    expect(mask?.foregroundMaskImage).toContain("data:image/svg+xml");
     expect(decodeURIComponent(mask?.apertureMaskImage ?? "")).toContain("fill='transparent'");
-    expect(decodeURIComponent(mask?.foregroundMaskImage ?? "")).toContain("<mask id='cut'>");
+    expect(mask).not.toHaveProperty("foregroundMaskImage");
   });
 
   it("allows a full-frame treatment only for an explicitly exterior scene", () => {

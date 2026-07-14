@@ -16,6 +16,7 @@ describe("virtual tour time periods", () => {
 
   it("provides distinct exterior and interior treatments for every period", () => {
     expect(new Set(TOUR_PERIODS.map(period => period.sceneFilter)).size).toBe(6);
+    expect(new Set(TOUR_PERIODS.map(period => period.exteriorFilter)).size).toBe(6);
     expect(new Set(TOUR_PERIODS.map(period => period.exteriorView)).size).toBe(6);
     expect(new Set(TOUR_PERIODS.map(period => period.interiorLight)).size).toBe(6);
 
@@ -25,14 +26,21 @@ describe("virtual tour time periods", () => {
       expect(period.description.length).toBeGreaterThan(0);
       expect(period.accent).toMatch(/^#[0-9a-f]{6}$/i);
       expect(period.exteriorView).toContain("linear-gradient");
+      expect(period.exteriorFilter).toContain("brightness(");
+      expect(period.exteriorTintOpacity).toBeGreaterThanOrEqual(0);
+      expect(period.exteriorTintOpacity).toBeLessThanOrEqual(0.2);
       expect(["color", "normal"]).toContain(period.exteriorBlendMode);
       expect(period.interiorLight).toContain("radial-gradient");
     }
   });
 
-  it("replaces bright window luminance after sunset without darkening the complete room", () => {
+  it("darkens only the photographic aperture after sunset without darkening the complete room", () => {
     for (const id of ["evening", "night", "midnight"] as const) {
-      expect(getTourPeriod(id).exteriorBlendMode).toBe("normal");
+      const period = getTourPeriod(id);
+      const apertureBrightness = Number(period.exteriorFilter.match(/brightness\(([^)]+)\)/)?.[1]);
+      expect(period.exteriorBlendMode).toBe("normal");
+      expect(apertureBrightness).toBeLessThan(0.75);
+      expect(period.exteriorTintOpacity).toBeLessThanOrEqual(0.2);
     }
 
     for (const id of ["morning", "noon", "afternoon"] as const) {

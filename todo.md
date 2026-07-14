@@ -110,3 +110,8 @@
 - [x] Restart the preview cleanly and verify the Interlace route, tRPC responses, current console, and network logs contain no active errors.
 - [x] Run tests, type checking, production build, then save and deliver the runtime-error fix checkpoint.
 - [x] Add an explicit regression assertion that unparseable property and unit metadata safely returns no floor identity.
+- [x] Reproduce the reported Night virtual-view defect where opaque blue rectangles cover the office-interior window panes.
+- [x] Correct the affected scene mask and layer composition so period lighting changes only the exterior visible through the true window openings.
+- [x] Add focused regression coverage preventing opaque period-color patches from being rendered above the source-photo foreground.
+- [x] Visually verify Morning, Noon, Afternoon, Evening, Night, and Midnight on the affected scene and inspect current runtime logs.
+- [x] Run the full tests and production build, then save and deliver the corrected virtual-view checkpoint.
