@@ -1,5 +1,22 @@
 export type ImmersiveModelView = "tower" | "floor";
 
+export type ListingFloorIdentity = {
+  floor: number;
+  unitLabel: string;
+};
+
+const WHOLE_PROPERTY_TYPES = [
+  "shophouse",
+  "warehouse",
+  "office building",
+  "factory building",
+  "landed",
+  "bungalow",
+  "detached",
+  "semi-detached",
+  "terrace house",
+];
+
 export const IMMERSIVE_MODEL_VIEW_CONFIG = {
   tower: {
     scaleY: 1,
@@ -81,6 +98,51 @@ export function getBoundedModelPanOffset({
   if (distance === 0 || distance <= safeMaxDistance) return { x, y, z };
   const scale = safeMaxDistance / distance;
   return { x: x * scale, y: y * scale, z: z * scale };
+}
+
+export function getModelOrbitDelta({
+  active,
+  deltaX,
+  deltaY,
+  viewportWidth,
+  viewportHeight,
+}: {
+  active: boolean;
+  deltaX: number;
+  deltaY: number;
+  viewportWidth: number;
+  viewportHeight: number;
+}) {
+  if (!active) return { azimuth: 0, polar: 0 };
+  return {
+    azimuth: deltaX === 0 ? 0 : -(deltaX / Math.max(viewportWidth, 1)) * Math.PI * 1.7,
+    polar: deltaY === 0 ? 0 : -(deltaY / Math.max(viewportHeight, 1)) * Math.PI * 1.2,
+  };
+}
+
+export function getListingFloorIdentity({
+  propertyId,
+  propertyType,
+  transactionUnit,
+}: {
+  propertyId: string;
+  propertyType: string;
+  transactionUnit?: string;
+}): ListingFloorIdentity | null {
+  const normalizedType = propertyType.trim().toLowerCase();
+  if (WHOLE_PROPERTY_TYPES.some(type => normalizedType.includes(type))) return null;
+
+  const unitMatch = transactionUnit?.match(/#(\d{1,3})-(\d{1,4})/);
+  if (unitMatch) {
+    const floor = Number(unitMatch[1]);
+    return floor > 0 ? { floor, unitLabel: `#${unitMatch[1]}-${unitMatch[2]}` } : null;
+  }
+
+  const idMatch = propertyId.match(/-(\d{1,3})(?:-(\d{1,4}))?$/);
+  if (!idMatch) return null;
+  const floor = Number(idMatch[1]);
+  if (floor <= 0) return null;
+  return { floor, unitLabel: idMatch[2] ? `#${idMatch[1]}-${idMatch[2]}` : `Level ${floor}` };
 }
 
 export function getModelInteractionAfterKey(active: boolean, key: string) {

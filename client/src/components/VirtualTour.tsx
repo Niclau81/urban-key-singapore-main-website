@@ -31,26 +31,54 @@ export function VirtualTour({ title, gallery, tourUrl }: { title: string; galler
       allowFullScreen
       className="h-full w-full transition-[filter] duration-500"
       style={{ filter: period.sceneFilter }}
-    /> : <img
-      src={gallery[index]}
-      alt={`${title} virtual view ${index + 1}`}
-      className="h-full w-full object-cover transition-[filter] duration-500"
-      style={{ filter: period.sceneFilter }}
-    />}
-    {exteriorMask && <div
-      aria-hidden="true"
-      data-tour-layer="exterior-window"
-      data-tour-exterior-region={exteriorMask.label}
-      className="pointer-events-none absolute inset-0 transition-[background] duration-500"
-      style={{
-        background: period.exteriorView,
-        clipPath: exteriorMask.clipPath,
-        opacity: exteriorMask.opacity,
-        maskImage: exteriorMask.maskImage,
-        WebkitMaskImage: exteriorMask.maskImage,
-        mixBlendMode: period.exteriorBlendMode,
-      }}
-    />}
+    /> : exteriorMask?.composition === "window-aperture" ? <>
+      <div
+        aria-hidden="true"
+        data-tour-layer="timed-sky-underlay"
+        data-tour-exterior-region={exteriorMask.label}
+        className="pointer-events-none absolute inset-0 transition-[background] duration-500"
+        style={{ background: period.exteriorView }}
+      />
+      <img
+        src={gallery[index]}
+        alt={`${title} virtual view ${index + 1}`}
+        data-tour-layer="opaque-source-foreground"
+        className="absolute inset-0 h-full w-full object-cover"
+        style={{
+          maskImage: exteriorMask.foregroundMaskImage,
+          WebkitMaskImage: exteriorMask.foregroundMaskImage,
+          maskSize: "100% 100%",
+          WebkitMaskSize: "100% 100%",
+        }}
+      />
+      <img
+        src={gallery[index]}
+        alt=""
+        aria-hidden="true"
+        data-tour-layer="original-glass-reflection"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-20"
+        style={{
+          maskImage: exteriorMask.apertureMaskImage,
+          WebkitMaskImage: exteriorMask.apertureMaskImage,
+          maskSize: "100% 100%",
+          WebkitMaskSize: "100% 100%",
+        }}
+      />
+    </> : <>
+      <img
+        src={gallery[index]}
+        alt={`${title} virtual view ${index + 1}`}
+        className="h-full w-full object-cover transition-[filter] duration-500"
+        style={{ filter: period.sceneFilter }}
+      />
+      {exteriorMask && <div
+        aria-hidden="true"
+        data-tour-layer="exterior-scene"
+        data-tour-exterior-region={exteriorMask.label}
+        className="pointer-events-none absolute inset-0 transition-[background] duration-500"
+        style={{ background: period.exteriorView, opacity: exteriorMask.opacity, mixBlendMode: period.exteriorBlendMode }}
+      />}
+    </>}
     <div
       aria-hidden="true"
       data-tour-layer="interior-light"

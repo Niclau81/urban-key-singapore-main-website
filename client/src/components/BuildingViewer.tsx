@@ -3,8 +3,10 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import {
   getBoundedModelPanOffset,
+  getListingFloorIdentity,
   getModelInteractionAfterBlur,
   getModelInteractionAfterKey,
+  getModelOrbitDelta,
   getModelPanDelta,
   getNextModelZoomDistance,
   IMMERSIVE_MODEL_VIEW_CONFIG,
@@ -15,12 +17,13 @@ type ViewerRuntime = {
   applyView: (view: ImmersiveModelView) => void;
 };
 
-export function BuildingViewer() {
+export function BuildingViewer({ propertyId, propertyType, transactionUnit }: { propertyId: string; propertyType: string; transactionUnit?: string }) {
   const mountRef = useRef<HTMLDivElement>(null);
   const interactionRef = useRef(false);
   const runtimeRef = useRef<ViewerRuntime | null>(null);
   const [view, setView] = useState<ImmersiveModelView>("tower");
   const [interactive, setInteractive] = useState(false);
+  const floorIdentity = getListingFloorIdentity({ propertyId, propertyType, transactionUnit });
 
   const setInteraction = (next: boolean) => {
     interactionRef.current = next;
@@ -50,32 +53,39 @@ export function BuildingViewer() {
     const concrete = new THREE.MeshStandardMaterial({ color: "#d9d2c3", roughness: 0.7, metalness: 0.05 });
     const glass = new THREE.MeshStandardMaterial({ color: "#476c65", roughness: 0.18, metalness: 0.35 });
     const brass = new THREE.MeshStandardMaterial({ color: "#b68a4c", roughness: 0.42, metalness: 0.45 });
+    const selectedFloor = new THREE.MeshStandardMaterial({ color: "#f2c66d", emissive: "#8a5e1e", emissiveIntensity: 0.75, roughness: 0.28, metalness: 0.35 });
+    const floorBands: Array<{ object: THREE.Group; floor: number; tower: number }> = [];
 
-    const makeTower = (x: number, z: number, floors: number, width: number) => {
+    const makeTower = (x: number, z: number, floors: number, width: number, towerIndex: number) => {
       const floorHeight = 0.42;
       const tower = new THREE.Group();
       for (let floor = 0; floor < floors; floor += 1) {
-        const slab = new THREE.Mesh(new THREE.BoxGeometry(width, 0.34, 2.15), concrete);
+        const floorNumber = floor + 1;
+        const band = new THREE.Group();
+        const isListedFloor = towerIndex === 1 && floorIdentity?.floor === floorNumber;
+        const slab = new THREE.Mesh(new THREE.BoxGeometry(width, 0.34, 2.15), isListedFloor ? selectedFloor : concrete);
         slab.position.y = floor * floorHeight + 0.55;
         slab.castShadow = true;
         slab.receiveShadow = true;
-        tower.add(slab);
+        band.add(slab);
 
-        const windowBand = new THREE.Mesh(new THREE.BoxGeometry(width + 0.04, 0.18, 2.18), glass);
+        const windowBand = new THREE.Mesh(new THREE.BoxGeometry(width + 0.04, 0.18, 2.18), isListedFloor ? selectedFloor : glass);
         windowBand.position.y = floor * floorHeight + 0.63;
-        tower.add(windowBand);
+        band.add(windowBand);
 
         const balcony = new THREE.Mesh(new THREE.BoxGeometry(width + 0.25, 0.045, 2.42), brass);
         balcony.position.set(0, floor * floorHeight + 0.78, 0);
-        tower.add(balcony);
+        band.add(balcony);
+        floorBands.push({ object: band, floor: floorNumber, tower: towerIndex });
+        tower.add(band);
       }
       tower.position.set(x, 0, z);
       return tower;
     };
 
-    group.add(makeTower(-1.7, 0, 13, 2.4));
-    group.add(makeTower(1.45, -0.8, 19, 2.1));
-    group.add(makeTower(0.2, 2.3, 9, 2.8));
+    group.add(makeTower(-1.7, 0, 22, 2.4, 0));
+    group.add(makeTower(1.45, -0.8, 32, 2.1, 1));
+    group.add(makeTower(0.2, 2.3, 16, 2.8, 2));
 
     const podium = new THREE.Mesh(new THREE.BoxGeometry(7.5, 0.6, 6), concrete);
     podium.position.y = 0.2;
@@ -143,7 +153,11 @@ export function BuildingViewer() {
 
     const applyView = (nextView: ImmersiveModelView) => {
       currentView = nextView;
-      group.scale.set(1, IMMERSIVE_MODEL_VIEW_CONFIG[nextView].scaleY, 1);
+      const isolatesListedFloor = nextView === "floor" && Boolean(floorIdentity);
+      floorBands.forEach(({ object, floor, tower }) => {
+        object.visible = !isolatesListedFloor || (tower === 1 && floor === floorIdentity?.floor);
+      });
+      group.scale.set(1, isolatesListedFloor ? 1 : IMMERSIVE_MODEL_VIEW_CONFIG[nextView].scaleY, 1);
       group.position.set(0, 0, 0);
       resizeRenderer();
       frameModel();
@@ -152,13 +166,13 @@ export function BuildingViewer() {
     applyView("tower");
 
     let dragging = false;
-    let dragMode: "pan" | "rotate" = "pan";
+    let dragMode: "pan" | "orbit" = "orbit";
     let previousX = 0;
     let previousY = 0;
     const onDown = (event: PointerEvent) => {
       if (!interactionRef.current) return;
       dragging = true;
-      dragMode = event.shiftKey || event.button === 1 || event.button === 2 ? "rotate" : "pan";
+      dragMode = event.shiftKey || event.altKey || event.button === 1 || event.button === 2 ? "pan" : "orbit";
       previousX = event.clientX;
       previousY = event.clientY;
       renderer.domElement.setPointerCapture(event.pointerId);
@@ -168,8 +182,20 @@ export function BuildingViewer() {
       const deltaX = event.clientX - previousX;
       const deltaY = event.clientY - previousY;
 
-      if (dragMode === "rotate") {
-        group.rotation.y += deltaX * 0.009;
+      if (dragMode === "orbit") {
+        const orbitDelta = getModelOrbitDelta({
+          active: true,
+          deltaX,
+          deltaY,
+          viewportWidth: renderer.domElement.clientWidth,
+          viewportHeight: renderer.domElement.clientHeight,
+        });
+        const offset = camera.position.clone().sub(target);
+        const spherical = new THREE.Spherical().setFromVector3(offset);
+        spherical.theta += orbitDelta.azimuth;
+        spherical.phi = THREE.MathUtils.clamp(spherical.phi + orbitDelta.polar, 0.12, Math.PI - 0.12);
+        camera.position.copy(target).add(new THREE.Vector3().setFromSpherical(spherical));
+        camera.lookAt(target);
       } else {
         const panDelta = getModelPanDelta({
           active: true,
@@ -236,7 +262,6 @@ export function BuildingViewer() {
     let frame = 0;
     const animate = () => {
       frame = requestAnimationFrame(animate);
-      if (!dragging) group.rotation.y += 0.0012;
       renderer.render(scene, camera);
     };
     animate();
@@ -261,7 +286,7 @@ export function BuildingViewer() {
       });
       if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
     };
-  }, []);
+  }, [floorIdentity?.floor]);
 
   useEffect(() => {
     runtimeRef.current?.applyView(view);
@@ -287,7 +312,7 @@ export function BuildingViewer() {
         if (nextInteraction !== interactionRef.current) setInteraction(nextInteraction);
       }}
       className={`h-[460px] w-full cursor-grab outline-none transition-shadow active:cursor-grabbing ${interactive ? "ring-2 ring-inset ring-[#b68a4c]" : ""}`}
-      aria-label={`Interactive conceptual 3D ${view === "tower" ? "building" : "floor plate"} model. ${interactive ? "Controls active; drag to pan in any direction, Shift-drag or secondary-drag to rotate, use the mouse wheel to zoom, and press Escape to release scrolling." : "Click or press Enter to activate model controls."}`}
+      aria-label={`Interactive conceptual 3D ${view === "tower" ? "building" : "floor plate"} model. ${interactive ? "Controls active; drag in any direction to orbit around the model, Shift-drag or secondary-drag to pan, use the mouse wheel to zoom, and press Escape to release scrolling." : "Click or press Enter to activate model controls."}`}
     />
 
     <div className="absolute left-4 top-4 rounded-2xl border border-white/50 bg-white/82 p-2 shadow-lg backdrop-blur-xl">
@@ -297,7 +322,12 @@ export function BuildingViewer() {
 
     <div className="pointer-events-none absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-[#10231e]/86 px-4 py-2 text-[11px] font-semibold text-white backdrop-blur">
       {interactive ? <Rotate3D className="size-4 text-[#d5ae72]" /> : <MousePointer2 className="size-4 text-[#d5ae72]" />}
-      {interactive ? "Drag to pan · Shift-drag to rotate · Scroll to zoom · Esc to release" : "Click model to enable pan, rotate and zoom"}
+      {interactive ? "Drag to orbit · Shift/right-drag to pan · Scroll to zoom · Esc to release" : "Click model to enable orbit, pan and zoom"}
     </div>
+    {floorIdentity && <div className="pointer-events-none absolute right-4 top-4 rounded-2xl border border-[#f2c66d]/55 bg-[#10231e]/88 px-4 py-3 text-right text-white shadow-lg backdrop-blur-xl">
+      <p className="text-[9px] font-bold uppercase tracking-[.15em] text-[#f2c66d]">Listed unit floor</p>
+      <p className="mt-1 text-sm font-semibold">{floorIdentity.unitLabel} · Level {floorIdentity.floor}</p>
+      <p className="mt-0.5 text-[10px] text-white/68">Gold level highlighted</p>
+    </div>}
   </div>;
 }

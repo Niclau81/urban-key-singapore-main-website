@@ -99,3 +99,8 @@
 - [x] Constrain model panning to safe bounds and reset or refit the target correctly when switching model modes.
 - [x] Add regression coverage and visually verify timed window skies plus multidirectional panning in Building and Floor plate modes.
 - [x] Run tests, type checking, production build, then save and deliver the timed-sky and model-pan fixes.
+- [x] Restore activated all-angle orbiting in both Building and Floor plate modes while retaining horizontal/vertical panning and bounded wheel zoom.
+- [x] Parse and highlight the listed unit’s actual floor in multi-unit Building and Floor plate models, while omitting floor highlighting for sole landed properties.
+- [x] Recompose virtual-view timing so the generated sky sits beneath the source photo’s opaque window/glass/frame layer rather than tinting over the picture.
+- [x] Add regression coverage and live visual verification for orbit, pan, zoom, floor highlighting, and below-window sky layering.
+- [x] Run tests, type checking, production build, then save and deliver the corrected model and virtual-view checkpoint.
