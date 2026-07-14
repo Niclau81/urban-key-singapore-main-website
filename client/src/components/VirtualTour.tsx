@@ -32,41 +32,22 @@ export function VirtualTour({ title, gallery, tourUrl }: { title: string; galler
       className="h-full w-full transition-[filter] duration-500"
       style={{ filter: period.sceneFilter }}
     /> : exteriorMask?.composition === "photographic-aperture" ? <>
+      <div
+        aria-hidden="true"
+        data-tour-layer="period-sky-underlay"
+        data-tour-exterior-region={exteriorMask.label}
+        className="pointer-events-none absolute inset-0 transition-[background] duration-500"
+        style={{ background: period.exteriorView }}
+      />
       <img
         src={gallery[index]}
         alt={`${title} virtual view ${index + 1}`}
-        data-tour-layer="photographic-source"
-        className="absolute inset-0 h-full w-full object-cover transition-[filter] duration-500"
-        style={{ filter: period.sceneFilter }}
-      />
-      <img
-        src={gallery[index]}
-        alt=""
-        aria-hidden="true"
-        data-tour-layer="photographic-exterior-pass"
+        data-tour-layer="photographic-foreground"
         data-tour-exterior-region={exteriorMask.label}
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover transition-[filter] duration-500"
+        className="absolute inset-0 h-full w-full object-cover"
         style={{
-          filter: period.exteriorFilter,
-          maskImage: exteriorMask.apertureMaskImage,
-          WebkitMaskImage: exteriorMask.apertureMaskImage,
-          maskSize: "100% 100%",
-          WebkitMaskSize: "100% 100%",
-          maskRepeat: "no-repeat",
-          WebkitMaskRepeat: "no-repeat",
-        }}
-      />
-      <div
-        aria-hidden="true"
-        data-tour-layer="exterior-atmosphere-tint"
-        data-tour-exterior-region={exteriorMask.label}
-        className="pointer-events-none absolute inset-0 transition-[background,opacity] duration-500"
-        style={{
-          background: period.exteriorView,
-          opacity: period.exteriorTintOpacity,
-          mixBlendMode: period.exteriorBlendMode,
-          maskImage: exteriorMask.apertureMaskImage,
-          WebkitMaskImage: exteriorMask.apertureMaskImage,
+          maskImage: exteriorMask.foregroundMaskImage,
+          WebkitMaskImage: exteriorMask.foregroundMaskImage,
           maskSize: "100% 100%",
           WebkitMaskSize: "100% 100%",
           maskRepeat: "no-repeat",
@@ -85,17 +66,15 @@ export function VirtualTour({ title, gallery, tourUrl }: { title: string; galler
         data-tour-layer="exterior-scene"
         data-tour-exterior-region={exteriorMask.label}
         className="pointer-events-none absolute inset-0 transition-[background] duration-500"
-        style={{ background: period.exteriorView, opacity: exteriorMask.opacity, mixBlendMode: period.exteriorBlendMode }}
+        style={{ background: period.exteriorView, opacity: exteriorMask.opacity }}
       />}
     </>}
-    <div
+    {exteriorMask?.composition !== "photographic-aperture" && <div
       aria-hidden="true"
       data-tour-layer="interior-light"
       className="pointer-events-none absolute inset-0 transition-[background] duration-500"
       style={{ background: period.interiorLight, mixBlendMode: "screen" }}
-    />
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#071a17]/72 via-[#071a17]/18 to-transparent" />
-
+    />}
     <div className="absolute left-3 right-3 top-3 flex flex-col gap-2 sm:left-4 sm:right-4 sm:top-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex w-fit items-center gap-2 rounded-full bg-[#10231e]/78 px-3 py-2 text-[10px] font-bold uppercase tracking-[.14em] text-white backdrop-blur">
         <Move3D className="size-4 text-[#d5ae72]" />{tourUrl ? "Interactive 360° tour" : "360° tour-ready fallback"}
@@ -126,7 +105,11 @@ export function VirtualTour({ title, gallery, tourUrl }: { title: string; galler
       <Button aria-label="Next virtual tour view" onClick={() => next(1)} size="icon" className="absolute right-3 top-[58%] -translate-y-1/2 rounded-full bg-white/88 text-[#17382f] hover:bg-white sm:right-4 sm:top-1/2"><ChevronRight className="size-4" /></Button>
     </>}
 
-    <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4 text-white sm:p-5">
+    <div
+      data-tour-layer="caption-content"
+      className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4 text-white sm:p-5"
+      style={{ textShadow: "0 2px 7px rgb(3 16 13 / 88%)" }}
+    >
       <div aria-live="polite">
         <div className="flex items-center gap-2">
           <span className="size-2 rounded-full" style={{ backgroundColor: period.accent }} />

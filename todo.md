@@ -115,3 +115,10 @@
 - [x] Add focused regression coverage preventing opaque period-color patches from being rendered above the source-photo foreground.
 - [x] Visually verify Morning, Noon, Afternoon, Evening, Night, and Midnight on the affected scene and inspect current runtime logs.
 - [x] Run the full tests and production build, then save and deliver the corrected virtual-view checkpoint.
+- [x] Remove every filtered-photo and atmospheric-tint layer rendered above the affected virtual-tour photograph.
+- [x] Create a deployment-safe office-interior foreground composition by applying a true inverse-alpha aperture mask to the original source photograph only at the exterior sky openings.
+- [x] Render each generated period sky strictly beneath the transparent foreground photograph while preserving frames and interior surfaces.
+- [x] Add regression coverage proving the source foreground is the top visual layer and no shading layer follows it in the compositor.
+- [x] Visually verify all six periods on desktop and mobile, inspect current runtime logs, run full tests and build, then save and deliver the fix.
+- [x] Remove the full-frame bottom caption gradient that still shades the photograph above the source foreground, retaining text readability without a photo-covering layer.
+- [x] Verify on the affected office-interior scene that no `foregroundLight` or other non-control visual-treatment sibling follows the foreground photograph across all six mobile period states.

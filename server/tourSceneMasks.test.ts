@@ -19,7 +19,10 @@ describe("virtual tour exterior masks", () => {
     });
     expect(mask?.apertureMaskImage).toContain("data:image/svg+xml");
     expect(decodeURIComponent(mask?.apertureMaskImage ?? "")).toContain("fill='transparent'");
-    expect(mask).not.toHaveProperty("foregroundMaskImage");
+    expect(mask?.foregroundMaskImage).toContain("data:image/svg+xml");
+    const foregroundMask = decodeURIComponent(mask?.foregroundMaskImage ?? "");
+    expect(foregroundMask).toContain("<rect width='1000' height='1000' fill='black'/>");
+    expect(foregroundMask).toContain("fill='transparent'");
   });
 
   it("bounds the residential exterior treatment to the central open view", () => {
@@ -33,13 +36,15 @@ describe("virtual tour exterior masks", () => {
     });
     expect(mask?.apertureMaskImage).toContain("data:image/svg+xml");
     expect(decodeURIComponent(mask?.apertureMaskImage ?? "")).toContain("fill='transparent'");
-    expect(mask).not.toHaveProperty("foregroundMaskImage");
+    expect(mask?.foregroundMaskImage).toContain("data:image/svg+xml");
+    expect(decodeURIComponent(mask?.foregroundMaskImage ?? "")).toContain("fill='transparent'");
   });
 
   it("allows a full-frame treatment only for an explicitly exterior scene", () => {
     expect(getTourExteriorMask("/manus-storage/warehouse-exterior_25db9dac.jpg")).toMatchObject({
       clipPath: "inset(0)",
       maskImage: "linear-gradient(#000, #000)",
+      foregroundMaskImage: "linear-gradient(#000, #000)",
       opacity: 1,
       label: "exterior-scene",
       composition: "full-scene",

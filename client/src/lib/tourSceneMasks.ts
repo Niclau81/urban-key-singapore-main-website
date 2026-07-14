@@ -2,6 +2,7 @@ export type TourExteriorMask = {
   clipPath: string;
   maskImage: string;
   apertureMaskImage: string;
+  foregroundMaskImage: string;
   opacity: number;
   label: string;
   composition: "photographic-aperture" | "full-scene";
@@ -9,9 +10,11 @@ export type TourExteriorMask = {
 
 const SOLID_MASK = "linear-gradient(#000, #000)";
 
-function svgMask(polygons: string[]) {
-  const shapes = polygons.map(points => `<polygon points='${points}' fill='black'/>`).join("");
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'><rect width='1000' height='1000' fill='transparent'/>${shapes}</svg>`;
+function svgMask(polygons: string[], inverse = false) {
+  const polygonFill = inverse ? "transparent" : "black";
+  const shapes = polygons.map(points => `<polygon points='${points}' fill='${polygonFill}'/>`).join("");
+  const rectFill = inverse ? "black" : "transparent";
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' preserveAspectRatio='none'><rect width='1000' height='1000' fill='${rectFill}'/>${shapes}</svg>`;
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 }
 
@@ -19,6 +22,7 @@ const EXTERIOR_SCENE_MASK: TourExteriorMask = {
   clipPath: "inset(0)",
   maskImage: SOLID_MASK,
   apertureMaskImage: SOLID_MASK,
+  foregroundMaskImage: SOLID_MASK,
   opacity: 1,
   label: "exterior-scene",
   composition: "full-scene",
@@ -29,6 +33,7 @@ const CENTRAL_WINDOW_MASK: TourExteriorMask = {
   clipPath: "polygon(34.8% 59.8%, 65.8% 59.8%, 65.8% 71.2%, 34.8% 71.2%)",
   maskImage: "linear-gradient(to bottom, transparent 58.8%, #000 61%, #000 69.8%, transparent 72.2%)",
   apertureMaskImage: svgMask(CENTRAL_BAY_POLYGONS),
+  foregroundMaskImage: svgMask(CENTRAL_BAY_POLYGONS, true),
   opacity: 1,
   label: "central-bay-view-opening",
   composition: "photographic-aperture",
@@ -44,6 +49,7 @@ const DIAGONAL_OFFICE_WINDOW_MASK: TourExteriorMask = {
   clipPath: "polygon(78.1% 44.2%, 93.8% 38.2%, 93.8% 56.8%, 78.1% 55.4%)",
   maskImage: "linear-gradient(135deg, transparent 0%, #000 10%, #000 89%, transparent 100%)",
   apertureMaskImage: svgMask(OFFICE_SKY_PANES),
+  foregroundMaskImage: svgMask(OFFICE_SKY_PANES, true),
   opacity: 1,
   label: "diagonal-office-window-sky",
   composition: "photographic-aperture",
