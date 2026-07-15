@@ -127,3 +127,18 @@
 - [x] Make timing choices available only when the active gallery scene has a corresponding time-specific photo, without overlaying simulated shading on the source image.
 - [x] Produce a representative office-interior example simulation using distinct photo assets for the supported timing choices and a clear fallback for unsupported choices.
 - [x] Add regression coverage, verify desktop and mobile behavior, run the full test suite and production build, then save and deliver the selector simulation.
+- [x] Audit the current Git repository, GitHub authentication, destination availability, and secret or generated-file exclusions before export.
+- [x] Create or update the UrbanKey repository under the Niclau81 GitHub account and push the finalized project source.
+- [x] Verify the remote branch and repository URL, then close and report the GitHub export task.
+- [ ] Inventory all frontend-to-backend contracts, environment dependencies, database models, authentication flows, uploads, AI calls, payments, receipts, and callbacks that require Go compatibility.
+- [ ] Define a compatibility matrix and Go service architecture that preserves current React user-facing behavior and documents unavoidable platform differences.
+- [ ] Create an isolated `singapore-property-intelligence-go` project copy without altering the existing Node edition.
+- [ ] Implement the Go API foundation with configuration, routing, middleware, validation, error envelopes, health checks, and static frontend serving.
+- [ ] Port authentication, professional profiles, property listings, saved properties, enquiries, dashboard data, ownership checks, and database persistence to Go.
+- [ ] Port S3 uploads, AI assistant adapters, subscription pricing, Stripe checkout and webhooks, payment states, receipt generation, and provider callbacks to Go.
+- [ ] Replace the React client’s tRPC dependency with typed compatibility API calls while preserving loading, success, empty, validation, and error behavior.
+- [ ] Add Go unit and integration tests plus frontend contract tests covering critical compatibility, authorization, privacy, pricing, payment, and upload workflows.
+- [ ] Verify Go formatting, static analysis, tests, frontend type checking, production builds, runtime behavior, accessibility, responsiveness, and secret exclusions.
+- [ ] Add a compatibility report, architecture notes, local setup instructions, environment-variable reference, database migration guidance, and known differences.
+- [ ] Create a private `Niclau81/singapore-property-intelligence-go` GitHub repository and push the verified Go edition.
+- [ ] Verify the remote branch and commit, remove temporary credentials, and deliver the Go compatibility repository with a concise validation summary.
