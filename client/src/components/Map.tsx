@@ -79,48 +79,12 @@
 import { useEffect, useRef, useState } from "react";
 import { usePersistFn } from "@/hooks/usePersistFn";
 import { cn } from "@/lib/utils";
+import { loadGoogleMapsScript } from "@/lib/googleMapsLoader";
 
 declare global {
   interface Window {
     google?: typeof google;
   }
-}
-
-const API_KEY = import.meta.env.VITE_FRONTEND_FORGE_API_KEY;
-const FORGE_BASE_URL =
-  import.meta.env.VITE_FRONTEND_FORGE_API_URL ||
-  "https://forge.butterfly-effect.dev";
-const MAPS_PROXY_URL = `${FORGE_BASE_URL}/v1/maps/proxy`;
-
-let mapScriptPromise: Promise<void> | null = null;
-
-function loadMapScript() {
-  if (window.google?.maps) return Promise.resolve();
-  if (mapScriptPromise) return mapScriptPromise;
-  mapScriptPromise = new Promise<void>((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>("script[data-urbankey-google-maps]");
-    if (existing) {
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("Google Maps script failed to load")), { once: true });
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker,places,geocoding,geometry`;
-    script.async = true;
-    script.dataset.urbankeyGoogleMaps = "true";
-    script.onload = () => {
-      if (window.google?.maps) resolve();
-      else reject(new Error("Google Maps loaded without the Maps namespace"));
-    };
-    script.onerror = () => {
-      console.error("Failed to load Google Maps script");
-      mapScriptPromise = null;
-      script.remove();
-      reject(new Error("Google Maps script failed to load"));
-    };
-    document.head.appendChild(script);
-  });
-  return mapScriptPromise;
 }
 
 interface MapViewProps {
@@ -141,6 +105,7 @@ export function MapView({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<google.maps.Map | null>(null);
   const [loadError, setLoadError] = useState(false);
+  const [retryAttempt, setRetryAttempt] = useState(0);
 
   const init = usePersistFn(async () => {
     if (forceFailureForTesting) {
@@ -148,7 +113,8 @@ export function MapView({
       return;
     }
     try {
-      await loadMapScript();
+      setLoadError(false);
+      await loadGoogleMapsScript();
     } catch {
       setLoadError(true);
       return;
@@ -177,12 +143,12 @@ export function MapView({
 
   useEffect(() => {
     init();
-  }, [init]);
+  }, [init, retryAttempt]);
 
   if (loadError) return <div className={cn("relative h-[500px] w-full overflow-hidden bg-[#102b25]", className)} role="status">
     <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "linear-gradient(rgba(213,174,114,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(213,174,114,.16) 1px,transparent 1px)", backgroundSize: "48px 48px", transform: "perspective(600px) rotateX(52deg) scale(1.35)" }} />
     <div className="absolute left-[47%] top-[44%] h-44 w-72 -translate-x-1/2 -translate-y-1/2 rotate-[-12deg] rounded-[46%] border border-[#d5ae72]/35 bg-[#275649]/35 shadow-[0_0_80px_rgba(42,112,90,.35)]" />
-    <div className="absolute left-1/2 top-1/2 rounded-2xl border border-white/10 bg-[#10231e]/85 px-5 py-4 text-center text-white shadow-xl backdrop-blur"><p className="text-xs font-semibold">Google Maps is temporarily unavailable</p><p className="mt-1 text-[10px] text-white/50">The live map will reconnect automatically on refresh.</p><button onClick={() => window.location.reload()} className="mt-3 rounded-full bg-[#d5ae72] px-3 py-1.5 text-[10px] font-bold text-[#17382f]">Retry map</button></div>
+    <div className="absolute left-1/2 top-1/2 rounded-2xl border border-white/10 bg-[#10231e]/85 px-5 py-4 text-center text-white shadow-xl backdrop-blur"><p className="text-xs font-semibold">Google Maps is temporarily unavailable</p><p className="mt-1 text-[10px] text-white/50">The map can retry without leaving this page.</p><button type="button" onClick={() => setRetryAttempt((attempt) => attempt + 1)} className="mt-3 rounded-full bg-[#d5ae72] px-3 py-1.5 text-[10px] font-bold text-[#17382f]">Retry map</button></div>
   </div>;
 
   return <div ref={mapContainer} className={cn("h-[500px] w-full", className)} />;

@@ -130,6 +130,12 @@
 - [x] Audit the current Git repository, GitHub authentication, destination availability, and secret or generated-file exclusions before export.
 - [x] Create or update the UrbanKey repository under the Niclau81 GitHub account and push the finalized project source.
 - [x] Verify the remote branch and repository URL, then close and report the GitHub export task.
+- [x] Reproduce the authenticated `/map` Google Maps script-loading failure and identify the failing loader or proxy contract.
+- [x] Implement a resilient, deployment-safe Google Maps loader that handles proxy configuration and surfaces a usable fallback instead of a blank map.
+- [x] Add focused regression tests for successful loading, failed script loading, retry behavior, and fallback rendering.
+- [x] Verify `/map` in the live authenticated preview, inspect runtime logs, run tests, type checking, and production build, then save and deliver the fix.
+- [x] Move the managed Maps credential origin out of relay source code into stable project metadata with runtime override support, preserving live-origin-first behavior.
+- [x] Re-verify `/map` with an authenticated session, confirm the relay and map render without script errors, then save and deliver the Maps checkpoint.
 - [ ] Inventory all frontend-to-backend contracts, environment dependencies, database models, authentication flows, uploads, AI calls, payments, receipts, and callbacks that require Go compatibility.
 - [ ] Define a compatibility matrix and Go service architecture that preserves current React user-facing behavior and documents unavoidable platform differences.
 - [ ] Create an isolated `singapore-property-intelligence-go` project copy without altering the existing Node edition.
