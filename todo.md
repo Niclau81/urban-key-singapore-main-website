@@ -136,15 +136,16 @@
 - [x] Verify `/map` in the live authenticated preview, inspect runtime logs, run tests, type checking, and production build, then save and deliver the fix.
 - [x] Move the managed Maps credential origin out of relay source code into stable project metadata with runtime override support, preserving live-origin-first behavior.
 - [x] Re-verify `/map` with an authenticated session, confirm the relay and map render without script errors, then save and deliver the Maps checkpoint.
-- [ ] Inventory all frontend-to-backend contracts, environment dependencies, database models, authentication flows, uploads, AI calls, payments, receipts, and callbacks that require Go compatibility.
-- [ ] Define a compatibility matrix and Go service architecture that preserves current React user-facing behavior and documents unavoidable platform differences.
-- [ ] Create an isolated `singapore-property-intelligence-go` project copy without altering the existing Node edition.
-- [ ] Implement the Go API foundation with configuration, routing, middleware, validation, error envelopes, health checks, and static frontend serving.
-- [ ] Port authentication, professional profiles, property listings, saved properties, enquiries, dashboard data, ownership checks, and database persistence to Go.
-- [ ] Port S3 uploads, AI assistant adapters, subscription pricing, Stripe checkout and webhooks, payment states, receipt generation, and provider callbacks to Go.
-- [ ] Replace the React client’s tRPC dependency with typed compatibility API calls while preserving loading, success, empty, validation, and error behavior.
-- [ ] Add Go unit and integration tests plus frontend contract tests covering critical compatibility, authorization, privacy, pricing, payment, and upload workflows.
-- [ ] Verify Go formatting, static analysis, tests, frontend type checking, production builds, runtime behavior, accessibility, responsiveness, and secret exclusions.
-- [ ] Add a compatibility report, architecture notes, local setup instructions, environment-variable reference, database migration guidance, and known differences.
-- [ ] Create a private `Niclau81/singapore-property-intelligence-go` GitHub repository and push the verified Go edition.
-- [ ] Verify the remote branch and commit, remove temporary credentials, and deliver the Go compatibility repository with a concise validation summary.
+- [x] Inventory all frontend-to-backend contracts, environment dependencies, database models, authentication flows, uploads, AI calls, payments, receipts, and callbacks that require Go compatibility.
+- [x] Define a compatibility matrix and Go service architecture that preserves current React user-facing behavior and documents unavoidable platform differences.
+- [x] Create an isolated `singapore-property-intelligence-go` project copy without altering the existing Node edition.
+- [x] Implement the Go API foundation with configuration, routing, middleware, validation, error envelopes, health checks, and static frontend serving.
+- [x] Port authentication, professional profiles, property listings, saved properties, enquiries, dashboard data, ownership checks, and database persistence to Go.
+- [x] Port S3 uploads, AI assistant adapters, subscription pricing, Stripe checkout and webhooks, payment states, receipt generation, and provider callbacks to Go.
+- [x] Preserve the React client’s typed tRPC call sites through the Go compatibility transport while retaining loading, success, empty, validation, unauthorized-redirect, and error behavior.
+- [x] Add Go unit and integration tests plus frontend contract tests covering critical compatibility, authorization, privacy, pricing, payment, and upload workflows.
+- [x] Verify Go formatting, static analysis, tests, frontend type checking, production builds, runtime behavior, accessibility, responsiveness, and secret exclusions.
+- [x] Add a compatibility report, architecture notes, local setup instructions, environment-variable reference, database migration guidance, and known differences.
+- [x] Create a private `Niclau81/singapore-property-intelligence-go` GitHub repository and push the verified Go edition.
+- [x] Verify the remote branch and commit, remove temporary credentials, and deliver the Go compatibility repository with a concise validation summary.
+- [x] Correct managed TiDB/MySQL TLS normalization for provider-style SSL options, verify live readiness against the secure database, and push the tested Go compatibility fix to the private main branch.
