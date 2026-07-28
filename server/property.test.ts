@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import type { TrpcContext } from "./_core/context";
 import { appRouter } from "./routers";
 import { districts, properties, singaporeDistricts } from "../shared/propertyData";
@@ -25,6 +27,14 @@ describe("property intelligence procedures", () => {
     expect(properties.every(property => districts.includes(property.district as (typeof districts)[number]))).toBe(true);
     expect(changiAssets).toHaveLength(1);
     expect(changiAssets[0]).toMatchObject({ id: "changi-airfreight-warehouse", district: "D17 · Changi" });
+  });
+
+  it("keeps the homepage district selector connected to the shared D01–D28 catalog", () => {
+    const homeSource = readFileSync(resolve(process.cwd(), "client/src/pages/Home.tsx"), "utf8");
+
+    expect(homeSource).toContain('import { districts } from "@shared/propertyData";');
+    expect(homeSource).toContain("<SelectContent>{districts.map(option =>");
+    expect(homeSource).not.toContain('<SelectItem value="D04 · Harbourfront">');
   });
 
   it("applies size, tenure, and MRT walk-time filters together", async () => {

@@ -181,3 +181,7 @@
 - [x] Audit all listing districts and every customer-facing district dropdown or filter source.
 - [x] Add complete district options for the available listings and align shared discovery filters.
 - [x] Add regression coverage and verify district selection returns the relevant listings before saving a checkpoint.
+- [x] Trace the homepage search selector’s separate partial district source exposed in the user’s screenshot.
+- [x] Replace the homepage selector options with the authoritative shared D01–D28 district catalog.
+- [x] Add a regression preventing the homepage from reverting to a local partial district list.
+- [x] Verify the expanded homepage selector in the live responsive interface, then save and deliver the repair checkpoint.

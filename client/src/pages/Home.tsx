@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
+import { districts } from "@shared/propertyData";
 import { ArrowRight, BadgeCheck, Box, Building, ChartNoAxesCombined, Map, Search, ShieldCheck, Sparkles, TrainFront } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -32,7 +33,7 @@ export default function Home() {
               <div className="flex flex-wrap gap-1 border-b border-[#17382f]/10 px-2 pb-2">{modes.map(item => <button key={item} onClick={() => setMode(item)} className={`rounded-full px-4 py-2 text-xs font-bold transition ${mode === item ? "bg-[#17382f] text-white" : "text-[#49635d] hover:bg-[#e8ede9]"}`}>{item}</button>)}</div>
               <div className="grid gap-2 pt-2 sm:grid-cols-[1.5fr_1fr_auto]">
                 <div className="flex items-center gap-2 rounded-xl px-3"><Search className="size-4 text-[#9b7440]" /><Input value={query} onChange={event => setQuery(event.target.value)} className="border-0 bg-transparent px-0 shadow-none focus-visible:ring-0" placeholder="Condo, district, MRT or street" onKeyDown={event => event.key === "Enter" && submit()} /></div>
-                <Select value={district} onValueChange={setDistrict}><SelectTrigger aria-label="District" className="h-11 border-0 bg-[#edf1ed] shadow-none"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="All districts">All districts</SelectItem><SelectItem value="D01 · Marina Bay">D01 · Marina Bay</SelectItem><SelectItem value="D04 · Harbourfront">D04 · Harbourfront</SelectItem><SelectItem value="D10 · Tanglin">D10 · Tanglin</SelectItem></SelectContent></Select>
+                <Select value={district} onValueChange={setDistrict}><SelectTrigger aria-label="District" className="h-11 border-0 bg-[#edf1ed] shadow-none"><SelectValue /></SelectTrigger><SelectContent>{districts.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent></Select>
                 <Button onClick={submit} className="h-11 rounded-xl bg-[#c99d60] px-6 text-[#10231e] hover:bg-[#d8af76]">Explore <ArrowRight className="ml-2 size-4" /></Button>
               </div>
             </div>
