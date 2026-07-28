@@ -164,3 +164,7 @@
 - [x] Audit and remove fixed mobile layout assumptions that can clip content or controls across small, tall, wide, and landscape phone viewports.
 - [x] Add responsive safe-area, viewport-height, and orientation behavior so the full mobile experience fits common devices.
 - [x] Add representative mobile viewport regression coverage and verify the finished responsive behavior before saving a checkpoint.
+- [x] Inventory the website’s current public, property, Map Intelligence, account, and agent workflows for end-user documentation.
+- [x] Create a structured English user guide covering core navigation, search, property evaluation, mapping, saved actions, and agent tools.
+- [x] Produce a concise companion video guide with an accessible walkthrough narration and visual sequence.
+- [x] Review the guide materials for accuracy and deliver the final written and video artifacts.
