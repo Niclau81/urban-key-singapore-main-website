@@ -76,6 +76,9 @@ describe("property intelligence procedures", () => {
     expect(hdbListings.some(property => property.tags.includes("Recent flat"))).toBe(true);
     expect(hdbListings.some(property => property.tags.includes("Established resale"))).toBe(true);
     expect(detail.property.floorPlan).toMatchObject({ label: expect.stringContaining("illustrative HDB layout") });
+    expect(detail.property).toMatchObject({ listingFloor: 12, listingUnit: "#12-128" });
+    expect(detail.property.transactions[0]).toMatchObject({ property: detail.property.title, unit: "#12-128" });
+    expect(hdbListings.every(property => Number.isInteger(property.listingFloor) && (property.listingFloor ?? 0) > 0 && /^#\d{2}-\d{3,4}$/.test(property.listingUnit ?? ""))).toBe(true);
   });
 
   it("matches commercial usage text without including residential listings", async () => {

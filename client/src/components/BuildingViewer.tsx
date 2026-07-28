@@ -21,17 +21,21 @@ export function BuildingViewer({
   propertyId,
   propertyType,
   transactionUnit,
+  listingFloor,
+  listingUnit,
 }: {
   propertyId?: string | null;
   propertyType?: string | null;
   transactionUnit?: string | null;
+  listingFloor?: number | null;
+  listingUnit?: string | null;
 }) {
   const mountRef = useRef<HTMLDivElement>(null);
   const interactionRef = useRef(false);
   const runtimeRef = useRef<ViewerRuntime | null>(null);
   const [view, setView] = useState<ImmersiveModelView>("tower");
   const [interactive, setInteractive] = useState(false);
-  const floorIdentity = getListingFloorIdentity({ propertyId, propertyType, transactionUnit });
+  const floorIdentity = getListingFloorIdentity({ propertyId, propertyType, transactionUnit, listingFloor, listingUnit });
 
   const setInteraction = (next: boolean) => {
     interactionRef.current = next;
@@ -319,18 +323,19 @@ export function BuildingViewer({
         const nextInteraction = getModelInteractionAfterBlur(interactionRef.current, focusStayedWithin);
         if (nextInteraction !== interactionRef.current) setInteraction(nextInteraction);
       }}
-      className={`h-[460px] w-full cursor-grab outline-none transition-shadow active:cursor-grabbing ${interactive ? "ring-2 ring-inset ring-[#b68a4c]" : ""}`}
+      className={`h-[clamp(260px,50svh,340px)] w-full cursor-grab outline-none transition-shadow active:cursor-grabbing sm:h-[460px] ${interactive ? "ring-2 ring-inset ring-[#b68a4c]" : ""}`}
       aria-label={`Interactive conceptual 3D ${view === "tower" ? "building" : "floor plate"} model. ${interactive ? "Controls active; drag in any direction to orbit around the model, Shift-drag or secondary-drag to pan, use the mouse wheel to zoom, and press Escape to release scrolling." : "Click or press Enter to activate model controls."}`}
     />
 
     <div className="absolute left-4 top-4 rounded-2xl border border-white/50 bg-white/82 p-2 shadow-lg backdrop-blur-xl">
-      <button onClick={() => setView("tower")} className={`flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold ${view === "tower" ? "bg-[#17382f] text-white" : "text-[#49635d]"}`}><Box className="size-4" />Building</button>
-      <button onClick={() => setView("floor")} className={`mt-1 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold ${view === "floor" ? "bg-[#17382f] text-white" : "text-[#49635d]"}`}><Layers3 className="size-4" />Floor plate</button>
+      <button onClick={() => setView("tower")} className={`flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold ${view === "tower" ? "bg-[#17382f] text-white" : "text-[#49635d]"}`}><Box className="size-4" />Building</button>
+      <button onClick={() => setView("floor")} className={`mt-1 flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold ${view === "floor" ? "bg-[#17382f] text-white" : "text-[#49635d]"}`}><Layers3 className="size-4" />Floor plate</button>
     </div>
 
-    <div className="pointer-events-none absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-[#10231e]/86 px-4 py-2 text-[11px] font-semibold text-white backdrop-blur">
+    <div className="pointer-events-none absolute bottom-3 left-1/2 flex max-w-[calc(100%-1.5rem)] -translate-x-1/2 items-center gap-2 rounded-full bg-[#10231e]/86 px-3 py-2 text-center text-[11px] font-semibold text-white backdrop-blur sm:bottom-4 sm:max-w-none sm:whitespace-nowrap sm:px-4">
       {interactive ? <Rotate3D className="size-4 text-[#d5ae72]" /> : <MousePointer2 className="size-4 text-[#d5ae72]" />}
-      {interactive ? "Drag to orbit · Shift/right-drag to pan · Scroll to zoom · Esc to release" : "Click model to enable orbit, pan and zoom"}
+      <span className="sm:hidden">{interactive ? "Drag to explore · Esc to release" : "Tap to enable 3D controls"}</span>
+      <span className="hidden sm:inline">{interactive ? "Drag to orbit · Shift/right-drag to pan · Scroll to zoom · Esc to release" : "Click model to enable orbit, pan and zoom"}</span>
     </div>
     {floorIdentity && <div className="pointer-events-none absolute right-4 top-4 rounded-2xl border border-[#f2c66d]/55 bg-[#10231e]/88 px-4 py-3 text-right text-white shadow-lg backdrop-blur-xl">
       <p className="text-[9px] font-bold uppercase tracking-[.15em] text-[#f2c66d]">Listed unit floor</p>

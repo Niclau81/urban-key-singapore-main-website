@@ -155,3 +155,7 @@
 - [x] Reduce mobile visual scale by 20% without compromising minimum readable text, tap targets, or layout accessibility.
 - [x] Add an accessible hide/show control for Map Intelligence floating panels so the map remains usable on mobile screens.
 - [x] Add regression coverage and verify the new listing, upload, HDB, mobile, and Map Intelligence behaviors before saving a checkpoint.
+- [x] Reproduce and fix missing immersive-model level highlighting for newly created listings with valid floor metadata.
+- [x] Make mobile immersive media and related interactive functions fit within the viewport without clipped imagery, horizontal overflow, or undersized controls.
+- [x] Make Map Intelligence floating panels initially hidden on mobile and reveal them only after an explicit user action.
+- [x] Add focused regressions and verify the repaired listing and Map Intelligence behavior on desktop and mobile before saving a checkpoint.

@@ -64,6 +64,24 @@ describe("immersive model interaction", () => {
     expect(getListingFloorIdentity({ propertyId: "sentosa-bungalow", propertyType: "Detached Landed", transactionUnit: "#01-01" })).toBeNull();
   });
 
+  it("prioritizes an advertised listing floor over comparable transaction metadata", () => {
+    expect(getListingFloorIdentity({
+      propertyId: "queenstown-skyline-demo",
+      propertyType: "HDB Flat",
+      transactionUnit: "Illustrative unit",
+      listingFloor: 12,
+      listingUnit: "#12-128",
+    })).toEqual({ floor: 12, unitLabel: "#12-128" });
+
+    expect(getListingFloorIdentity({
+      propertyId: "new-listing-without-floor-in-id",
+      propertyType: "Condominium",
+      transactionUnit: "#06-02",
+      listingFloor: 18,
+      listingUnit: "#17-08",
+    })).toEqual({ floor: 18, unitLabel: "Level 18" });
+  });
+
   it("handles incomplete listing metadata without throwing during BuildingViewer render", () => {
     expect(getListingFloorIdentity({ propertyId: "interlace-garden-06-12", propertyType: undefined })).toEqual({ floor: 6, unitLabel: "#06-12" });
     expect(getListingFloorIdentity({ propertyId: "orchard-boulevard-19-02", propertyType: null, transactionUnit: undefined })).toEqual({ floor: 19, unitLabel: "#19-02" });

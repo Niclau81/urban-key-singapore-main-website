@@ -16,7 +16,7 @@ export default function MapIntelligence() {
   const forceMapFallback = new URLSearchParams(window.location.search).get("mapFallback") === "1";
   const [selected, setSelected] = useState<Property | null>(null);
   const [layers, setLayers] = useState<LayerState>({ districts: true, mrt: true, threeD: true });
-  const [mobilePanelsHidden, setMobilePanelsHidden] = useState(false);
+  const [mobilePanelsHidden, setMobilePanelsHidden] = useState(() => typeof window !== "undefined" && window.innerWidth < 640);
   const mapRef = useRef<google.maps.Map | null>(null);
   const overlaysRef = useRef<{ districts: google.maps.Polygon[]; mrt: google.maps.Circle[]; markers: google.maps.marker.AdvancedMarkerElement[]; cluster?: google.maps.marker.AdvancedMarkerElement } | null>(null);
   const setupMap = useCallback((map: google.maps.Map) => {

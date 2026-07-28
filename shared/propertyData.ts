@@ -67,6 +67,13 @@ export type Property = {
     note: string;
     imageUrl?: string;
   };
+  /**
+   * The advertised unit identity for a multi-unit listing. These optional
+   * fields deliberately remain separate from comparable transaction history,
+   * which may describe a different unit in the same development.
+   */
+  listingFloor?: number;
+  listingUnit?: string;
 };
 
 const images = {
@@ -203,9 +210,23 @@ const hdbSeed = [
   ["clementi-crest-demo", "Clementi Crest Flat · Demo", "D05 · Buona Vista", "Clementi Avenue 4 · illustrative address", "Buy", 838000, 0, 4, 2, 1119, "Clementi MRT", 6, 1.3164, 103.7653, "Recent flat", images.luxuryInterior],
 ] as const;
 
+const hdbListingUnits = [
+  { floor: 12, unit: "#12-128" },
+  { floor: 9, unit: "#09-214" },
+  { floor: 15, unit: "#15-306" },
+  { floor: 11, unit: "#11-418" },
+  { floor: 8, unit: "#08-522" },
+  { floor: 14, unit: "#14-638" },
+  { floor: 7, unit: "#07-744" },
+  { floor: 16, unit: "#16-856" },
+  { floor: 10, unit: "#10-962" },
+  { floor: 18, unit: "#18-104" },
+] as const;
+
 const hdbProperties: Property[] = hdbSeed.map((item, index) => {
   const [id, title, district, address, mode, price, monthlyRent, beds, baths, size, mrt, mrtMinutes, latitude, longitude, era, image] = item;
   const salePrice = price || Math.round(monthlyRent * 220);
+  const listingIdentity = hdbListingUnits[index];
   return {
     id,
     title,
@@ -232,9 +253,11 @@ const hdbProperties: Property[] = hdbSeed.map((item, index) => {
       bedrooms: beds,
       note: "Illustrative product-demo floor plan only. It is not an official HDB plan, survey, or representation of an actual unit.",
     },
+    listingFloor: listingIdentity.floor,
+    listingUnit: listingIdentity.unit,
     owner: { initials: ["A.L.", "J.T.", "M.R.", "S.K.", "D.N.", "P.C.", "H.Y.", "R.W.", "C.G.", "E.F."][index], ownershipYears: 3 + (index % 12), propertyCount: 1 },
     incidents: [{ year: "Demo", category: "neutral", title: "Illustrative listing context", detail: "This HDB record is curated solely for product demonstration. Verify all material information through official sources and the appointed agent.", source: "Curated demo record" }],
-    transactions: [{ date: "2025-05-18", type: mode === "Rent" ? "Rent" : "Sale", property: title, unit: "Illustrative unit", price: mode === "Rent" ? Math.round((monthlyRent || 0) * 0.97) : Math.round(salePrice * 0.96), psf: mode === "Rent" ? Number((((monthlyRent || 0) * 0.97) / size).toFixed(2)) : Math.round((salePrice * 0.96) / size) }],
+    transactions: [{ date: "2025-05-18", type: mode === "Rent" ? "Rent" : "Sale", property: title, unit: listingIdentity.unit, price: mode === "Rent" ? Math.round((monthlyRent || 0) * 0.97) : Math.round(salePrice * 0.96), psf: mode === "Rent" ? Number((((monthlyRent || 0) * 0.97) / size).toFixed(2)) : Math.round((salePrice * 0.96) / size) }],
   };
 });
 

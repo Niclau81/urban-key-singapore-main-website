@@ -71,7 +71,7 @@ export function VirtualTour({ title, gallery, tourUrl }: { title: string; galler
   const move = (step: number) => showImage((index + step + gallery.length) % gallery.length);
 
   return <div
-    className="relative h-[560px] overflow-hidden rounded-[28px] border border-[#17382f]/10 bg-[#10231e] sm:h-[520px]"
+    className="relative h-[clamp(260px,54svh,360px)] overflow-hidden rounded-[28px] border border-[#17382f]/10 bg-[#10231e] sm:h-[520px]"
     data-tour-fallback={tourUrl ? "panoramic-iframe" : "image-carousel"}
     data-tour-photo-timing={tourUrl ? "provider-controlled" : activeTiming.id}
   >
@@ -100,7 +100,7 @@ export function VirtualTour({ title, gallery, tourUrl }: { title: string; galler
         <SelectTrigger
           aria-label="Select an available photo timing"
           data-tour-control="photo-timing-select"
-          className="h-10 w-[158px] rounded-full border-white/15 bg-[#10231e]/92 px-4 text-xs font-semibold text-white shadow-lg focus:ring-[#d5ae72] sm:w-[184px]"
+          className="h-11 w-[158px] rounded-full border-white/15 bg-[#10231e]/92 px-4 text-xs font-semibold text-white shadow-lg focus:ring-[#d5ae72] sm:w-[184px]"
         >
           <Clock3 className="mr-2 size-3.5 text-[#d5ae72]" />
           <SelectValue />
@@ -119,8 +119,8 @@ export function VirtualTour({ title, gallery, tourUrl }: { title: string; galler
     </div>
 
     {!tourUrl && gallery.length > 1 && <>
-      <Button aria-label="Previous gallery image" onClick={() => move(-1)} size="icon" className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/90 text-[#17382f] shadow-lg hover:bg-white"><ChevronLeft className="size-4" /></Button>
-      <Button aria-label="Next gallery image" onClick={() => move(1)} size="icon" className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/90 text-[#17382f] shadow-lg hover:bg-white"><ChevronRight className="size-4" /></Button>
+      <Button aria-label="Previous gallery image" onClick={() => move(-1)} size="icon" className="absolute left-3 top-1/2 z-20 size-11 -translate-y-1/2 rounded-full bg-white/90 text-[#17382f] shadow-lg hover:bg-white sm:left-4"><ChevronLeft className="size-4" /></Button>
+      <Button aria-label="Next gallery image" onClick={() => move(1)} size="icon" className="absolute right-3 top-1/2 z-20 size-11 -translate-y-1/2 rounded-full bg-white/90 text-[#17382f] shadow-lg hover:bg-white sm:right-4"><ChevronRight className="size-4" /></Button>
     </>}
 
     <div data-tour-layer="caption-content" className="absolute bottom-5 left-5 z-20 max-w-[calc(100%-2.5rem)] text-white sm:bottom-7 sm:left-7">

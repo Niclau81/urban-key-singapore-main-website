@@ -124,15 +124,29 @@ export function getListingFloorIdentity({
   propertyId,
   propertyType,
   transactionUnit,
+  listingFloor,
+  listingUnit,
 }: {
   propertyId?: string | null;
   propertyType?: string | null;
   transactionUnit?: string | null;
+  listingFloor?: number | null;
+  listingUnit?: string | null;
 }): ListingFloorIdentity | null {
   const normalizedType = typeof propertyType === "string" ? propertyType.trim().toLowerCase() : "";
   if (WHOLE_PROPERTY_TYPES.some(type => normalizedType.includes(type))) return null;
 
-  const unitMatch = typeof transactionUnit === "string" ? transactionUnit.match(/#(\d{1,3})-(\d{1,4})/) : null;
+  const parseUnit = (unit: string | null | undefined) => typeof unit === "string" ? unit.match(/#\s*(\d{1,3})\s*-\s*(\d{1,4})/) : null;
+  const explicitFloor = typeof listingFloor === "number" && Number.isInteger(listingFloor) && listingFloor > 0 ? listingFloor : null;
+  const explicitUnitMatch = parseUnit(listingUnit);
+  if (explicitFloor) {
+    const unitLabel = explicitUnitMatch && Number(explicitUnitMatch[1]) === explicitFloor
+      ? `#${explicitUnitMatch[1]}-${explicitUnitMatch[2]}`
+      : `Level ${explicitFloor}`;
+    return { floor: explicitFloor, unitLabel };
+  }
+
+  const unitMatch = explicitUnitMatch ?? parseUnit(transactionUnit);
   if (unitMatch) {
     const floor = Number(unitMatch[1]);
     return floor > 0 ? { floor, unitLabel: `#${unitMatch[1]}-${unitMatch[2]}` } : null;
