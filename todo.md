@@ -159,3 +159,5 @@
 - [x] Make mobile immersive media and related interactive functions fit within the viewport without clipped imagery, horizontal overflow, or undersized controls.
 - [x] Make Map Intelligence floating panels initially hidden on mobile and reveal them only after an explicit user action.
 - [x] Add focused regressions and verify the repaired listing and Map Intelligence behavior on desktop and mobile before saving a checkpoint.
+- [x] Reproduce and fix the missing property-information popup when an asset is selected on the 3D Map Intelligence view.
+- [x] Add regression coverage and validate the repaired 3D map asset-preview interaction before saving a checkpoint.
