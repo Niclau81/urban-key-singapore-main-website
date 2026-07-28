@@ -175,3 +175,6 @@
 - [x] Create an investor introduction and key-point brief covering the problem, solution, functional differentiation, and product-use journey.
 - [x] Produce a step-by-step investor walkthrough video covering all major public, property, intelligence, assistant, account, and professional functions.
 - [x] Validate the investor materials and deliver the final introduction and video assets.
+- [x] Prepare editable soft-copy documents for the investor introduction, key points, and feature walkthrough storyboard.
+- [x] Assemble a clearly structured digital media package containing the investor walkthrough video and English captions.
+- [x] Verify the soft-copy package opens correctly and deliver the final downloadable files.
