@@ -92,6 +92,14 @@
 .map-cluster-pin strong { font-size: 18px; line-height: 1; }
 .map-cluster-pin span { margin-top: 2px; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
 
+@media (max-width: 639px) {
+  /* Compact the product canvas by 20% while keeping primary reading and touch targets usable. */
+  .mobile-compact { width: 125%; min-height: 125vh; zoom: .8; }
+  .mobile-compact button, .mobile-compact [role="button"], .mobile-compact input, .mobile-compact select, .mobile-compact textarea { min-height: 55px; }
+  .mobile-compact .text-xs { font-size: 15px !important; }
+  .mobile-compact .text-sm { font-size: 17.5px !important; }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .section-title, h1 { animation: reveal .55s cubic-bezier(.23,1,.32,1) both; }
   @keyframes reveal { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }

@@ -191,6 +191,30 @@ export const appRouter = router({
       if (!removed) throw new TRPCError({ code: "NOT_FOUND", message: "Image not found or unavailable to this account" });
       return { imageId: input.imageId };
     }),
+    uploadFloorPlan: protectedProcedure.input(z.object({
+      id: z.number().int().positive(),
+      fileName: z.string().min(1).max(255),
+      mimeType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+      base64: z.string().min(1).max(8_500_000),
+    })).mutation(async ({ ctx, input }) => {
+      if (!await db.isManagedPropertyOwner(ctx.user.id, input.id)) throw new TRPCError({ code: "NOT_FOUND", message: "Listing not found or unavailable to this account" });
+      const data = Buffer.from(input.base64, "base64");
+      if (!data.length || data.length > 6 * 1024 * 1024) throw new TRPCError({ code: "BAD_REQUEST", message: "The floor plan must be smaller than 6 MB" });
+      const extension = input.mimeType === "image/png" ? "png" : input.mimeType === "image/webp" ? "webp" : "jpg";
+      const stored = await storagePut(`property-listings/${ctx.user.id}/${input.id}/floor-plans/${randomUUID()}.${extension}`, data, input.mimeType);
+      return db.upsertManagedPropertyFloorPlan(ctx.user.id, input.id, {
+        storageKey: stored.key,
+        url: stored.url,
+        fileName: input.fileName,
+        mimeType: input.mimeType,
+        fileSize: data.length,
+      });
+    }),
+    removeFloorPlan: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+      const removed = await db.removeManagedPropertyFloorPlan(ctx.user.id, input.id);
+      if (!removed) throw new TRPCError({ code: "NOT_FOUND", message: "Floor plan not found or unavailable to this account" });
+      return { id: input.id };
+    }),
   }),
   ai: router({
     chat: publicProcedure.input(z.object({

@@ -8,6 +8,8 @@ const mocks = vi.hoisted(() => ({
   isManagedPropertyOwner: vi.fn(),
   listManagedProperties: vi.fn(),
   addManagedPropertyImage: vi.fn(),
+  upsertManagedPropertyFloorPlan: vi.fn(),
+  removeManagedPropertyFloorPlan: vi.fn(),
   storagePut: vi.fn(),
 }));
 
@@ -21,6 +23,8 @@ vi.mock("./db", async () => {
     isManagedPropertyOwner: mocks.isManagedPropertyOwner,
     listManagedProperties: mocks.listManagedProperties,
     addManagedPropertyImage: mocks.addManagedPropertyImage,
+    upsertManagedPropertyFloorPlan: mocks.upsertManagedPropertyFloorPlan,
+    removeManagedPropertyFloorPlan: mocks.removeManagedPropertyFloorPlan,
   };
 });
 
@@ -142,5 +146,34 @@ describe("agent and co-broker listing portal", () => {
       sortOrder: 0,
     }));
     expect(result).toMatchObject({ id: 13, listingId: 42, userId: 7, fileName: "warehouse.webp" });
+  });
+
+  it("blocks optional floor-plan uploads when the listing is not owned by the signed-in account", async () => {
+    mocks.isManagedPropertyOwner.mockResolvedValue(false);
+    const caller = appRouter.createCaller(authenticatedContext());
+
+    await expect(caller.listing.uploadFloorPlan({ id: 42, fileName: "plan.png", mimeType: "image/png", base64: Buffer.from("plan").toString("base64") })).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(mocks.storagePut).not.toHaveBeenCalled();
+    expect(mocks.upsertManagedPropertyFloorPlan).not.toHaveBeenCalled();
+  });
+
+  it("stores one replaceable optional floor plan with deployment-safe metadata", async () => {
+    mocks.isManagedPropertyOwner.mockResolvedValue(true);
+    mocks.storagePut.mockResolvedValue({ key: "property-listings/7/42/floor-plans/plan.png", url: "https://storage.example/plan.png" });
+    mocks.upsertManagedPropertyFloorPlan.mockImplementation(async (userId, listingId, plan) => ({ id: 8, userId, listingId, ...plan, createdAt: new Date(), updatedAt: new Date() }));
+    const caller = appRouter.createCaller(authenticatedContext());
+    const result = await caller.listing.uploadFloorPlan({ id: 42, fileName: "plan.png", mimeType: "image/png", base64: Buffer.from("floor-plan-bytes").toString("base64") });
+
+    expect(mocks.storagePut).toHaveBeenCalledWith(expect.stringMatching(/^property-listings\/7\/42\/floor-plans\/.+\.png$/), Buffer.from("floor-plan-bytes"), "image/png");
+    expect(mocks.upsertManagedPropertyFloorPlan).toHaveBeenCalledWith(7, 42, expect.objectContaining({ storageKey: "property-listings/7/42/floor-plans/plan.png", url: "https://storage.example/plan.png", fileName: "plan.png", mimeType: "image/png", fileSize: 16 }));
+    expect(result).toMatchObject({ id: 8, listingId: 42, userId: 7, fileName: "plan.png" });
+  });
+
+  it("removes an optional floor plan only from the authenticated owner’s listing", async () => {
+    mocks.removeManagedPropertyFloorPlan.mockResolvedValue(true);
+    const caller = appRouter.createCaller(authenticatedContext());
+
+    await expect(caller.listing.removeFloorPlan({ id: 42 })).resolves.toEqual({ id: 42 });
+    expect(mocks.removeManagedPropertyFloorPlan).toHaveBeenCalledWith(7, 42);
   });
 });

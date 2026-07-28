@@ -149,3 +149,9 @@
 - [x] Create a private `Niclau81/singapore-property-intelligence-go` GitHub repository and push the verified Go edition.
 - [x] Verify the remote branch and commit, remove temporary credentials, and deliver the Go compatibility repository with a concise validation summary.
 - [x] Correct managed TiDB/MySQL TLS normalization for provider-style SSL options, verify live readiness against the secure database, and push the tested Go compatibility fix to the private main branch.
+- [x] Add an optional agent-uploaded floor-plan field to property listings, preserving existing listings without a floor plan.
+- [x] Provide a responsive floor-plan display on property details and an accessible agent workflow to replace or remove an uploaded plan.
+- [x] Add curated new and older HDB demonstration listings across Singapore’s regions without fabricated reviews or user-generated testimonials.
+- [x] Reduce mobile visual scale by 20% without compromising minimum readable text, tap targets, or layout accessibility.
+- [x] Add an accessible hide/show control for Map Intelligence floating panels so the map remains usable on mobile screens.
+- [x] Add regression coverage and verify the new listing, upload, HDB, mobile, and Map Intelligence behaviors before saving a checkpoint.

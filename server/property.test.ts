@@ -65,6 +65,19 @@ describe("property intelligence procedures", () => {
     expect(result[0]).toMatchObject({ id: "changi-airfreight-warehouse", floorLoading: 20, ceilingHeight: 10.5 });
   });
 
+  it("includes illustrative new and established HDB demonstrations across Singapore regions with floor-plan references", async () => {
+    const caller = appRouter.createCaller(publicContext());
+    const hdbListings = await caller.property.list({ propertyType: "HDB Flat" });
+    const districts = new Set(hdbListings.map(property => property.district));
+    const detail = await caller.property.detail({ id: "queenstown-skyline-demo" });
+
+    expect(hdbListings).toHaveLength(10);
+    expect([...districts]).toEqual(expect.arrayContaining(["D03 · Queenstown", "D18 · Tampines", "D22 · Jurong", "D25 · Woodlands"]));
+    expect(hdbListings.some(property => property.tags.includes("Recent flat"))).toBe(true);
+    expect(hdbListings.some(property => property.tags.includes("Established resale"))).toBe(true);
+    expect(detail.property.floorPlan).toMatchObject({ label: expect.stringContaining("illustrative HDB layout") });
+  });
+
   it("matches commercial usage text without including residential listings", async () => {
     const caller = appRouter.createCaller(publicContext());
     const result = await caller.property.list({ commercialUsage: "Factory" });

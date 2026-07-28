@@ -120,6 +120,19 @@ export const propertyListingImages = mysqlTable("propertyListingImages", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
+export const propertyListingFloorPlans = mysqlTable("propertyListingFloorPlans", {
+  id: int("id").autoincrement().primaryKey(),
+  listingId: int("listingId").notNull(),
+  userId: int("userId").notNull(),
+  storageKey: varchar("storageKey", { length: 768 }).notNull(),
+  url: text("url").notNull(),
+  fileName: varchar("fileName", { length: 255 }).notNull(),
+  mimeType: varchar("mimeType", { length: 80 }).notNull(),
+  fileSize: int("fileSize").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({ listingUnique: uniqueIndex("propertyListingFloorPlans_listing_unique").on(table.listingId) }));
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type UserProfile = typeof userProfiles.$inferSelect;
@@ -129,3 +142,4 @@ export type SavedListing = typeof savedListings.$inferSelect;
 export type Enquiry = typeof enquiries.$inferSelect;
 export type PropertyListing = typeof propertyListings.$inferSelect;
 export type PropertyListingImage = typeof propertyListingImages.$inferSelect;
+export type PropertyListingFloorPlan = typeof propertyListingFloorPlans.$inferSelect;

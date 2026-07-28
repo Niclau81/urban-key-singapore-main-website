@@ -54,11 +54,14 @@ export default function AgentPortal() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [draft, setDraft] = useState<ListingDraft>(emptyDraft);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [pendingFloorPlan, setPendingFloorPlan] = useState<File | null>(null);
 
   const createListing = trpc.listing.create.useMutation();
   const updateListing = trpc.listing.update.useMutation();
   const uploadImage = trpc.listing.uploadImage.useMutation();
   const removeImage = trpc.listing.removeImage.useMutation();
+  const uploadFloorPlan = trpc.listing.uploadFloorPlan.useMutation();
+  const removeFloorPlan = trpc.listing.removeFloorPlan.useMutation();
   const updateStatus = trpc.listing.updateStatus.useMutation({
     onSuccess: async () => { await utils.listing.listMine.invalidate(); toast.success("Listing status updated"); },
     onError: error => toast.error(error.message),
@@ -74,12 +77,13 @@ export default function AgentPortal() {
   const imageCount = listings.reduce((total, item) => total + item.images.length, 0);
   const selectedListing = editingId ? listings.find(item => item.id === editingId) : undefined;
   const commercialDraft = commercialPropertyTypes.includes(draft.propertyType as (typeof commercialPropertyTypes)[number]);
-  const saving = createListing.isPending || updateListing.isPending || uploadImage.isPending;
+  const saving = createListing.isPending || updateListing.isPending || uploadImage.isPending || uploadFloorPlan.isPending;
 
   const openNew = () => {
     setEditingId(null);
     setDraft(emptyDraft);
     setPendingFiles([]);
+    setPendingFloorPlan(null);
     setShowEditor(true);
   };
 
@@ -105,6 +109,7 @@ export default function AgentPortal() {
       availableFrom: listing.availableFrom ?? "",
     });
     setPendingFiles([]);
+    setPendingFloorPlan(null);
     setShowEditor(true);
   };
 
@@ -117,6 +122,13 @@ export default function AgentPortal() {
     const existingCount = selectedListing?.images.length ?? 0;
     if (existingCount + pendingFiles.length + next.length > 6) return toast.error("Each listing supports up to 6 images");
     setPendingFiles(current => [...current, ...next]);
+  };
+
+  const chooseFloorPlan = (file: File | undefined) => {
+    if (!file) return;
+    const allowed = new Set(["image/jpeg", "image/png", "image/webp"]);
+    if (!allowed.has(file.type) || file.size > 6 * 1024 * 1024) return toast.error("Use a JPG, PNG, or WebP floor plan smaller than 6 MB");
+    setPendingFloorPlan(file);
   };
 
   const listingInput = () => ({
@@ -149,9 +161,13 @@ export default function AgentPortal() {
       for (const file of pendingFiles) {
         await uploadImage.mutateAsync({ id: saved.id, fileName: file.name, mimeType: file.type as "image/jpeg" | "image/png" | "image/webp", base64: await fileToBase64(file) });
       }
+      if (pendingFloorPlan) {
+        await uploadFloorPlan.mutateAsync({ id: saved.id, fileName: pendingFloorPlan.name, mimeType: pendingFloorPlan.type as "image/jpeg" | "image/png" | "image/webp", base64: await fileToBase64(pendingFloorPlan) });
+      }
       await utils.listing.listMine.invalidate();
       setShowEditor(false);
       setPendingFiles([]);
+      setPendingFloorPlan(null);
       toast.success(editingId ? "Listing updated" : "Draft listing created");
     } catch (saveError) {
       toast.error(saveError instanceof Error ? saveError.message : "Could not save this listing");
@@ -165,6 +181,16 @@ export default function AgentPortal() {
       toast.success("Image removed");
     } catch (removeError) {
       toast.error(removeError instanceof Error ? removeError.message : "Could not remove image");
+    }
+  };
+
+  const deleteFloorPlan = async (listingId: number) => {
+    try {
+      await removeFloorPlan.mutateAsync({ id: listingId });
+      await utils.listing.listMine.invalidate();
+      toast.success("Floor plan removed");
+    } catch (removeError) {
+      toast.error(removeError instanceof Error ? removeError.message : "Could not remove this floor plan");
     }
   };
 
@@ -188,7 +214,7 @@ export default function AgentPortal() {
           <div className="flex flex-col gap-4 border-b border-[#17382f]/8 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6"><div><h2 className="font-display text-2xl">Your listings</h2><p className="mt-1 text-xs text-[#71857f]">Only properties owned by this account are shown.</p></div><label className="flex h-11 w-full items-center gap-2 rounded-full border border-[#17382f]/12 bg-[#f8f8f3] px-4 sm:w-72"><Search className="size-4 text-[#7c8e88]" /><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search title, address, type…" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[#9aa8a4]" /></label></div>
           {isLoading ? <div className="grid gap-3 p-5 sm:p-6">{[0, 1, 2].map(item => <div key={item} className="h-28 animate-pulse rounded-2xl bg-[#edf1ed]" />)}</div> : error ? <div className="p-10 text-center"><p className="font-semibold">Could not load your listings</p><p className="mt-2 text-sm text-[#71857f]">{error.message}</p></div> : filtered.length ? <div className="divide-y divide-[#17382f]/8">{filtered.map(listing => <article key={listing.id} className="grid gap-4 p-5 transition hover:bg-[#fbfaf6] sm:grid-cols-[110px_1fr] sm:p-6 lg:grid-cols-[130px_1fr_auto] lg:items-center">
             <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#e7ede8]">{listing.images[0] ? <img src={listing.images[0].url} alt={`${listing.title} cover`} className="h-full w-full object-cover" /> : <span className="grid h-full place-items-center text-[#7f948d]">{commercialPropertyTypes.includes(listing.propertyType as (typeof commercialPropertyTypes)[number]) ? <Warehouse className="size-7" /> : <Home className="size-7" />}</span>}<span className="absolute left-2 top-2 rounded-full bg-[#17382f]/85 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-white">{listing.mode}</span></div>
-            <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h3 className="truncate font-semibold">{listing.title}</h3><StatusPill status={listing.status} /></div><p className="mt-2 text-xs text-[#71857f]">{listing.propertyType} · {listing.district} · {listing.size.toLocaleString()} sq ft</p><p className="mt-1 text-xs text-[#71857f]">{listing.address || "Address not added"}{listing.mrtName ? ` · ${listing.mrtName} MRT` : ""}</p><div className="mt-3 flex flex-wrap gap-2"><span className="rounded-full bg-[#edf1ed] px-2.5 py-1 text-[10px] font-semibold text-[#49635d]">{listing.mode === "Rent-Out" ? `$${listing.price.toLocaleString()}/mo` : `$${listing.price.toLocaleString()}`}</span><span className="rounded-full bg-[#f3ede2] px-2.5 py-1 text-[10px] font-semibold text-[#805d2f]">{listing.images.length}/6 images</span>{listing.commercialUsage && <span className="rounded-full bg-[#f3ede2] px-2.5 py-1 text-[10px] font-semibold text-[#805d2f]">{listing.commercialUsage}</span>}</div></div>
+            <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h3 className="truncate font-semibold">{listing.title}</h3><StatusPill status={listing.status} /></div><p className="mt-2 text-xs text-[#71857f]">{listing.propertyType} · {listing.district} · {listing.size.toLocaleString()} sq ft</p><p className="mt-1 text-xs text-[#71857f]">{listing.address || "Address not added"}{listing.mrtName ? ` · ${listing.mrtName} MRT` : ""}</p><div className="mt-3 flex flex-wrap gap-2"><span className="rounded-full bg-[#edf1ed] px-2.5 py-1 text-[10px] font-semibold text-[#49635d]">{listing.mode === "Rent-Out" ? `$${listing.price.toLocaleString()}/mo` : `$${listing.price.toLocaleString()}`}</span><span className="rounded-full bg-[#f3ede2] px-2.5 py-1 text-[10px] font-semibold text-[#805d2f]">{listing.images.length}/6 images</span>{listing.floorPlan && <span className="rounded-full bg-[#e7eef6] px-2.5 py-1 text-[10px] font-semibold text-[#385b77]">Floor plan uploaded</span>}{listing.commercialUsage && <span className="rounded-full bg-[#f3ede2] px-2.5 py-1 text-[10px] font-semibold text-[#805d2f]">{listing.commercialUsage}</span>}</div></div>
             <div className="flex flex-wrap gap-2 sm:col-span-2 lg:col-span-1 lg:justify-end"><Button size="sm" variant="outline" onClick={() => openEdit(listing)} className="rounded-full bg-white"><Pencil className="mr-1.5 size-3.5" />Edit & upload</Button><Button size="sm" onClick={() => updateStatus.mutate({ id: listing.id, status: listing.status === "active" ? "paused" : "active" })} disabled={updateStatus.isPending} className={`rounded-full ${listing.status === "active" ? "bg-[#e9eee9] text-[#275649] hover:bg-[#dce5de]" : "bg-[#17382f]"}`}>{listing.status === "active" ? "Pause" : "Activate"}</Button></div>
           </article>)}</div> : <div className="px-5 py-16 text-center"><span className="mx-auto grid size-16 place-items-center rounded-2xl bg-[#e7ede8] text-[#275649]"><Building2 className="size-7" /></span><h3 className="mt-5 font-display text-2xl">{search ? "No matching properties" : "Create your first property"}</h3><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#71857f]">{search ? "Try another title, address, district, or property type." : "Start with the essentials, save a private draft, then upload media and activate it when the record is ready."}</p>{!search && <Button onClick={openNew} className="mt-6 rounded-full bg-[#17382f]"><CirclePlus className="mr-2 size-4" />Create draft listing</Button>}</div>}
         </section>
@@ -202,6 +228,7 @@ export default function AgentPortal() {
         </div>
         <aside><div className="sticky top-28 rounded-2xl border border-[#17382f]/10 bg-white p-5"><div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-[#e7ede8] text-[#275649]"><ImagePlus className="size-5" /></span><div><h3 className="text-sm font-semibold">Property media</h3><p className="text-[10px] text-[#71857f]">JPG, PNG or WebP · 6 MB each</p></div></div><label className="mt-5 grid cursor-pointer place-items-center rounded-2xl border border-dashed border-[#17382f]/22 bg-[#faf9f5] px-4 py-8 text-center transition hover:border-[#b68a4c]"><input type="file" accept="image/jpeg,image/png,image/webp" multiple className="sr-only" onChange={event => { chooseFiles(event.target.files); event.currentTarget.value = ""; }} /><UploadCloud className="size-6 text-[#a77c43]" /><span className="mt-2 text-xs font-semibold">Choose property images</span><span className="mt-1 text-[10px] text-[#81918c]">Up to 6 images per listing</span></label>
           <div className="mt-4 grid gap-2">{selectedListing?.images.map(image => <div key={image.id} className="group flex items-center gap-3 rounded-xl bg-[#f4f4ef] p-2"><img src={image.url} alt="Property upload" className="size-12 rounded-lg object-cover" /><div className="min-w-0 flex-1"><p className="truncate text-[11px] font-semibold">{image.fileName}</p><p className="mt-0.5 text-[9px] text-[#81918c]">{Math.max(1, Math.round(image.fileSize / 1024))} KB</p></div><button type="button" aria-label={`Remove ${image.fileName}`} onClick={() => void deleteImage(selectedListing.id, image.id)} className="grid size-8 place-items-center rounded-full text-[#9c5651] transition hover:bg-[#f5e4e2]"><Trash2 className="size-3.5" /></button></div>)}{pendingFiles.map((file, index) => <div key={`${file.name}-${file.lastModified}`} className="flex items-center gap-3 rounded-xl border border-[#b68a4c]/20 bg-[#fff8eb] p-2"><span className="grid size-12 place-items-center rounded-lg bg-[#f3e8d5] text-[#a77c43]"><FileImage className="size-5" /></span><div className="min-w-0 flex-1"><p className="truncate text-[11px] font-semibold">{file.name}</p><p className="mt-0.5 text-[9px] text-[#81918c]">Ready to upload</p></div><button type="button" aria-label={`Remove pending ${file.name}`} onClick={() => setPendingFiles(current => current.filter((_, fileIndex) => fileIndex !== index))} className="grid size-8 place-items-center rounded-full text-[#9c5651]"><X className="size-3.5" /></button></div>)}</div>
+          <div className="mt-5 rounded-2xl border border-[#17382f]/10 bg-[#fbfaf6] p-4"><div className="flex items-start gap-3"><span className="grid size-9 place-items-center rounded-xl bg-[#e7eef6] text-[#385b77]"><FileImage className="size-4" /></span><div><h4 className="text-xs font-semibold">Optional floor plan</h4><p className="mt-1 text-[10px] leading-4 text-[#71857f]">One JPG, PNG, or WebP plan per listing. A new upload replaces the existing plan.</p></div></div><label className="mt-3 flex h-11 cursor-pointer items-center justify-center rounded-xl border border-dashed border-[#385b77]/35 bg-white px-3 text-xs font-semibold text-[#385b77] transition hover:border-[#385b77]"><input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={event => { chooseFloorPlan(event.target.files?.[0]); event.currentTarget.value = ""; }} /><UploadCloud className="mr-2 size-4" />{selectedListing?.floorPlan || pendingFloorPlan ? "Replace floor plan" : "Add floor plan"}</label>{selectedListing?.floorPlan && <div className="mt-3 flex items-center gap-3 rounded-xl bg-white p-2"><img src={selectedListing.floorPlan.url} alt="Uploaded floor plan" className="size-12 rounded-lg object-cover" /><div className="min-w-0 flex-1"><p className="truncate text-[11px] font-semibold">{selectedListing.floorPlan.fileName}</p><p className="mt-0.5 text-[9px] text-[#81918c]">Current optional floor plan</p></div><button type="button" aria-label="Remove floor plan" onClick={() => void deleteFloorPlan(selectedListing.id)} className="grid size-8 place-items-center rounded-full text-[#9c5651] transition hover:bg-[#f5e4e2]"><Trash2 className="size-3.5" /></button></div>}{pendingFloorPlan && <div className="mt-3 flex items-center gap-3 rounded-xl border border-[#b68a4c]/20 bg-[#fff8eb] p-2"><span className="grid size-12 place-items-center rounded-lg bg-[#f3e8d5] text-[#a77c43]"><FileImage className="size-5" /></span><div className="min-w-0 flex-1"><p className="truncate text-[11px] font-semibold">{pendingFloorPlan.name}</p><p className="mt-0.5 text-[9px] text-[#81918c]">Ready to replace on save</p></div><button type="button" aria-label={`Remove pending ${pendingFloorPlan.name} floor plan`} onClick={() => setPendingFloorPlan(null)} className="grid size-8 place-items-center rounded-full text-[#9c5651]"><X className="size-3.5" /></button></div>}</div>
           {!editingId && pendingFiles.length === 0 && <p className="mt-4 rounded-xl bg-[#edf1ed] p-3 text-[10px] leading-4 text-[#647b74]">You can save the listing first and return later to add images. New records remain private drafts until activated.</p>}
         </div></aside>
         <div className="flex flex-col-reverse gap-3 border-t border-[#17382f]/8 pt-5 sm:flex-row sm:justify-end lg:col-span-2"><Button type="button" variant="ghost" onClick={() => setShowEditor(false)}>Cancel</Button><Button disabled={saving} className="h-11 rounded-full bg-[#17382f] px-7">{saving ? "Saving property…" : editingId ? "Save updates" : "Create draft"}<ChevronRight className="ml-2 size-4" /></Button></div>

@@ -1,6 +1,6 @@
 export type ListingMode = "Buy" | "Sell" | "Rent" | "Rent-Out";
 
-export const residentialPropertyTypes = ["Condominium", "Apartment"] as const;
+export const residentialPropertyTypes = ["Condominium", "Apartment", "HDB Flat"] as const;
 export const commercialPropertyTypes = ["Office", "Shophouse", "Warehouse", "Office Building", "Factory Building"] as const;
 export const propertyTypes = [...residentialPropertyTypes, ...commercialPropertyTypes] as const;
 
@@ -61,6 +61,12 @@ export type Property = {
   parkingLots?: number;
   availableFrom?: string;
   grossFloorArea?: number;
+  floorPlan?: {
+    label: string;
+    bedrooms: number;
+    note: string;
+    imageUrl?: string;
+  };
 };
 
 const images = {
@@ -184,6 +190,54 @@ const residentialProperties: Property[] = [
   },
 ];
 
+const hdbSeed = [
+  ["queenstown-skyline-demo", "Queenstown Skyline Flat · Demo", "D03 · Queenstown", "Alexandra Road · illustrative address", "Buy", 928000, 0, 3, 2, 969, "Queenstown MRT", 6, 1.2941, 103.8062, "Established resale", images.interlace],
+  ["bishan-grove-demo", "Bishan Grove Flat · Demo", "D20 · Bishan", "Bishan Street 24 · illustrative address", "Buy", 870000, 0, 3, 2, 904, "Bishan MRT", 8, 1.3507, 103.8482, "Established resale", images.luxuryInterior],
+  ["sengkang-canopy-demo", "Sengkang Canopy Flat · Demo", "D19 · Sengkang", "Sengkang West Way · illustrative address", "Buy", 748000, 0, 3, 2, 1001, "Cheng Lim LRT", 5, 1.3852, 103.8891, "Recent flat", images.marinaInterior],
+  ["woodlands-horizon-demo", "Woodlands Horizon Flat · Demo", "D25 · Woodlands", "Woodlands Drive 50 · illustrative address", "Rent", 0, 3850, 3, 2, 1087, "Woodlands North MRT", 9, 1.4451, 103.7856, "Established resale", images.interlace],
+  ["yishun-greenway-demo", "Yishun Greenway Flat · Demo", "D27 · Yishun", "Yishun Avenue 6 · illustrative address", "Buy", 608000, 0, 3, 2, 861, "Khatib MRT", 10, 1.4182, 103.8333, "Established resale", images.marinaSkyline],
+  ["tampines-verge-demo", "Tampines Verge Flat · Demo", "D18 · Tampines", "Tampines Avenue 9 · illustrative address", "Buy", 786000, 0, 4, 2, 1184, "Tampines West MRT", 7, 1.3535, 103.9401, "Recent flat", images.luxuryInterior],
+  ["bedok-reservoir-demo", "Bedok Reservoir Flat · Demo", "D16 · Bedok", "Bedok Reservoir Road · illustrative address", "Rent", 0, 3420, 3, 2, 926, "Bedok Reservoir MRT", 6, 1.3339, 103.9188, "Established resale", images.marinaInterior],
+  ["jurong-lake-demo", "Jurong Lake Gardens Flat · Demo", "D22 · Jurong", "Yuan Ching Road · illustrative address", "Buy", 698000, 0, 3, 2, 990, "Lakeside MRT", 8, 1.3447, 103.7204, "Recent flat", images.interlace],
+  ["choa-chu-kang-demo", "Choa Chu Kang Park Flat · Demo", "D23 · Choa Chu Kang", "Choa Chu Kang Avenue 4 · illustrative address", "Buy", 628000, 0, 3, 2, 1033, "Yew Tee MRT", 9, 1.3975, 103.7472, "Established resale", images.marinaSkyline],
+  ["clementi-crest-demo", "Clementi Crest Flat · Demo", "D05 · Buona Vista", "Clementi Avenue 4 · illustrative address", "Buy", 838000, 0, 4, 2, 1119, "Clementi MRT", 6, 1.3164, 103.7653, "Recent flat", images.luxuryInterior],
+] as const;
+
+const hdbProperties: Property[] = hdbSeed.map((item, index) => {
+  const [id, title, district, address, mode, price, monthlyRent, beds, baths, size, mrt, mrtMinutes, latitude, longitude, era, image] = item;
+  const salePrice = price || Math.round(monthlyRent * 220);
+  return {
+    id,
+    title,
+    district,
+    address,
+    type: "HDB Flat",
+    mode,
+    price: salePrice,
+    monthlyRent: monthlyRent || undefined,
+    beds,
+    baths,
+    size,
+    tenure: "99-year",
+    mrt,
+    mrtMinutes,
+    latitude,
+    longitude,
+    image,
+    gallery: [image, images.marinaInterior, images.luxuryInterior],
+    description: `An ${era.toLowerCase()} HDB flat included as an illustrative UrbanKey demonstration listing. Layout, availability, price, and all property particulars require independent verification before any decision.`,
+    tags: ["HDB demo", era, `${beds}-room layout`],
+    floorPlan: {
+      label: `${beds}-room illustrative HDB layout`,
+      bedrooms: beds,
+      note: "Illustrative product-demo floor plan only. It is not an official HDB plan, survey, or representation of an actual unit.",
+    },
+    owner: { initials: ["A.L.", "J.T.", "M.R.", "S.K.", "D.N.", "P.C.", "H.Y.", "R.W.", "C.G.", "E.F."][index], ownershipYears: 3 + (index % 12), propertyCount: 1 },
+    incidents: [{ year: "Demo", category: "neutral", title: "Illustrative listing context", detail: "This HDB record is curated solely for product demonstration. Verify all material information through official sources and the appointed agent.", source: "Curated demo record" }],
+    transactions: [{ date: "2025-05-18", type: mode === "Rent" ? "Rent" : "Sale", property: title, unit: "Illustrative unit", price: mode === "Rent" ? Math.round((monthlyRent || 0) * 0.97) : Math.round(salePrice * 0.96), psf: mode === "Rent" ? Number((((monthlyRent || 0) * 0.97) / size).toFixed(2)) : Math.round((salePrice * 0.96) / size) }],
+  };
+});
+
 const commercialSeed = [
   ["tanjong-pagar-office-18", "Anson Exchange Office Suite", "D02 · Tanjong Pagar", "10 Anson Road", "Office", "Rent", 4680000, 23800, 3680, "99-year", "Tanjong Pagar MRT", 3, 1.2758, 103.8464, images.office, "Office · Professional services", 3, 2.8, "Shared service bay", 3, "2026-09-01"],
   ["robinson-office-09", "Robinson Green Workplace", "D01 · Marina Bay", "88 Robinson Road", "Office", "Buy", 5980000, 29200, 4210, "Freehold", "Shenton Way MRT", 4, 1.2793, 103.8489, images.office, "Office · Corporate headquarters", 3.5, 3, "Basement service bay", 4, "2026-10-15"],
@@ -254,9 +308,18 @@ const commercialProperties: Property[] = commercialSeed.map((item, index) => {
   };
 });
 
-export const properties: Property[] = [...residentialProperties, ...commercialProperties];
+const withIllustrativeFloorPlan = (property: Property): Property => ({
+  ...property,
+  floorPlan: property.floorPlan ?? {
+    label: property.isCommercial ? "Illustrative floor-plate layout" : `${Math.max(1, property.beds)}-bedroom illustrative layout`,
+    bedrooms: property.beds,
+    note: "Illustrative product-demo floor plan only. It is not a survey, as-built drawing, or official plan.",
+  },
+});
 
-export const districts = ["All districts", "D01 · Marina Bay", "D02 · Tanjong Pagar", "D04 · Harbourfront", "D05 · Buona Vista", "D10 · Tanglin", "D14 · Geylang", "D15 · East Coast", "D17 · Changi", "D22 · Jurong", "D25 · Woodlands"];
+export const properties: Property[] = [...residentialProperties, ...hdbProperties, ...commercialProperties].map(withIllustrativeFloorPlan);
+
+export const districts = ["All districts", "D01 · Marina Bay", "D02 · Tanjong Pagar", "D03 · Queenstown", "D04 · Harbourfront", "D05 · Buona Vista", "D10 · Tanglin", "D14 · Geylang", "D15 · East Coast", "D16 · Bedok", "D18 · Tampines", "D19 · Sengkang", "D20 · Bishan", "D22 · Jurong", "D23 · Choa Chu Kang", "D25 · Woodlands", "D27 · Yishun"];
 
 export const propertyHistoryDisclaimer =
   "Property and unit history shown here is curated demonstration data, may include unverified resident reports, and must not be treated as a factual allegation. Users should independently verify all material information through official records, the property owner, managing agent, and qualified advisers before making any decision.";

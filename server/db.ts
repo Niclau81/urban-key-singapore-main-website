@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { agentProfiles, enquiries, InsertUser, propertyListingImages, propertyListings, savedListings, subscriptionOrders, userProfiles, users } from "../drizzle/schema";
+import { agentProfiles, enquiries, InsertUser, propertyListingFloorPlans, propertyListingImages, propertyListings, savedListings, subscriptionOrders, userProfiles, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -190,7 +190,12 @@ export async function listManagedProperties(userId: number) {
   if (!db) return [];
   const listings = await db.select().from(propertyListings).where(eq(propertyListings.userId, userId)).orderBy(desc(propertyListings.createdAt));
   const images = await db.select().from(propertyListingImages).where(eq(propertyListingImages.userId, userId)).orderBy(propertyListingImages.sortOrder, propertyListingImages.id);
-  return listings.map(listing => ({ ...listing, images: images.filter(image => image.listingId === listing.id) }));
+  const floorPlans = await db.select().from(propertyListingFloorPlans).where(eq(propertyListingFloorPlans.userId, userId));
+  return listings.map(listing => ({
+    ...listing,
+    images: images.filter(image => image.listingId === listing.id),
+    floorPlan: floorPlans.find(plan => plan.listingId === listing.id) ?? null,
+  }));
 }
 
 export async function createManagedProperty(userId: number, input: {
@@ -284,6 +289,27 @@ export async function removeManagedPropertyImage(userId: number, listingId: numb
   const db = await getDb();
   if (!db) return false;
   const result = await db.delete(propertyListingImages).where(and(eq(propertyListingImages.id, imageId), eq(propertyListingImages.listingId, listingId), eq(propertyListingImages.userId, userId)));
+  return Number(result[0].affectedRows) > 0;
+}
+
+export async function upsertManagedPropertyFloorPlan(userId: number, listingId: number, floorPlan: {
+  storageKey: string;
+  url: string;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+}) {
+  const db = await getDb();
+  if (!db) return { id: 0, userId, listingId, ...floorPlan, createdAt: new Date(), updatedAt: new Date() };
+  await db.insert(propertyListingFloorPlans).values({ userId, listingId, ...floorPlan }).onDuplicateKeyUpdate({ set: floorPlan });
+  const rows = await db.select().from(propertyListingFloorPlans).where(and(eq(propertyListingFloorPlans.listingId, listingId), eq(propertyListingFloorPlans.userId, userId))).limit(1);
+  return rows[0];
+}
+
+export async function removeManagedPropertyFloorPlan(userId: number, listingId: number) {
+  const db = await getDb();
+  if (!db) return false;
+  const result = await db.delete(propertyListingFloorPlans).where(and(eq(propertyListingFloorPlans.listingId, listingId), eq(propertyListingFloorPlans.userId, userId)));
   return Number(result[0].affectedRows) > 0;
 }
 
