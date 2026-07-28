@@ -168,3 +168,6 @@
 - [x] Create a structured English user guide covering core navigation, search, property evaluation, mapping, saved actions, and agent tools.
 - [x] Produce a concise companion video guide with an accessible walkthrough narration and visual sequence.
 - [x] Review the guide materials for accuracy and deliver the final written and video artifacts.
+- [x] Diagnose why the original video guide showed a zero-asset Map Intelligence state and identify a reliable populated-map demonstration.
+- [x] Rebuild the video guide around visible click-by-click workflows rather than static interface frames.
+- [x] Verify the rebuilt video includes populated 3D map assets, a marker selection, a property preview, and readable action guidance before delivery.

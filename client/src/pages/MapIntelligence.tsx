@@ -16,7 +16,7 @@ function isCompactMapViewport() {
 }
 
 export default function MapIntelligence() {
-  const { data: properties = [] } = trpc.property.list.useQuery();
+  const { data: properties = [], isLoading: isLoadingProperties } = trpc.property.list.useQuery();
   const forceMapFallback = new URLSearchParams(window.location.search).get("mapFallback") === "1";
   const [selected, setSelected] = useState<Property | null>(null);
   const [layers, setLayers] = useState<LayerState>({ districts: true, mrt: true, threeD: true });
@@ -24,6 +24,7 @@ export default function MapIntelligence() {
   const mapRef = useRef<google.maps.Map | null>(null);
   const compactViewportRef = useRef(isCompactMapViewport());
   const overlaysRef = useRef<{ districts: google.maps.Polygon[]; mrt: google.maps.Circle[]; markers: google.maps.marker.AdvancedMarkerElement[]; cluster?: google.maps.marker.AdvancedMarkerElement } | null>(null);
+  const mapListenersRef = useRef<google.maps.MapsEventListener[]>([]);
   useEffect(() => {
     const updateViewportMode = () => {
       const compact = isCompactMapViewport();
@@ -41,6 +42,16 @@ export default function MapIntelligence() {
   }, []);
   const setupMap = useCallback((map: google.maps.Map) => {
     mapRef.current = map;
+    mapListenersRef.current.forEach(listener => listener.remove());
+    mapListenersRef.current = [];
+    const existing = overlaysRef.current;
+    if (existing) {
+      existing.districts.forEach(item => item.setMap(null));
+      existing.mrt.forEach(item => item.setMap(null));
+      existing.markers.forEach(item => item.map = null);
+      if (existing.cluster) existing.cluster.map = null;
+      overlaysRef.current = null;
+    }
     map.setOptions({ tilt: 45, heading: -18, mapTypeId: "roadmap", gestureHandling: "greedy", styles: [{ featureType: "poi.business", stylers: [{ visibility: "off" }] }] });
     const districtShapes = [
       [{ lat: 1.266, lng: 103.842 }, { lat: 1.266, lng: 103.87 }, { lat: 1.292, lng: 103.87 }, { lat: 1.292, lng: 103.842 }],
@@ -72,10 +83,13 @@ export default function MapIntelligence() {
     const cluster = new google.maps.marker.AdvancedMarkerElement({ map: null, position: { lat: 1.334, lng: 103.817 }, content: clusterEl, title: `${properties.length} properties` });
     cluster.addListener("click", () => { map.setZoom(12); map.panTo({ lat: 1.334, lng: 103.817 }); });
     const updateClusters = () => { const clustered = (map.getZoom() || 13) <= 11; markers.forEach(marker => marker.map = clustered ? null : map); cluster.map = clustered ? map : null; };
-    map.addListener("zoom_changed", updateClusters);
+    mapListenersRef.current.push(map.addListener("zoom_changed", updateClusters));
     updateClusters();
     overlaysRef.current = { districts, mrt, markers, cluster };
   }, [properties]);
+  useEffect(() => {
+    if (mapRef.current && properties.length > 0) setupMap(mapRef.current);
+  }, [properties, setupMap]);
   const toggle = (key: keyof LayerState) => {
     const next = !layers[key]; setLayers(current => ({ ...current, [key]: next }));
     const map = mapRef.current; const overlays = overlaysRef.current; if (!map || !overlays) return;
@@ -85,7 +99,7 @@ export default function MapIntelligence() {
   };
   return <div className="h-[var(--app-viewport-height)] min-h-0 overflow-hidden bg-[#10231e] text-[#17382f]"><BrandHeader tone="dark" /><main className="relative h-[calc(var(--app-viewport-height)-var(--site-header-height))] min-h-0">
     <MapView initialCenter={{ lat: 1.334, lng: 103.817 }} initialZoom={11} onMapReady={setupMap} forceFailureForTesting={forceMapFallback} className="h-full w-full" />
-    <div id="map-intelligence-controls" className={`absolute left-[max(.75rem,env(safe-area-inset-left))] top-3 z-10 max-h-[calc(100%-5rem)] w-[calc(100%-1.5rem)] max-w-[412px] overflow-y-auto overscroll-contain rounded-[24px] border border-white/60 bg-[#faf9f5]/94 p-4 shadow-2xl backdrop-blur-xl sm:left-4 sm:top-4 sm:max-w-[330px] sm:p-5 ${mobilePanelsHidden ? "hidden md:block" : ""}`}><div className="flex items-start justify-between"><div><p className="eyebrow">Map intelligence</p><h1 className="mt-2 font-display text-2xl">Explore by context.</h1></div><span className="grid size-9 place-items-center rounded-full bg-[#e8eee9] text-[#275649]"><MapPinned className="size-4" /></span></div><p className="mt-3 text-xs leading-5 text-[#4e665f]">Tilt, zoom, and compare homes, offices, shophouses, warehouses, and factories across Singapore.</p><div className="mt-3 flex gap-3 text-[10px] font-bold uppercase tracking-[.12em]"><span className="flex items-center gap-1.5"><i className="size-2 rounded-full bg-[#17382f]" />Homes</span><span className="flex items-center gap-1.5"><i className="size-2 rounded-full bg-[#a66a2c]" />Commercial / industrial</span></div><div className="mt-5 grid gap-2">{[
+    <div id="map-intelligence-controls" className={`absolute left-[max(.75rem,env(safe-area-inset-left))] top-3 z-10 max-h-[calc(100%-5rem)] w-[calc(100%-1.5rem)] max-w-[412px] overflow-y-auto overscroll-contain rounded-[24px] border border-white/60 bg-[#faf9f5]/94 p-4 shadow-2xl backdrop-blur-xl sm:left-4 sm:top-4 sm:max-w-[330px] sm:p-5 ${mobilePanelsHidden ? "hidden md:block" : ""}`}><div className="flex items-start justify-between"><div><p className="eyebrow">Map intelligence</p><h1 className="mt-2 font-display text-2xl">Explore by context.</h1></div><span className="grid size-9 place-items-center rounded-full bg-[#e8eee9] text-[#275649]"><MapPinned className="size-4" /></span></div><p className="mt-3 text-xs leading-5 text-[#4e665f]">Tilt, zoom, and compare homes, offices, shophouses, warehouses, and factories across Singapore.</p><p className="mt-3 rounded-xl bg-[#edf1ed] px-3 py-2 text-[11px] font-semibold text-[#275649]" aria-live="polite">{isLoadingProperties ? "Loading mapped assets…" : `${properties.length} listed assets currently mapped`}</p><div className="mt-3 flex gap-3 text-[10px] font-bold uppercase tracking-[.12em]"><span className="flex items-center gap-1.5"><i className="size-2 rounded-full bg-[#17382f]" />Homes</span><span className="flex items-center gap-1.5"><i className="size-2 rounded-full bg-[#a66a2c]" />Commercial / industrial</span></div><div className="mt-5 grid gap-2">{[
       ["threeD", "3D building perspective", Box], ["districts", "District boundaries", Layers3], ["mrt", "MRT walk-time radius", TrainFront],
     ].map(([key, label, Icon]) => <div key={key as string} className="flex items-center gap-3 rounded-xl bg-white px-3 py-3"><span className="grid size-8 place-items-center rounded-full bg-[#edf1ed] text-[#275649]"><Icon className="size-4" /></span><span className="flex-1 text-xs font-semibold">{label as string}</span><Switch aria-label={label as string} checked={layers[key as keyof LayerState]} onCheckedChange={() => toggle(key as keyof LayerState)} /></div>)}</div><div className="mt-4 flex gap-2"><Button size="sm" variant="outline" className="flex-1 rounded-full bg-white" onClick={() => mapRef.current?.setCenter({ lat: 1.334, lng: 103.817 })}><LocateFixed className="mr-2 size-3.5" />Recenter</Button><Button onClick={() => toast.info("Choose a workplace, school, port, or logistics node to configure commute-time routing.")} size="sm" variant="outline" className="flex-1 rounded-full bg-white"><Route className="mr-2 size-3.5" />Commute</Button></div></div>
     <div className="absolute bottom-4 left-4 z-10 hidden rounded-full border border-white/40 bg-[#10231e]/78 px-4 py-2 text-[10px] font-semibold text-white backdrop-blur sm:block">Google Maps · Illustrative district and MRT overlays · Zoom out to cluster</div>

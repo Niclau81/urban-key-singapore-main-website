@@ -24,4 +24,12 @@ describe("3D map asset preview", () => {
     expect(previewMarkup).toContain("Close property preview");
     expect(previewMarkup).not.toContain('mobilePanelsHidden ? "hidden sm:block" : ""');
   });
+
+  it("rebuilds overlays after property data arrives instead of retaining the initial zero-asset map", () => {
+    expect(mapSource).toContain("if (mapRef.current && properties.length > 0) setupMap(mapRef.current);");
+    expect(mapSource).toContain("existing.markers.forEach(item => item.map = null);");
+    expect(mapSource).toContain("mapListenersRef.current.forEach(listener => listener.remove());");
+    expect(mapSource).toContain('isLoadingProperties ? "Loading mapped assets…"');
+    expect(mapSource).toContain("listed assets currently mapped");
+  });
 });
