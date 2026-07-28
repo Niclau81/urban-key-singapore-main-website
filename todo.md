@@ -161,3 +161,6 @@
 - [x] Add focused regressions and verify the repaired listing and Map Intelligence behavior on desktop and mobile before saving a checkpoint.
 - [x] Reproduce and fix the missing property-information popup when an asset is selected on the 3D Map Intelligence view.
 - [x] Add regression coverage and validate the repaired 3D map asset-preview interaction before saving a checkpoint.
+- [x] Audit and remove fixed mobile layout assumptions that can clip content or controls across small, tall, wide, and landscape phone viewports.
+- [x] Add responsive safe-area, viewport-height, and orientation behavior so the full mobile experience fits common devices.
+- [x] Add representative mobile viewport regression coverage and verify the finished responsive behavior before saving a checkpoint.

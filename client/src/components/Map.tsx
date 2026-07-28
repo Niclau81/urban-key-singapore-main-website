@@ -145,11 +145,11 @@ export function MapView({
     init();
   }, [init, retryAttempt]);
 
-  if (loadError) return <div className={cn("relative h-[500px] w-full overflow-hidden bg-[#102b25]", className)} role="status">
+  if (loadError) return <div className={cn("relative w-full overflow-hidden bg-[#102b25]", className ?? "h-[500px]")} role="status">
     <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "linear-gradient(rgba(213,174,114,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(213,174,114,.16) 1px,transparent 1px)", backgroundSize: "48px 48px", transform: "perspective(600px) rotateX(52deg) scale(1.35)" }} />
     <div className="absolute left-[47%] top-[44%] h-44 w-72 -translate-x-1/2 -translate-y-1/2 rotate-[-12deg] rounded-[46%] border border-[#d5ae72]/35 bg-[#275649]/35 shadow-[0_0_80px_rgba(42,112,90,.35)]" />
     <div className="absolute left-1/2 top-1/2 rounded-2xl border border-white/10 bg-[#10231e]/85 px-5 py-4 text-center text-white shadow-xl backdrop-blur"><p className="text-xs font-semibold">Google Maps is temporarily unavailable</p><p className="mt-1 text-[10px] text-white/50">The map can retry without leaving this page.</p><button type="button" onClick={() => setRetryAttempt((attempt) => attempt + 1)} className="mt-3 rounded-full bg-[#d5ae72] px-3 py-1.5 text-[10px] font-bold text-[#17382f]">Retry map</button></div>
   </div>;
 
-  return <div ref={mapContainer} className={cn("h-[500px] w-full", className)} />;
+  return <div ref={mapContainer} className={cn("w-full", className ?? "h-[500px]")} />;
 }
