@@ -171,3 +171,7 @@
 - [x] Diagnose why the original video guide showed a zero-asset Map Intelligence state and identify a reliable populated-map demonstration.
 - [x] Rebuild the video guide around visible click-by-click workflows rather than static interface frames.
 - [x] Verify the rebuilt video includes populated 3D map assets, a marker selection, a property preview, and readable action guidance before delivery.
+- [x] Inventory every current investor-relevant UrbanKey function and map each to user value and product evidence.
+- [x] Create an investor introduction and key-point brief covering the problem, solution, functional differentiation, and product-use journey.
+- [x] Produce a step-by-step investor walkthrough video covering all major public, property, intelligence, assistant, account, and professional functions.
+- [x] Validate the investor materials and deliver the final introduction and video assets.
