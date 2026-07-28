@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { TrpcContext } from "./_core/context";
 import { appRouter } from "./routers";
+import { districts, properties, singaporeDistricts } from "../shared/propertyData";
 
 function publicContext(): TrpcContext {
   return { user: null, req: { protocol: "https", headers: {} } as TrpcContext["req"], res: {} as TrpcContext["res"] };
@@ -12,6 +13,18 @@ describe("property intelligence procedures", () => {
     const result = await caller.property.list({ district: "D01 · Marina Bay", propertyType: "Condominium", maxMrtMinutes: 5 });
     expect(result).toHaveLength(1);
     expect(result[0]?.title).toBe("Marina Cove Residence");
+  });
+
+  it("exposes every Singapore district in shared discovery choices and retains coverage for all listed districts", async () => {
+    const caller = appRouter.createCaller(publicContext());
+    const changiAssets = await caller.property.list({ district: "D17 · Changi", propertyType: "Warehouse" });
+
+    expect(singaporeDistricts).toHaveLength(28);
+    expect(new Set(singaporeDistricts)).toHaveLength(28);
+    expect(districts).toEqual(["All districts", ...singaporeDistricts]);
+    expect(properties.every(property => districts.includes(property.district as (typeof districts)[number]))).toBe(true);
+    expect(changiAssets).toHaveLength(1);
+    expect(changiAssets[0]).toMatchObject({ id: "changi-airfreight-warehouse", district: "D17 · Changi" });
   });
 
   it("applies size, tenure, and MRT walk-time filters together", async () => {

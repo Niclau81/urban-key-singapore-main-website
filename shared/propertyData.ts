@@ -342,7 +342,38 @@ const withIllustrativeFloorPlan = (property: Property): Property => ({
 
 export const properties: Property[] = [...residentialProperties, ...hdbProperties, ...commercialProperties].map(withIllustrativeFloorPlan);
 
-export const districts = ["All districts", "D01 · Marina Bay", "D02 · Tanjong Pagar", "D03 · Queenstown", "D04 · Harbourfront", "D05 · Buona Vista", "D10 · Tanglin", "D14 · Geylang", "D15 · East Coast", "D16 · Bedok", "D18 · Tampines", "D19 · Sengkang", "D20 · Bishan", "D22 · Jurong", "D23 · Choa Chu Kang", "D25 · Woodlands", "D27 · Yishun"];
+export const singaporeDistricts = [
+  "D01 · Marina Bay",
+  "D02 · Tanjong Pagar",
+  "D03 · Queenstown",
+  "D04 · Harbourfront",
+  "D05 · Buona Vista",
+  "D06 · City Hall",
+  "D07 · Bugis",
+  "D08 · Little India",
+  "D09 · Orchard",
+  "D10 · Tanglin",
+  "D11 · Newton",
+  "D12 · Toa Payoh",
+  "D13 · Macpherson",
+  "D14 · Geylang",
+  "D15 · East Coast",
+  "D16 · Bedok",
+  "D17 · Changi",
+  "D18 · Tampines",
+  "D19 · Sengkang",
+  "D20 · Bishan",
+  "D21 · Upper Bukit Timah",
+  "D22 · Jurong",
+  "D23 · Choa Chu Kang",
+  "D24 · Lim Chu Kang",
+  "D25 · Woodlands",
+  "D26 · Upper Thomson",
+  "D27 · Yishun",
+  "D28 · Seletar",
+] as const;
+
+export const districts = ["All districts", ...singaporeDistricts] as const;
 
 export const propertyHistoryDisclaimer =
   "Property and unit history shown here is curated demonstration data, may include unverified resident reports, and must not be treated as a factual allegation. Users should independently verify all material information through official records, the property owner, managing agent, and qualified advisers before making any decision.";

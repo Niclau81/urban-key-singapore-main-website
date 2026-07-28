@@ -178,3 +178,6 @@
 - [x] Prepare editable soft-copy documents for the investor introduction, key points, and feature walkthrough storyboard.
 - [x] Assemble a clearly structured digital media package containing the investor walkthrough video and English captions.
 - [x] Verify the soft-copy package opens correctly and deliver the final downloadable files.
+- [x] Audit all listing districts and every customer-facing district dropdown or filter source.
+- [x] Add complete district options for the available listings and align shared discovery filters.
+- [x] Add regression coverage and verify district selection returns the relevant listings before saving a checkpoint.
