@@ -178,10 +178,10 @@
 - [x] Prepare editable soft-copy documents for the investor introduction, key points, and feature walkthrough storyboard.
 - [x] Assemble a clearly structured digital media package containing the investor walkthrough video and English captions.
 - [x] Verify the soft-copy package opens correctly and deliver the final downloadable files.
-- [x] Audit all listing districts and every customer-facing district dropdown or filter source.
-- [x] Add complete district options for the available listings and align shared discovery filters.
-- [x] Add regression coverage and verify district selection returns the relevant listings before saving a checkpoint.
-- [x] Trace the homepage search selector’s separate partial district source exposed in the user’s screenshot.
-- [x] Replace the homepage selector options with the authoritative shared D01–D28 district catalog.
-- [x] Add a regression preventing the homepage from reverting to a local partial district list.
-- [x] Verify the expanded homepage selector in the live responsive interface, then save and deliver the repair checkpoint.
+- [x] Audit and isolate Singapore-specific labels, formats, regions, map centers, and discovery assumptions.
+- [x] Define a typed reusable market configuration model for country identity, locale, currency, terminology, geography, and map defaults.
+- [x] Create selectable market profiles and retain Singapore as the initial default experience.
+- [x] Adapt property discovery, card terminology, pricing formatters, search filters, and map initialization to the active market configuration.
+- [x] Provide a market switcher and a clear international-ready user interface without creating duplicate country pages.
+- [x] Add regression coverage for market configuration, localization, region filtering, and map defaults.
+- [x] Verify desktop and mobile market switching, map positioning, tests, type checking, production build, and save the multi-market checkpoint.

@@ -50,6 +50,7 @@ function authenticatedContext(userId = 7): TrpcContext {
 }
 
 const listingInput = {
+  marketId: "singapore" as const,
   title: "Tuas logistics facility",
   description: "A high-clearance logistics asset with direct container access.",
   address: "12 Pioneer Sector Walk",

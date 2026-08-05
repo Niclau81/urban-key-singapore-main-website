@@ -1,4 +1,5 @@
 import { COOKIE_NAME } from "@shared/const";
+import { defaultMarketId, getMarketConfig, marketIds } from "@shared/marketConfig";
 import { properties, propertyHistoryDisclaimer } from "@shared/propertyData";
 import { AUTOMATED_PAYMENT_METHODS, calculateSubscriptionPrice, getSubscriptionPlan, SUBSCRIPTION_PLANS } from "@shared/subscriptionPlans";
 import { TRPCError } from "@trpc/server";
@@ -14,6 +15,7 @@ import { createStripeCheckoutSession } from "./stripe";
 
 const messageSchema = z.object({ role: z.enum(["system", "user", "assistant"]), content: z.string().min(1).max(5000) });
 const listingInputSchema = z.object({
+  marketId: z.enum(marketIds),
   title: z.string().trim().min(4).max(180),
   description: z.string().trim().max(4000).optional(),
   address: z.string().trim().max(240).optional(),
@@ -42,7 +44,7 @@ export const agentRegistrationSchema = z.object({
   email: z.string().trim().email().max(320),
   companyName: z.string().trim().min(2).max(180),
   companyAddress: z.string().trim().min(5).max(320),
-  postalCode: z.string().trim().regex(/^\d{6}$/, "Enter a valid 6-digit Singapore postal code").optional(),
+  postalCode: z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9 -]{1,15}$/, "Enter a valid postal or ZIP code").optional(),
   agentLicenseNumber: z.string().trim().min(3).max(80),
   jobTitle: z.string().trim().max(120).optional(),
   businessRegistrationNumber: z.string().trim().max(80).optional(),
@@ -68,6 +70,7 @@ export const appRouter = router({
   }),
   property: router({
     list: publicProcedure.input(z.object({
+      marketId: z.enum(marketIds).optional(),
       mode: z.enum(["Buy", "Sell", "Rent", "Rent-Out"]).optional(),
       district: z.string().optional(),
       propertyType: z.string().optional(),
@@ -83,8 +86,9 @@ export const appRouter = router({
       if (!input) return true;
       const price = property.mode === "Rent" || property.mode === "Rent-Out" ? property.monthlyRent ?? property.price : property.price;
       const haystack = `${property.title} ${property.address} ${property.district} ${property.type} ${property.mrt} ${property.commercialUsage ?? ""}`.toLowerCase();
-      return (!input.mode || input.mode === property.mode)
-        && (!input.district || input.district === "All districts" || property.district === input.district)
+      return (!input.marketId || input.marketId === property.marketId)
+        && (!input.mode || input.mode === property.mode)
+        && (!input.district || input.district.startsWith("All ") || property.district === input.district)
         && (!input.propertyType || input.propertyType === "All types" || property.type === input.propertyType)
         && (!input.maxPrice || price <= input.maxPrice)
         && (!input.minSize || property.size >= input.minSize)
@@ -150,7 +154,7 @@ export const appRouter = router({
     create: protectedProcedure.input(z.object({ propertyId: z.string(), message: z.string().min(10).max(2000) })).mutation(({ ctx, input }) => db.createEnquiry(ctx.user.id, input.propertyId, input.message)),
   }),
   listing: router({
-    listMine: protectedProcedure.query(({ ctx }) => db.listManagedProperties(ctx.user.id)),
+    listMine: protectedProcedure.input(z.object({ marketId: z.enum(marketIds) }).optional()).query(({ ctx, input }) => db.listManagedProperties(ctx.user.id, input?.marketId)),
     create: protectedProcedure.input(listingInputSchema).mutation(({ ctx, input }) => db.createManagedProperty(ctx.user.id, input)),
     update: protectedProcedure.input(listingInputSchema.extend({ id: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
       const { id, ...listing } = input;
@@ -219,9 +223,11 @@ export const appRouter = router({
   ai: router({
     chat: publicProcedure.input(z.object({
       mode: z.enum(["buyer", "agent"]),
+      marketId: z.enum(marketIds).optional(),
       messages: z.array(messageSchema).min(1).max(20),
     })).mutation(async ({ input }) => {
-      const catalog = properties.map(property => ({
+      const market = getMarketConfig(input.marketId ?? defaultMarketId);
+      const catalog = properties.filter(property => property.marketId === market.id).map(property => ({
         id: property.id,
         title: property.title,
         district: property.district,
@@ -243,8 +249,8 @@ export const appRouter = router({
         availableFrom: property.availableFrom,
       }));
       const system = input.mode === "buyer"
-        ? `You are UrbanKey Concierge, a careful Singapore residential, commercial, and industrial property discovery assistant. Recommend only from the provided demonstration catalog and explain fit, transaction mode, permitted or intended usage, floor loading, ceiling height, loading access, parking, price, commute, tenure, and next steps when relevant. Never invent a listing or claim a recommendation guarantees suitability, zoning approval, or regulatory compliance. Catalog: ${JSON.stringify(catalog)}`
-        : `You are UrbanKey Pro, an assistant for Singapore residential, commercial, and industrial property agents and co-brokers. Use the provided demonstration catalog for comparative market observations, commercial-use matching, operational specification checks, co-broking angles, listing positioning, and principled negotiation suggestions. Do not provide legal or financial advice, do not claim regulatory approval, and never reveal or infer private owner identity. Catalog: ${JSON.stringify(catalog)}`;
+        ? `You are UrbanKey Concierge, a careful ${market.countryName} residential, commercial, and industrial property discovery assistant. Recommend only from the provided demonstration catalog and explain fit, transaction mode, permitted or intended usage, floor loading, ceiling height, loading access, parking, price, commute, tenure, and next steps when relevant. Never invent a listing or claim a recommendation guarantees suitability, zoning approval, or regulatory compliance. The active market uses ${market.currency}, ${market.terminology.areaUnit}, and ${market.terminology.transit} terminology. Catalog: ${JSON.stringify(catalog)}`
+        : `You are UrbanKey Pro, an assistant for ${market.countryName} residential, commercial, and industrial property agents and co-brokers. Use the provided demonstration catalog for comparative market observations, commercial-use matching, operational specification checks, co-broking angles, listing positioning, and principled negotiation suggestions. Do not provide legal or financial advice, do not claim regulatory approval, and never reveal or infer private owner identity. The active market uses ${market.currency}, ${market.terminology.areaUnit}, and ${market.terminology.transit} terminology. Catalog: ${JSON.stringify(catalog)}`;
       const response = await invokeLLM({ messages: [{ role: "system", content: system }, ...input.messages] });
       const content = response.choices?.[0]?.message?.content;
       if (typeof content !== "string" || !content.trim()) throw new Error("The assistant did not return a response");

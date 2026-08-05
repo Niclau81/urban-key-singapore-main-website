@@ -85,6 +85,7 @@ export const enquiries = mysqlTable("enquiries", {
 export const propertyListings = mysqlTable("propertyListings", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
+  marketId: varchar("marketId", { length: 40 }).default("singapore").notNull(),
   title: varchar("title", { length: 180 }).notNull(),
   description: text("description"),
   address: varchar("address", { length: 240 }),

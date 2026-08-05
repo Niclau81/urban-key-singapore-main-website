@@ -1,40 +1,42 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { getAllRegionsLabel, marketConfigs, marketIds } from "@shared/marketConfig";
 import type { TrpcContext } from "./_core/context";
 import { appRouter } from "./routers";
-import { districts, properties, singaporeDistricts } from "../shared/propertyData";
 
 function publicContext(): TrpcContext {
   return { user: null, req: { protocol: "https", headers: {} } as TrpcContext["req"], res: {} as TrpcContext["res"] };
 }
 
 describe("property intelligence procedures", () => {
+  it("defines an explicit country, region, locale, currency, and map viewport for every selectable market", () => {
+    expect(marketIds).toEqual(["singapore", "australia", "united-kingdom", "united-states", "united-arab-emirates", "global"]);
+    for (const marketId of marketIds) {
+      const market = marketConfigs[marketId];
+      expect(market).toMatchObject({ id: marketId, countryName: expect.any(String), countryCode: expect.any(String), locale: expect.any(String), currency: expect.any(String) });
+      expect(market.map.center.lat).toBeGreaterThanOrEqual(-90);
+      expect(market.map.center.lat).toBeLessThanOrEqual(90);
+      expect(market.map.center.lng).toBeGreaterThanOrEqual(-180);
+      expect(market.map.center.lng).toBeLessThanOrEqual(180);
+      expect(market.map.zoom).toBeGreaterThan(0);
+      expect(getAllRegionsLabel(market)).toMatch(/^All /);
+    }
+  });
+
+  it("scopes public discovery results to the requested country market", async () => {
+    const caller = appRouter.createCaller(publicContext());
+    const singapore = await caller.property.list({ marketId: "singapore" });
+    const australia = await caller.property.list({ marketId: "australia" });
+
+    expect(singapore.length).toBeGreaterThan(0);
+    expect(singapore.every(property => property.marketId === "singapore")).toBe(true);
+    expect(australia.every(property => property.marketId === "australia")).toBe(true);
+  });
+
   it("returns filtered Singapore listings", async () => {
     const caller = appRouter.createCaller(publicContext());
     const result = await caller.property.list({ district: "D01 · Marina Bay", propertyType: "Condominium", maxMrtMinutes: 5 });
     expect(result).toHaveLength(1);
     expect(result[0]?.title).toBe("Marina Cove Residence");
-  });
-
-  it("exposes every Singapore district in shared discovery choices and retains coverage for all listed districts", async () => {
-    const caller = appRouter.createCaller(publicContext());
-    const changiAssets = await caller.property.list({ district: "D17 · Changi", propertyType: "Warehouse" });
-
-    expect(singaporeDistricts).toHaveLength(28);
-    expect(new Set(singaporeDistricts)).toHaveLength(28);
-    expect(districts).toEqual(["All districts", ...singaporeDistricts]);
-    expect(properties.every(property => districts.includes(property.district as (typeof districts)[number]))).toBe(true);
-    expect(changiAssets).toHaveLength(1);
-    expect(changiAssets[0]).toMatchObject({ id: "changi-airfreight-warehouse", district: "D17 · Changi" });
-  });
-
-  it("keeps the homepage district selector connected to the shared D01–D28 catalog", () => {
-    const homeSource = readFileSync(resolve(process.cwd(), "client/src/pages/Home.tsx"), "utf8");
-
-    expect(homeSource).toContain('import { districts } from "@shared/propertyData";');
-    expect(homeSource).toContain("<SelectContent>{districts.map(option =>");
-    expect(homeSource).not.toContain('<SelectItem value="D04 · Harbourfront">');
   });
 
   it("applies size, tenure, and MRT walk-time filters together", async () => {

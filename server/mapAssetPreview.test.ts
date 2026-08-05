@@ -26,7 +26,10 @@ describe("3D map asset preview", () => {
   });
 
   it("rebuilds overlays after property data arrives instead of retaining the initial zero-asset map", () => {
-    expect(mapSource).toContain("if (mapRef.current && properties.length > 0) setupMap(mapRef.current);");
+    expect(mapSource).toContain("if (mapRef.current) setupMap(mapRef.current);");
+    expect(mapSource).toContain("}, [layers.districts, layers.mrt, layers.threeD, market, properties]);");
+    expect(mapSource).toContain("initialCenter={market.map.center}");
+    expect(mapSource).toContain("initialZoom={market.map.zoom}");
     expect(mapSource).toContain("existing.markers.forEach(item => item.map = null);");
     expect(mapSource).toContain("mapListenersRef.current.forEach(listener => listener.remove());");
     expect(mapSource).toContain('isLoadingProperties ? "Loading mapped assets…"');

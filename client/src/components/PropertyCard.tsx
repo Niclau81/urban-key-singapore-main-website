@@ -2,13 +2,12 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
+import { formatMarketCurrency, getMarketConfig } from "@shared/marketConfig";
 import type { Property } from "@shared/propertyData";
 import { Bath, BedDouble, Bookmark, Building2, CarFront, MapPin, MoveUpRight, Ruler, TrainFront, Warehouse } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Link } from "wouter";
-
-const money = (value: number) => new Intl.NumberFormat("en-SG", { style: "currency", currency: "SGD", maximumFractionDigits: 0 }).format(value);
 
 export function PropertyCard({ property, featured = false }: { property: Property; featured?: boolean }) {
   const { isAuthenticated } = useAuth();
@@ -19,7 +18,8 @@ export function PropertyCard({ property, featured = false }: { property: Propert
   });
   const save = () => isAuthenticated ? toggleSaved.mutate({ propertyId: property.id }) : startLogin();
   const isRental = property.mode === "Rent" || property.mode === "Rent-Out";
-  const price = isRental && property.monthlyRent ? `${money(property.monthlyRent)} / mo` : money(property.price);
+  const market = getMarketConfig(property.marketId);
+  const price = isRental && property.monthlyRent ? `${formatMarketCurrency(property.monthlyRent, market)} / mo` : formatMarketCurrency(property.price, market);
   const modeLabel = { Buy: "For sale", Sell: "Owner sale", Rent: "For rent", "Rent-Out": "Owner lease" }[property.mode];
   return (
     <article className={`group overflow-hidden rounded-[24px] border border-[#17382f]/10 bg-white shadow-[0_18px_60px_rgba(21,50,42,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_70px_rgba(21,50,42,0.14)] ${featured ? "lg:grid lg:grid-cols-[1.18fr_.82fr]" : ""}`}>
@@ -33,7 +33,7 @@ export function PropertyCard({ property, featured = false }: { property: Propert
       </div>
       <div className={`flex flex-col p-5 ${featured ? "justify-center lg:p-8" : ""}`}>
         <div className="mb-4"><p className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-[#76552f]">{property.type} · {property.tenure}</p><h3 className={`${featured ? "font-display text-3xl" : "text-[20px] font-semibold"} leading-tight text-[#16362e]`}>{property.title}</h3><p className="mt-2 text-sm text-[#49635d]">{property.address}</p></div>
-        <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-[#49635d]">{property.isCommercial ? <><span className="flex items-center gap-1.5"><Warehouse className="size-4" />{property.commercialUsage?.split(" · ")[0]}</span><span className="flex items-center gap-1.5"><Ruler className="size-4" />{property.size.toLocaleString()} sq ft</span><span className="flex items-center gap-1.5"><CarFront className="size-4" />{property.parkingLots ?? 0} lots</span></> : <><span className="flex items-center gap-1.5"><BedDouble className="size-4" />{property.beds}</span><span className="flex items-center gap-1.5"><Bath className="size-4" />{property.baths}</span><span className="flex items-center gap-1.5"><Building2 className="size-4" />{property.size.toLocaleString()} sq ft</span></>}<span className="flex items-center gap-1.5"><TrainFront className="size-4 text-[#b68a4c]" />{property.mrtMinutes} min</span></div>
+        <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-[#49635d]">{property.isCommercial ? <><span className="flex items-center gap-1.5"><Warehouse className="size-4" />{property.commercialUsage?.split(" · ")[0]}</span><span className="flex items-center gap-1.5"><Ruler className="size-4" />{property.size.toLocaleString(market.locale)} {market.terminology.areaUnit}</span><span className="flex items-center gap-1.5"><CarFront className="size-4" />{property.parkingLots ?? 0} lots</span></> : <><span className="flex items-center gap-1.5"><BedDouble className="size-4" />{property.beds}</span><span className="flex items-center gap-1.5"><Bath className="size-4" />{property.baths}</span><span className="flex items-center gap-1.5"><Building2 className="size-4" />{property.size.toLocaleString(market.locale)} {market.terminology.areaUnit}</span></>}<span className="flex items-center gap-1.5"><TrainFront className="size-4 text-[#b68a4c]" />{property.mrtMinutes} min {market.terminology.transit}</span></div>
         <div className="mt-auto flex items-end justify-between border-t border-[#17382f]/10 pt-4"><div><p className="text-[10px] font-bold uppercase tracking-[0.13em] text-[#566c65]">{isRental ? "Guide rent" : "Guide price"}</p><p className="mt-1 text-xl font-semibold text-[#17382f]">{price}</p></div><Link href={`/property/${property.id}`}><Button size="icon" className="rounded-full bg-[#17382f] text-white hover:bg-[#225245]" aria-label={`View ${property.title}`}><MoveUpRight className="size-4" /></Button></Link></div>
       </div>
     </article>

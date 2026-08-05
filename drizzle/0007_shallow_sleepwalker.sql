@@ -1,0 +1,1 @@
+ALTER TABLE `propertyListings` ADD `marketId` varchar(40) DEFAULT 'singapore' NOT NULL;

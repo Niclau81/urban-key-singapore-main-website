@@ -1,3 +1,5 @@
+import { getAllRegionsLabel, marketConfigs, type MarketId } from "./marketConfig";
+
 export type ListingMode = "Buy" | "Sell" | "Rent" | "Rent-Out";
 
 export const residentialPropertyTypes = ["Condominium", "Apartment", "HDB Flat"] as const;
@@ -27,6 +29,7 @@ export type PropertyIncident = {
 
 export type Property = {
   id: string;
+  marketId: MarketId;
   title: string;
   district: string;
   address: string;
@@ -76,6 +79,8 @@ export type Property = {
   listingUnit?: string;
 };
 
+type SeedProperty = Omit<Property, "marketId">;
+
 const images = {
   marinaInterior: "/manus-storage/office-interior_791afa97.jpg",
   marinaSkyline: "/manus-storage/office-building_b7b74f98.jpg",
@@ -89,7 +94,7 @@ const images = {
   officeBuilding: "/manus-storage/office-building_b7b74f98.jpg",
 };
 
-const residentialProperties: Property[] = [
+const residentialProperties: SeedProperty[] = [
   {
     id: "marina-cove-28-08",
     title: "Marina Cove Residence",
@@ -223,7 +228,7 @@ const hdbListingUnits = [
   { floor: 18, unit: "#18-104" },
 ] as const;
 
-const hdbProperties: Property[] = hdbSeed.map((item, index) => {
+const hdbProperties: SeedProperty[] = hdbSeed.map((item, index) => {
   const [id, title, district, address, mode, price, monthlyRent, beds, baths, size, mrt, mrtMinutes, latitude, longitude, era, image] = item;
   const salePrice = price || Math.round(monthlyRent * 220);
   const listingIdentity = hdbListingUnits[index];
@@ -274,7 +279,7 @@ const commercialSeed = [
   ["jurong-factory-building", "Jurong Precision Factory", "D22 · Jurong", "5 Pioneer Sector Walk", "Factory Building", "Rent-Out", 17800000, 98500, 51400, "30-year", "Pioneer MRT", 14, 1.3136, 103.6814, images.factoryBuilding, "B2 Factory · Precision engineering", 30, 8, "Drive-in production bays · 2 loading docks", 34, "2026-10-01"],
 ] as const;
 
-const commercialProperties: Property[] = commercialSeed.map((item, index) => {
+const commercialProperties: SeedProperty[] = commercialSeed.map((item, index) => {
   const [id, title, district, address, type, mode, price, monthlyRent, size, tenure, mrt, mrtMinutes, latitude, longitude, image, commercialUsage, floorLoading, ceilingHeight, loadingAccess, parkingLots, availableFrom] = item;
   const gallery = type === "Shophouse"
     ? [images.shophouse, images.office, images.warehouse]
@@ -331,7 +336,7 @@ const commercialProperties: Property[] = commercialSeed.map((item, index) => {
   };
 });
 
-const withIllustrativeFloorPlan = (property: Property): Property => ({
+const withIllustrativeFloorPlan = (property: SeedProperty): SeedProperty => ({
   ...property,
   floorPlan: property.floorPlan ?? {
     label: property.isCommercial ? "Illustrative floor-plate layout" : `${Math.max(1, property.beds)}-bedroom illustrative layout`,
@@ -340,40 +345,11 @@ const withIllustrativeFloorPlan = (property: Property): Property => ({
   },
 });
 
-export const properties: Property[] = [...residentialProperties, ...hdbProperties, ...commercialProperties].map(withIllustrativeFloorPlan);
+export const properties: Property[] = [...residentialProperties, ...hdbProperties, ...commercialProperties]
+  .map(withIllustrativeFloorPlan)
+  .map(property => ({ ...property, marketId: "singapore" }));
 
-export const singaporeDistricts = [
-  "D01 · Marina Bay",
-  "D02 · Tanjong Pagar",
-  "D03 · Queenstown",
-  "D04 · Harbourfront",
-  "D05 · Buona Vista",
-  "D06 · City Hall",
-  "D07 · Bugis",
-  "D08 · Little India",
-  "D09 · Orchard",
-  "D10 · Tanglin",
-  "D11 · Newton",
-  "D12 · Toa Payoh",
-  "D13 · Macpherson",
-  "D14 · Geylang",
-  "D15 · East Coast",
-  "D16 · Bedok",
-  "D17 · Changi",
-  "D18 · Tampines",
-  "D19 · Sengkang",
-  "D20 · Bishan",
-  "D21 · Upper Bukit Timah",
-  "D22 · Jurong",
-  "D23 · Choa Chu Kang",
-  "D24 · Lim Chu Kang",
-  "D25 · Woodlands",
-  "D26 · Upper Thomson",
-  "D27 · Yishun",
-  "D28 · Seletar",
-] as const;
-
-export const districts = ["All districts", ...singaporeDistricts] as const;
+export const districts = [getAllRegionsLabel(marketConfigs.singapore), ...marketConfigs.singapore.geography.regions];
 
 export const propertyHistoryDisclaimer =
   "Property and unit history shown here is curated demonstration data, may include unverified resident reports, and must not be treated as a factual allegation. Users should independently verify all material information through official records, the property owner, managing agent, and qualified advisers before making any decision.";

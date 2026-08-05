@@ -145,6 +145,12 @@ export function MapView({
     init();
   }, [init, retryAttempt]);
 
+  useEffect(() => {
+    if (!map.current) return;
+    map.current.setCenter(initialCenter);
+    map.current.setZoom(initialZoom);
+  }, [initialCenter.lat, initialCenter.lng, initialZoom]);
+
   if (loadError) return <div className={cn("relative w-full overflow-hidden bg-[#102b25]", className ?? "h-[500px]")} role="status">
     <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "linear-gradient(rgba(213,174,114,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(213,174,114,.16) 1px,transparent 1px)", backgroundSize: "48px 48px", transform: "perspective(600px) rotateX(52deg) scale(1.35)" }} />
     <div className="absolute left-[47%] top-[44%] h-44 w-72 -translate-x-1/2 -translate-y-1/2 rotate-[-12deg] rounded-[46%] border border-[#d5ae72]/35 bg-[#275649]/35 shadow-[0_0_80px_rgba(42,112,90,.35)]" />

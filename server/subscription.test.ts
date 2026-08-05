@@ -45,9 +45,10 @@ describe("professional registration validation", () => {
     expect(agentRegistrationSchema.parse(valid).email).toBe(valid.email);
   });
 
-  it("requires explicit terms consent and a valid Singapore postal code", () => {
+  it("requires explicit terms consent and a valid international postal or ZIP code", () => {
     expect(agentRegistrationSchema.safeParse({ ...valid, termsAccepted: false }).success).toBe(false);
-    expect(agentRegistrationSchema.safeParse({ ...valid, postalCode: "12345" }).success).toBe(false);
+    expect(agentRegistrationSchema.safeParse({ ...valid, postalCode: "!" }).success).toBe(false);
+    expect(agentRegistrationSchema.safeParse({ ...valid, postalCode: "SW1A 1AA" }).success).toBe(true);
   });
 });
 

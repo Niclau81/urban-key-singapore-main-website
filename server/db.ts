@@ -1,6 +1,7 @@
 import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { agentProfiles, enquiries, InsertUser, propertyListingFloorPlans, propertyListingImages, propertyListings, savedListings, subscriptionOrders, userProfiles, users } from "../drizzle/schema";
+import type { MarketId } from "@shared/marketConfig";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -185,10 +186,10 @@ export async function createEnquiry(userId: number, propertyId: string, message:
   return { id: Number(result[0].insertId), userId, propertyId, message, status: "new" as const, createdAt: new Date() };
 }
 
-export async function listManagedProperties(userId: number) {
+export async function listManagedProperties(userId: number, marketId?: MarketId) {
   const db = await getDb();
   if (!db) return [];
-  const listings = await db.select().from(propertyListings).where(eq(propertyListings.userId, userId)).orderBy(desc(propertyListings.createdAt));
+  const listings = await db.select().from(propertyListings).where(marketId ? and(eq(propertyListings.userId, userId), eq(propertyListings.marketId, marketId)) : eq(propertyListings.userId, userId)).orderBy(desc(propertyListings.createdAt));
   const images = await db.select().from(propertyListingImages).where(eq(propertyListingImages.userId, userId)).orderBy(propertyListingImages.sortOrder, propertyListingImages.id);
   const floorPlans = await db.select().from(propertyListingFloorPlans).where(eq(propertyListingFloorPlans.userId, userId));
   return listings.map(listing => ({
@@ -199,6 +200,7 @@ export async function listManagedProperties(userId: number) {
 }
 
 export async function createManagedProperty(userId: number, input: {
+  marketId: MarketId;
   title: string;
   description?: string;
   address?: string;
@@ -236,6 +238,7 @@ export async function isManagedPropertyOwner(userId: number, id: number) {
 }
 
 export async function updateManagedProperty(userId: number, id: number, input: {
+  marketId: MarketId;
   title: string;
   description?: string;
   address?: string;
