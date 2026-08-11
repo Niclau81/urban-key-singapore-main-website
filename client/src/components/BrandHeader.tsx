@@ -1,26 +1,28 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { MarketSwitcher } from "@/components/MarketSwitcher";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useMarket } from "@/contexts/MarketContext";
 import { startLogin } from "@/const";
 import { Building2, ChevronDown, Menu, Search, Sparkles, UserRound } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 
-const navItems = [
-  { label: "Buy", href: "/explore?mode=Buy" },
-  { label: "Rent", href: "/explore?mode=Rent" },
-  { label: "Sell", href: "/explore?mode=Sell" },
-  { label: "Rent out", href: "/explore?mode=Rent-Out" },
-  { label: "Map intelligence", href: "/map" },
-];
-
 export function BrandHeader({ tone = "light" }: { tone?: "light" | "dark" }) {
   const [open, setOpen] = useState(false);
   const { user, isAuthenticated } = useAuth();
   const { market } = useMarket();
+  const { t } = useLanguage();
   const [location] = useLocation();
   const dark = tone === "dark";
+  const navItems = [
+    { label: t("nav.buy"), href: "/explore?mode=Buy" },
+    { label: t("nav.rent"), href: "/explore?mode=Rent" },
+    { label: t("nav.sell"), href: "/explore?mode=Sell" },
+    { label: t("nav.rentOut"), href: "/explore?mode=Rent-Out" },
+    { label: t("nav.map"), href: "/map" },
+  ];
   return (
     <header className={`relative z-50 border-b pt-[env(safe-area-inset-top)] ${dark ? "border-white/12 bg-[#10211d]/88 text-white" : "border-[#18342c]/10 bg-[#faf9f5]/92 text-[#18342c]"} backdrop-blur-xl`}>
       <div className="container flex h-[var(--site-header-content-height)] items-center justify-between gap-3 sm:gap-6">
@@ -30,17 +32,18 @@ export function BrandHeader({ tone = "light" }: { tone?: "light" | "dark" }) {
         </Link>
         <nav className="hidden items-center gap-7 lg:flex" aria-label="Main navigation">
           {navItems.map(item => <Link key={item.label} href={item.href} className={`text-[13px] font-semibold transition-colors ${location.startsWith(item.href.split("?")[0]) ? "text-[#b68a4c]" : dark ? "text-white/72 hover:text-white" : "text-[#18342c]/72 hover:text-[#18342c]"}`}>{item.label}</Link>)}
-          <Link href="/assistants" className={`flex items-center gap-1.5 text-[13px] font-semibold ${dark ? "text-white/72 hover:text-white" : "text-[#18342c]/72 hover:text-[#18342c]"}`}><Sparkles className="size-3.5 text-[#b68a4c]" /> AI concierge</Link>
+          <Link href="/assistants" className={`flex items-center gap-1.5 text-[13px] font-semibold ${dark ? "text-white/72 hover:text-white" : "text-[#18342c]/72 hover:text-[#18342c]"}`}><Sparkles className="size-3.5 text-[#b68a4c]" /> {t("nav.ai")}</Link>
         </nav>
         <div className="hidden items-center gap-2 lg:flex">
           <MarketSwitcher tone={tone} />
-          <Link href="/explore"><Button aria-label="Search properties" variant="ghost" size="icon" className={dark ? "text-white hover:bg-white/10" : ""}><Search className="size-4" /></Button></Link>
-          <Link href={isAuthenticated ? "/agent/portal" : "/agent"}><Button variant="ghost" className={`rounded-full px-4 ${dark ? "text-white hover:bg-white/10" : "text-[#18342c] hover:bg-[#18342c]/6"}`}>Agent portal</Button></Link><Link href="/agent/subscribe"><Button variant="ghost" className={`rounded-full px-3 ${dark ? "text-[#d7ad6d] hover:bg-white/10" : "text-[#a77c43] hover:bg-[#18342c]/6"}`}>Plans</Button></Link>
-          {isAuthenticated ? <Link href="/dashboard"><Button variant="outline" className={`rounded-full ${dark ? "border-white/25 bg-white/5 text-white hover:bg-white/12" : "border-[#18342c]/20"}`}><UserRound className="mr-2 size-4" />{user?.name?.split(" ")[0] || "Account"}<ChevronDown className="ml-2 size-3.5 opacity-60" /></Button></Link> : <Button onClick={startLogin} className={`rounded-full px-5 ${dark ? "bg-[#d7ad6d] text-[#10211d] hover:bg-[#e1bd84]" : "bg-[#143a31] text-white hover:bg-[#1c4b40]"}`}>Sign in</Button>}
+          <LanguageSwitcher tone={tone} />
+          <Link href="/explore"><Button aria-label={t("nav.search")} variant="ghost" size="icon" className={dark ? "text-white hover:bg-white/10" : ""}><Search className="size-4" /></Button></Link>
+          <Link href={isAuthenticated ? "/agent/portal" : "/agent"}><Button variant="ghost" className={`rounded-full px-4 ${dark ? "text-white hover:bg-white/10" : "text-[#18342c] hover:bg-[#18342c]/6"}`}>{t("nav.agent")}</Button></Link><Link href="/agent/subscribe"><Button variant="ghost" className={`rounded-full px-3 ${dark ? "text-[#d7ad6d] hover:bg-white/10" : "text-[#a77c43] hover:bg-[#18342c]/6"}`}>{t("nav.plans")}</Button></Link>
+          {isAuthenticated ? <Link href="/dashboard"><Button variant="outline" className={`rounded-full ${dark ? "border-white/25 bg-white/5 text-white hover:bg-white/12" : "border-[#18342c]/20"}`}><UserRound className="mr-2 size-4" />{user?.name?.split(" ")[0] || "Account"}<ChevronDown className="ml-2 size-3.5 opacity-60" /></Button></Link> : <Button onClick={startLogin} className={`rounded-full px-5 ${dark ? "bg-[#d7ad6d] text-[#10211d] hover:bg-[#e1bd84]" : "bg-[#143a31] text-white hover:bg-[#1c4b40]"}`}>{t("nav.signIn")}</Button>}
         </div>
-        <button className="grid size-11 place-items-center rounded-full lg:hidden" onClick={() => setOpen(value => !value)} aria-label="Toggle menu"><Menu className="size-5" /></button>
+        <button className="grid size-11 place-items-center rounded-full lg:hidden" onClick={() => setOpen(value => !value)} aria-label={t("nav.menu")}><Menu className="size-5" /></button>
       </div>
-      {open && <div className={`container border-t py-5 lg:hidden ${dark ? "border-white/10" : "border-[#18342c]/10"}`}><div className="grid gap-3"><MarketSwitcher tone={tone} className="mb-1" />{navItems.map(item => <Link key={item.label} href={item.href} onClick={() => setOpen(false)} className="py-2 text-sm font-semibold">{item.label}</Link>)}<Link href="/assistants" className="py-2 text-sm font-semibold">AI concierge</Link><Link href={isAuthenticated ? "/agent/portal" : "/agent"} onClick={() => setOpen(false)} className="py-2 text-sm font-semibold text-[#b68a4c]">Agent & co-broker portal</Link><Link href="/agent/subscribe" onClick={() => setOpen(false)} className="py-2 text-sm font-semibold">Professional plans</Link>{isAuthenticated && <Link href="/agent/payments" onClick={() => setOpen(false)} className="py-2 text-sm font-semibold">Payment history</Link>}<Link href="/dashboard" className="py-2 text-sm font-semibold">My workspace</Link></div></div>}
+      {open && <div className={`container border-t py-5 lg:hidden ${dark ? "border-white/10" : "border-[#18342c]/10"}`}><div className="grid gap-3"><div className="flex flex-wrap gap-2"><MarketSwitcher tone={tone} /><LanguageSwitcher tone={tone} /></div>{navItems.map(item => <Link key={item.label} href={item.href} onClick={() => setOpen(false)} className="py-2 text-sm font-semibold">{item.label}</Link>)}<Link href="/assistants" className="py-2 text-sm font-semibold">{t("nav.ai")}</Link><Link href={isAuthenticated ? "/agent/portal" : "/agent"} onClick={() => setOpen(false)} className="py-2 text-sm font-semibold text-[#b68a4c]">{t("nav.agent")}</Link><Link href="/agent/subscribe" onClick={() => setOpen(false)} className="py-2 text-sm font-semibold">{t("nav.plans")}</Link>{isAuthenticated && <Link href="/agent/payments" onClick={() => setOpen(false)} className="py-2 text-sm font-semibold">Payment history</Link>}<Link href="/dashboard" className="py-2 text-sm font-semibold">My workspace</Link></div></div>}
     </header>
   );
 }

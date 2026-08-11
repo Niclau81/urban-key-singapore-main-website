@@ -98,7 +98,8 @@ describe("Google Maps frontend loader", () => {
     );
     const source = readFileSync(componentPath, "utf8");
 
-    expect(source).toContain("Google Maps is temporarily unavailable");
+    expect(source).toContain("getMapFallbackMessages");
+    expect(source).toContain("fallbackMessages.unavailable");
     expect(source).toContain("setRetryAttempt((attempt) => attempt + 1)");
     expect(source).not.toContain("window.location.reload()");
   });

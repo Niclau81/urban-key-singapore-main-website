@@ -185,3 +185,9 @@
 - [x] Provide a market switcher and a clear international-ready user interface without creating duplicate country pages.
 - [x] Add regression coverage for market configuration, localization, region filtering, and map defaults.
 - [x] Verify desktop and mobile market switching, map positioning, tests, type checking, production build, and save the multi-market checkpoint.
+- [x] Audit all language-bearing public interface copy and define the first South-East Asian locale coverage.
+- [x] Create a typed reusable locale catalog, persisted language preference, translation dictionaries, and future-global extension contract.
+- [x] Add an accessible language selector alongside the market selector without duplicating country pages.
+- [x] Localize the core public homepage, discovery, property cards, navigation, and map intelligence terms for the selected South-East Asian language.
+- [x] Add documented global-language onboarding guidance and regression coverage for locale selection, dictionary completeness, and fallback behavior.
+- [x] Verify desktop and mobile language switching, run tests and the production build, then save the localization checkpoint.

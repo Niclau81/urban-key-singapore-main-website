@@ -21,18 +21,18 @@ describe("3D map asset preview", () => {
 
     expect(previewMarkup).toContain('aria-live="polite"');
     expect(previewMarkup).toContain("selected.title");
-    expect(previewMarkup).toContain("Close property preview");
+    expect(previewMarkup).toContain('t("map.closePreview")');
     expect(previewMarkup).not.toContain('mobilePanelsHidden ? "hidden sm:block" : ""');
   });
 
   it("rebuilds overlays after property data arrives instead of retaining the initial zero-asset map", () => {
     expect(mapSource).toContain("if (mapRef.current) setupMap(mapRef.current);");
-    expect(mapSource).toContain("}, [layers.districts, layers.mrt, layers.threeD, market, properties]);");
+    expect(mapSource).toContain("}, [layers.districts, layers.mrt, layers.threeD, market, properties, t]);");
     expect(mapSource).toContain("initialCenter={market.map.center}");
     expect(mapSource).toContain("initialZoom={market.map.zoom}");
     expect(mapSource).toContain("existing.markers.forEach(item => item.map = null);");
     expect(mapSource).toContain("mapListenersRef.current.forEach(listener => listener.remove());");
-    expect(mapSource).toContain('isLoadingProperties ? "Loading mapped assets…"');
-    expect(mapSource).toContain("listed assets currently mapped");
+    expect(mapSource).toContain('isLoadingProperties ? t("map.loading")');
+    expect(mapSource).toContain('t("map.mapped", { count: properties.length })');
   });
 });

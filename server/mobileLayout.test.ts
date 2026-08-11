@@ -41,7 +41,7 @@ describe("mobile viewport safeguards", () => {
     expect(mapSource).toContain("function isCompactMapViewport()");
     expect(mapSource).toContain("window.innerWidth < 768 || window.innerHeight < 480");
     expect(mapSource).toContain('mobilePanelsHidden ? "hidden md:block" : ""');
-    expect(mapSource).toContain('mobilePanelsHidden ? "Show panels" : "Hide panels"');
+    expect(mapSource).toContain('mobilePanelsHidden ? t("map.showPanels") : t("map.hidePanels")');
     expect(mapSource).toContain('className="absolute right-[max(.75rem,env(safe-area-inset-right))]');
     expect(mapSource).toContain("md:hidden");
   });
