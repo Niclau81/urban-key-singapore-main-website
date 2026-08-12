@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getAllRegionsLabel, marketConfigs, marketIds } from "@shared/marketConfig";
+import { planningDemoDisclosure, properties } from "@shared/propertyData";
 import type { TrpcContext } from "./_core/context";
 import { appRouter } from "./routers";
 
@@ -9,7 +10,7 @@ function publicContext(): TrpcContext {
 
 describe("property intelligence procedures", () => {
   it("defines an explicit country, region, locale, currency, and map viewport for every selectable market", () => {
-    expect(marketIds).toEqual(["singapore", "australia", "united-kingdom", "united-states", "united-arab-emirates", "global"]);
+    expect(marketIds).toEqual(["singapore", "indonesia", "malaysia", "thailand", "vietnam", "philippines", "australia", "united-kingdom", "united-states", "united-arab-emirates", "global"]);
     for (const marketId of marketIds) {
       const market = marketConfigs[marketId];
       expect(market).toMatchObject({ id: marketId, countryName: expect.any(String), countryCode: expect.any(String), locale: expect.any(String), currency: expect.any(String) });
@@ -30,6 +31,22 @@ describe("property intelligence procedures", () => {
     expect(singapore.length).toBeGreaterThan(0);
     expect(singapore.every(property => property.marketId === "singapore")).toBe(true);
     expect(australia.every(property => property.marketId === "australia")).toBe(true);
+  });
+
+  it("provides selected South-East Asian markets with explicitly illustrative planning inventory", async () => {
+    const caller = appRouter.createCaller(publicContext());
+    const southeastAsiaMarkets = ["indonesia", "malaysia", "thailand", "vietnam", "philippines"] as const;
+
+    for (const marketId of southeastAsiaMarkets) {
+      const result = await caller.property.list({ marketId });
+      expect(result).toHaveLength(2);
+      expect(result.every(property => property.marketId === marketId && property.isPlanningDemo)).toBe(true);
+      expect(result.every(property => property.tags.includes("Not live inventory"))).toBe(true);
+    }
+
+    const demos = properties.filter(property => property.isPlanningDemo);
+    expect(demos).toHaveLength(10);
+    expect(planningDemoDisclosure).toContain("not live");
   });
 
   it("returns filtered Singapore listings", async () => {

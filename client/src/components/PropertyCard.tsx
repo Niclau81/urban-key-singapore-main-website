@@ -28,7 +28,7 @@ export function PropertyCard({ property, featured = false }: { property: Propert
       <div className={`relative overflow-hidden ${featured ? "min-h-[350px]" : "aspect-[1.38/1]"}`}>
         <img src={property.image} alt={property.title} className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.035]" />
         <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
-          <span className="rounded-full bg-[#fbfaf7]/92 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-[#17382f] backdrop-blur">{modeLabel}</span>
+          <div className="flex flex-wrap gap-2"><span className="rounded-full bg-[#fbfaf7]/92 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-[#17382f] backdrop-blur">{modeLabel}</span>{property.isPlanningDemo && <span className="rounded-full bg-[#c99d60] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#10231e] shadow-sm">{t("demo.planningLabel")}</span>}</div>
           <Button onClick={save} size="icon" variant="secondary" className="rounded-full bg-[#fbfaf7]/92 text-[#17382f] shadow-sm backdrop-blur hover:bg-white" aria-label={t("card.save")}><Bookmark className={`size-4 ${saved ? "fill-current" : ""}`} /></Button>
         </div>
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-14 text-white"><div className="flex items-center gap-2 text-xs"><MapPin className="size-3.5" />{property.district}</div></div>

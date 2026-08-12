@@ -77,6 +77,8 @@ export type Property = {
    */
   listingFloor?: number;
   listingUnit?: string;
+  /** Clearly separates future-market planning illustrations from live or verified supply. */
+  isPlanningDemo?: boolean;
 };
 
 type SeedProperty = Omit<Property, "marketId">;
@@ -345,9 +347,53 @@ const withIllustrativeFloorPlan = (property: SeedProperty): SeedProperty => ({
   },
 });
 
-export const properties: Property[] = [...residentialProperties, ...hdbProperties, ...commercialProperties]
-  .map(withIllustrativeFloorPlan)
-  .map(property => ({ ...property, marketId: "singapore" }));
+type SoutheastAsiaPlanningSeed = Pick<Property, "id" | "marketId" | "title" | "district" | "type" | "mode" | "price" | "monthlyRent" | "beds" | "baths" | "size" | "tenure" | "mrt" | "mrtMinutes" | "latitude" | "longitude" | "image" | "isCommercial">;
+
+const southeastAsiaPlanningSeeds: SoutheastAsiaPlanningSeed[] = [
+  { id: "jakarta-garden-planning-demo", marketId: "indonesia", title: "Jakarta Garden Residence · Planning Demo", district: "Jakarta", type: "Condominium", mode: "Buy", price: 2650000000, beds: 2, baths: 2, size: 92, tenure: "Illustrative tenure", mrt: "Illustrative Jakarta transit node", mrtMinutes: 8, latitude: -6.2297, longitude: 106.8269, image: images.luxuryInterior },
+  { id: "tangerang-office-planning-demo", marketId: "indonesia", title: "Tangerang Flexible Office · Planning Demo", district: "Tangerang", type: "Office", mode: "Rent", price: 7800000000, monthlyRent: 65000000, beds: 0, baths: 2, size: 380, tenure: "Illustrative tenure", mrt: "Illustrative Tangerang transit node", mrtMinutes: 11, latitude: -6.1783, longitude: 106.6319, image: images.office, isCommercial: true },
+  { id: "kl-sky-planning-demo", marketId: "malaysia", title: "Kuala Lumpur Sky Home · Planning Demo", district: "Kuala Lumpur", type: "Condominium", mode: "Buy", price: 1250000, beds: 2, baths: 2, size: 88, tenure: "Illustrative tenure", mrt: "Illustrative Kuala Lumpur transit node", mrtMinutes: 7, latitude: 3.1517, longitude: 101.6942, image: images.marinaInterior },
+  { id: "johor-office-planning-demo", marketId: "malaysia", title: "Johor Creative Office · Planning Demo", district: "Johor Bahru", type: "Office", mode: "Rent", price: 1850000, monthlyRent: 11500, beds: 0, baths: 2, size: 310, tenure: "Illustrative tenure", mrt: "Illustrative Johor transit node", mrtMinutes: 9, latitude: 1.4927, longitude: 103.7414, image: images.officeBuilding, isCommercial: true },
+  { id: "bangkok-riverside-planning-demo", marketId: "thailand", title: "Bangkok Riverside Apartment · Planning Demo", district: "Bangkok", type: "Apartment", mode: "Buy", price: 8900000, beds: 2, baths: 2, size: 76, tenure: "Illustrative tenure", mrt: "Illustrative Bangkok transit node", mrtMinutes: 6, latitude: 13.7246, longitude: 100.5331, image: images.interlace },
+  { id: "chonburi-office-planning-demo", marketId: "thailand", title: "Chonburi Business Hub · Planning Demo", district: "Chonburi", type: "Office", mode: "Rent", price: 22000000, monthlyRent: 160000, beds: 0, baths: 3, size: 540, tenure: "Illustrative tenure", mrt: "Illustrative Chonburi transit node", mrtMinutes: 14, latitude: 13.3611, longitude: 100.9847, image: images.office, isCommercial: true },
+  { id: "hcm-garden-planning-demo", marketId: "vietnam", title: "Ho Chi Minh Garden Apartment · Planning Demo", district: "Ho Chi Minh City", type: "Apartment", mode: "Buy", price: 6800000000, beds: 2, baths: 2, size: 82, tenure: "Illustrative tenure", mrt: "Illustrative Ho Chi Minh City transit node", mrtMinutes: 10, latitude: 10.7769, longitude: 106.7009, image: images.luxuryInterior },
+  { id: "hanoi-workspace-planning-demo", marketId: "vietnam", title: "Hanoi Flexible Workspace · Planning Demo", district: "Hanoi", type: "Office", mode: "Rent", price: 18000000000, monthlyRent: 120000000, beds: 0, baths: 3, size: 470, tenure: "Illustrative tenure", mrt: "Illustrative Hanoi transit node", mrtMinutes: 12, latitude: 21.0285, longitude: 105.8542, image: images.officeBuilding, isCommercial: true },
+  { id: "makati-residence-planning-demo", marketId: "philippines", title: "Makati Residence · Planning Demo", district: "Makati", type: "Condominium", mode: "Buy", price: 13500000, beds: 2, baths: 2, size: 86, tenure: "Illustrative tenure", mrt: "Illustrative Makati transit node", mrtMinutes: 9, latitude: 14.5547, longitude: 121.0244, image: images.marinaSkyline },
+  { id: "taguig-office-planning-demo", marketId: "philippines", title: "Taguig Harbour Office · Planning Demo", district: "Taguig", type: "Office", mode: "Rent", price: 92000000, monthlyRent: 540000, beds: 0, baths: 3, size: 520, tenure: "Illustrative tenure", mrt: "Illustrative Taguig transit node", mrtMinutes: 8, latitude: 14.5176, longitude: 121.0509, image: images.office, isCommercial: true },
+];
+
+const southeastAsiaPlanningProperties: Property[] = southeastAsiaPlanningSeeds.map((seed, index) => ({
+  ...seed,
+  address: "Illustrative location only — not a real listing address",
+  gallery: [seed.image, images.luxuryInterior, images.officeBuilding],
+  description: `Illustrative future-market planning inventory for ${marketConfigs[seed.marketId].countryName}. This record is not a live, available, or verified property listing and must not be used to assess pricing, availability, ownership, or local market conditions.`,
+  tags: ["Illustrative planning demo", "Future market", "Not live inventory"],
+  owner: { initials: "DEMO", ownershipYears: 0, propertyCount: 0 },
+  incidents: [{ year: "Demo", category: "neutral", title: "Planning illustration only", detail: "This record exists solely to demonstrate a future-market experience. No property, owner, transaction, availability, or incident information is represented as factual.", source: "UrbanKey planning demo" }],
+  transactions: [],
+  isPlanningDemo: true,
+  commercialUsage: seed.isCommercial ? "Illustrative office use" : undefined,
+  floorLoading: seed.isCommercial ? 2.5 : undefined,
+  ceilingHeight: seed.isCommercial ? 3 : undefined,
+  loadingAccess: seed.isCommercial ? "Illustrative access only" : undefined,
+  parkingLots: seed.isCommercial ? 4 + (index % 3) : undefined,
+  availableFrom: undefined,
+  grossFloorArea: seed.isCommercial ? seed.size : undefined,
+  floorPlan: {
+    label: seed.isCommercial ? "Illustrative planning floor plate" : `${seed.beds}-bedroom illustrative planning layout`,
+    bedrooms: seed.beds,
+    note: "Illustrative planning-demo floor plan only. It is not an official plan, survey, or representation of an actual property.",
+  },
+}));
+
+export const properties: Property[] = [
+  ...[...residentialProperties, ...hdbProperties, ...commercialProperties]
+    .map(withIllustrativeFloorPlan)
+    .map(property => ({ ...property, marketId: "singapore" as MarketId })),
+  ...southeastAsiaPlanningProperties,
+];
+
+export const planningDemoDisclosure = "Illustrative planning-demo inventory only. These entries are not live, available, or verified listings and must not be used to assess price, availability, ownership, or local market conditions.";
 
 export const districts = [getAllRegionsLabel(marketConfigs.singapore), ...marketConfigs.singapore.geography.regions];
 

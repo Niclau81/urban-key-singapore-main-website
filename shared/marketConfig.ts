@@ -1,4 +1,4 @@
-export const marketIds = ["singapore", "australia", "united-kingdom", "united-states", "united-arab-emirates", "global"] as const;
+export const marketIds = ["singapore", "indonesia", "malaysia", "thailand", "vietnam", "philippines", "australia", "united-kingdom", "united-states", "united-arab-emirates", "global"] as const;
 export type MarketId = (typeof marketIds)[number];
 
 export type MapPoint = { lat: number; lng: number };
@@ -43,6 +43,36 @@ export const marketConfigs: Record<MarketId, MarketConfig> = {
     },
     geography: { regionLabel: "District", regions: singaporeRegions },
     terminology: { propertyPlural: "properties", transit: "MRT", areaUnit: "sq ft", pricePerArea: "PSF" },
+  },
+  indonesia: {
+    id: "indonesia", countryName: "Indonesia", countryCode: "ID", locale: "id-ID", currency: "IDR",
+    map: { center: { lat: -6.2088, lng: 106.8456 }, zoom: 10 },
+    geography: { regionLabel: "Market", regions: ["Jakarta", "Tangerang", "Bandung", "Surabaya"] },
+    terminology: { propertyPlural: "properties", transit: "urban transit", areaUnit: "m²", pricePerArea: "price per m²" },
+  },
+  malaysia: {
+    id: "malaysia", countryName: "Malaysia", countryCode: "MY", locale: "ms-MY", currency: "MYR",
+    map: { center: { lat: 3.139, lng: 101.6869 }, zoom: 10 },
+    geography: { regionLabel: "Market", regions: ["Kuala Lumpur", "Johor Bahru", "Petaling Jaya", "Penang"] },
+    terminology: { propertyPlural: "properties", transit: "urban transit", areaUnit: "m²", pricePerArea: "price per m²" },
+  },
+  thailand: {
+    id: "thailand", countryName: "Thailand", countryCode: "TH", locale: "th-TH", currency: "THB",
+    map: { center: { lat: 13.7563, lng: 100.5018 }, zoom: 10 },
+    geography: { regionLabel: "Market", regions: ["Bangkok", "Chonburi", "Chiang Mai", "Phuket"] },
+    terminology: { propertyPlural: "properties", transit: "urban transit", areaUnit: "m²", pricePerArea: "price per m²" },
+  },
+  vietnam: {
+    id: "vietnam", countryName: "Vietnam", countryCode: "VN", locale: "vi-VN", currency: "VND",
+    map: { center: { lat: 10.8231, lng: 106.6297 }, zoom: 10 },
+    geography: { regionLabel: "Market", regions: ["Ho Chi Minh City", "Hanoi", "Da Nang", "Binh Duong"] },
+    terminology: { propertyPlural: "properties", transit: "urban transit", areaUnit: "m²", pricePerArea: "price per m²" },
+  },
+  philippines: {
+    id: "philippines", countryName: "Philippines", countryCode: "PH", locale: "en-PH", currency: "PHP",
+    map: { center: { lat: 14.5995, lng: 120.9842 }, zoom: 10 },
+    geography: { regionLabel: "Market", regions: ["Makati", "Taguig", "Quezon City", "Cebu City"] },
+    terminology: { propertyPlural: "properties", transit: "urban transit", areaUnit: "m²", pricePerArea: "price per m²" },
   },
   australia: {
     id: "australia", countryName: "Australia", countryCode: "AU", locale: "en-AU", currency: "AUD",

@@ -191,3 +191,9 @@
 - [x] Localize the core public homepage, discovery, property cards, navigation, and map intelligence terms for the selected South-East Asian language.
 - [x] Add documented global-language onboarding guidance and regression coverage for locale selection, dictionary completeness, and fallback behavior.
 - [x] Verify desktop and mobile language switching, run tests and the production build, then save the localization checkpoint.
+- [x] Audit the country-market catalog and property data contract for South-East Asian planning-demo coverage.
+- [x] Add selectable Indonesia, Malaysia, Thailand, Vietnam, and Philippines market profiles with local map and currency configuration.
+- [x] Create clearly labelled illustrative planning-demo listings for the selected South-East Asian markets without representing them as live or verified supply.
+- [x] Surface the regional demo listings in discovery and Map Intelligence with persistent planning-demo disclosure.
+- [x] Add regression coverage for market scoping, demonstration disclosure, and South-East Asian map/listing availability.
+- [x] Verify desktop and mobile regional discovery and maps, run type checks, tests, production build, and save the planning-demo checkpoint.
