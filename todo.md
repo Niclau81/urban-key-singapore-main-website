@@ -224,4 +224,4 @@
 - [x] Identify a working spoken-narration fallback after the silent demo-video delivery defect.
 - [x] Generate an audible English narration and synchronize it to the existing AI Property Agent demonstration visuals and captions.
 - [x] Verify the corrected video includes an audible non-silent track, synchronized captions, and intact safeguard content.
-- [ ] Save and deliver the corrected narrated video artifact.
+- [x] Save and deliver the corrected narrated video artifact.
