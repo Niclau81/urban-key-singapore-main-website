@@ -203,11 +203,11 @@
 - [x] Add lawyer and government-agency hand-off queues that prepare and track requests but require explicitly authorised professional or customer submissions.
 - [x] Add consent, privacy, approval, and non-advice disclosures; prevent the assistant from making binding commitments, submitting government filings, or providing legal advice autonomously.
 - [x] Add regressions and responsive verification for workflow gates, document requests, appointments, audit logging, and hand-offs.
-- [ ] Run the complete validation pass, checkpoint the AI Property Agent foundation, and document the open jurisdiction and integration decisions.
+- [x] Run the complete validation pass, checkpoint the AI Property Agent foundation, and document the open jurisdiction and integration decisions.
 - [x] Map Singapore buy, sell, rent, and rent-out operations into customer, agent, lawyer, and government-sector responsibility lanes.
 - [x] Build a Singapore AI Property Agent workspace with case intake, property sourcing, checklist progress, document requests, appointment coordination, professional hand-offs, and case status visibility.
 - [x] Prepare document packs and government-sector hand-off checklists without autonomous submission, legal advice, payment, or binding representation.
 - [x] Add approval-gated email and WhatsApp communication drafting, authorisation, connection-status tracking, and audit records; defer external connection until authorised account credentials and channel ownership are configured.
 - [x] Provide explicit customer authorisation, privacy, KYC, data-retention, conflict-check, legal-review, payment, and escalation boundaries for all four journeys.
 - [x] Add end-to-end regression coverage and responsive verification for Singapore integrated-agent cases, approval gates, paperwork queues, appointments, and communication records.
-- [ ] Complete integration-readiness documentation, validate the foundation, and save the Singapore integrated-agent checkpoint.
+- [x] Complete integration-readiness documentation, validate the foundation, and save the Singapore integrated-agent checkpoint.
