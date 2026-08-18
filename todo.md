@@ -220,4 +220,4 @@
 - [x] Capture the relevant AI Property Agent workspace visuals in a coherent user-action sequence.
 - [x] Produce a clear narration script and English captions that explain the approval-controlled operating model without overstating automation.
 - [x] Assemble and verify the accessible demo video, captions, and any supporting production notes.
-- [ ] Save the video-production checkpoint and deliver the completed demo artifacts.
+- [x] Save the video-production checkpoint and deliver the completed demo artifacts.
