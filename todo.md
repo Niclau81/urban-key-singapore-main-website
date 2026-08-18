@@ -276,4 +276,4 @@
 - [x] Provide independently selectable timed views for two rooms in the selected Singapore demonstration tour.
 - [x] Correct the affected tour view context and preserve room, floor, panorama, and guided-photo transitions.
 - [x] Add focused regression coverage and desktop/mobile verification for both timed rooms, selector availability, and the repaired viewer state.
-- [ ] Save the verified timed-view repair checkpoint and report the corrected experience.
+- [x] Save the verified timed-view repair checkpoint and report the corrected experience.
