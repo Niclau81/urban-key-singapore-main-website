@@ -271,3 +271,9 @@
 - [x] Define the verified-public-tour asset contract so private captures remain excluded until an independent approval workflow deliberately binds approved equirectangular assets to room-specific panorama URLs.
 - [x] Add regression coverage and desktop/mobile interaction verification for camera movement, hotspots, floor maps, full screen, accessible controls, and fallback truthfulness.
 - [x] Save the verified interactive 3D-tour checkpoint and document required 360° capture and approval steps.
+- [x] Reproduce the affected tour context error and audit the current room-specific Morning, Noon, and Night timed-photo sources.
+- [x] Restore an explicit Morning, Noon, and Night selector in the guided-photo fallback without altering the truthful interactive panorama mode.
+- [x] Provide independently selectable timed views for two rooms in the selected Singapore demonstration tour.
+- [x] Correct the affected tour view context and preserve room, floor, panorama, and guided-photo transitions.
+- [x] Add focused regression coverage and desktop/mobile verification for both timed rooms, selector availability, and the repaired viewer state.
+- [ ] Save the verified timed-view repair checkpoint and report the corrected experience.

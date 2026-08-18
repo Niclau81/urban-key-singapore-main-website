@@ -152,6 +152,12 @@ describe("property intelligence procedures", () => {
     expect(generatedDemo.virtualTour).toMatchObject({ captureMode: "illustrative-panorama" });
     expect(Object.values(generatedDemo.virtualTour!.panoramaPreviewUrls ?? {})).toHaveLength(3);
     expect(Object.values(generatedDemo.virtualTour!.panoramaPreviewUrls ?? {}).every(url => url.includes("/manus-storage/queenstown-demo-") )).toBe(true);
+    const timedRooms = generatedDemo.virtualTour!.rooms.filter(room => room.id === "living" || room.id === "kitchen");
+    expect(timedRooms).toHaveLength(2);
+    for (const room of timedRooms) {
+      expect(room.timedPhotos?.map(photo => photo.id)).toEqual(["morning", "noon", "night"]);
+      expect(room.timedPhotos?.every(photo => photo.src.includes("/manus-storage/queenstown-"))).toBe(true);
+    }
     for (const [listingId, assetPrefix] of [["marina-cove-28-08", "marina-cove-demo-"], ["interlace-garden-06-12", "interlace-demo-"]] as const) {
       const generatedTour = tourListings.find(property => property.id === listingId)!;
       expect(generatedTour.virtualTour).toMatchObject({ captureMode: "illustrative-panorama" });
@@ -191,6 +197,8 @@ describe("property intelligence procedures", () => {
     expect(guidedSource).toContain('data-tour-guide-scope="approved-metadata"');
     expect(timedSource).toContain("data-tour-photo-timing");
     expect(guidedSource).toContain("photo-timing-select");
+    expect(guidedSource).toContain("View photo timings");
+    expect(guidedSource).toContain("activeRoom?.timedPhotos");
     expect(guidedSource).toContain("<EquirectangularPanorama");
     expect(guidedSource).toContain("interactivePanoramaUrl");
     expect(guidedSource).toContain("Illustrative 360° preview");

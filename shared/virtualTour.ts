@@ -1,3 +1,11 @@
+export type VirtualTourTimedPhoto = {
+  id: "morning" | "noon" | "night";
+  label: "Morning" | "Noon" | "Night";
+  timeRange: string;
+  description: string;
+  src: string;
+};
+
 export type VirtualTourRoom = {
   id: string;
   label: string;
@@ -6,6 +14,8 @@ export type VirtualTourRoom = {
   approvedHighlights: string[];
   floorPlanPosition: { x: number; y: number };
   viewerPosition: { x: number; y: number };
+  /** Optional original illustrative photo sequence for the honest guided-photo fallback. */
+  timedPhotos?: VirtualTourTimedPhoto[];
 };
 
 export type VirtualPropertyTour = {
