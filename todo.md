@@ -254,4 +254,4 @@
 - [x] Store generated static assets through the managed web asset workflow and associate them only with clearly disclosed demonstration tour listings.
 - [x] Integrate demonstration panorama assets into the immersive viewer while retaining the labelled guided-photo fallback and time-aware photo selector.
 - [x] Add regression coverage and desktop/mobile visual verification for generated demo media, panorama readiness, labels, and fallback integrity.
-- [ ] Save the verified demonstration-media checkpoint and deliver the generated asset package.
+- [x] Save the verified demonstration-media checkpoint and deliver the generated asset package.
