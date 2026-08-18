@@ -292,4 +292,4 @@
 - [x] Make Morning, Noon, and Night direct buttons visible for any tour room that has timed media, without a prerequisite mode-switch click.
 - [x] Keep each listing’s floor plan, room labels, panorama nodes, and timing media internally consistent, with no mixed legacy layout shown to the user.
 - [x] Add cross-listing regressions and desktop/mobile verification for the active tour’s six-room plan and directly selectable timing buttons.
-- [ ] Save the verified cross-listing floor-plan and timing-control correction checkpoint.
+- [x] Save the verified cross-listing floor-plan and timing-control correction checkpoint.
