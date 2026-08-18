@@ -17,6 +17,7 @@ import SubscriptionPlans from "./pages/SubscriptionPlans";
 import Checkout from "./pages/Checkout";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentHistory from "./pages/PaymentHistory";
+import PropertyAgent from "./pages/PropertyAgent";
 
 function Router() {
   return <Switch>
@@ -26,6 +27,7 @@ function Router() {
     <Route path="/map" component={MapIntelligence} />
     <Route path="/property/:id" component={PropertyDetail} />
     <Route path="/assistants" component={Assistants} />
+    <Route path="/property-agent" component={PropertyAgent} />
     <Route path="/agent" component={AgentLogin} />
     <Route path="/agent/portal" component={AgentPortal} />
     <Route path="/agent/signup" component={AgentSignUp} />

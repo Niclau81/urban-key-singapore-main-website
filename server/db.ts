@@ -1,7 +1,8 @@
 import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { agentProfiles, enquiries, InsertUser, propertyListingFloorPlans, propertyListingImages, propertyListings, savedListings, subscriptionOrders, userProfiles, users } from "../drizzle/schema";
+import { agentProfiles, enquiries, InsertUser, propertyAgentAppointments, propertyAgentAuditLogs, propertyAgentCases, propertyAgentCommunications, propertyAgentDocuments, propertyAgentHandOffs, propertyAgentTasks, propertyListingFloorPlans, propertyListingImages, propertyListings, savedListings, subscriptionOrders, userProfiles, users } from "../drizzle/schema";
 import type { MarketId } from "@shared/marketConfig";
+import { singaporeJourneyBlueprints, type PropertyAgentCaseStatus, type SingaporeJourneyId } from "@shared/propertyAgent";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -320,5 +321,180 @@ export async function updateManagedPropertyStatus(userId: number, id: number, st
   const db = await getDb();
   if (!db) return false;
   const result = await db.update(propertyListings).set({ status }).where(and(eq(propertyListings.id, id), eq(propertyListings.userId, userId)));
+  return Number(result[0].affectedRows) > 0;
+}
+
+export type PropertyAgentCaseInput = {
+  journey: SingaporeJourneyId;
+  title: string;
+  propertyId?: string;
+  processingConsent: boolean;
+};
+
+export async function listPropertyAgentCases(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(propertyAgentCases).where(eq(propertyAgentCases.userId, userId)).orderBy(desc(propertyAgentCases.updatedAt));
+}
+
+export async function getPropertyAgentCase(userId: number, caseId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const cases = await db.select().from(propertyAgentCases).where(and(eq(propertyAgentCases.id, caseId), eq(propertyAgentCases.userId, userId))).limit(1);
+  const propertyCase = cases[0];
+  if (!propertyCase) return null;
+  const [tasks, documents, appointments, communications, handOffs, audit] = await Promise.all([
+    db.select().from(propertyAgentTasks).where(eq(propertyAgentTasks.caseId, caseId)).orderBy(propertyAgentTasks.id),
+    db.select().from(propertyAgentDocuments).where(and(eq(propertyAgentDocuments.caseId, caseId), eq(propertyAgentDocuments.userId, userId))).orderBy(propertyAgentDocuments.id),
+    db.select().from(propertyAgentAppointments).where(eq(propertyAgentAppointments.caseId, caseId)).orderBy(desc(propertyAgentAppointments.createdAt)),
+    db.select().from(propertyAgentCommunications).where(eq(propertyAgentCommunications.caseId, caseId)).orderBy(desc(propertyAgentCommunications.createdAt)),
+    db.select().from(propertyAgentHandOffs).where(eq(propertyAgentHandOffs.caseId, caseId)).orderBy(propertyAgentHandOffs.id),
+    db.select().from(propertyAgentAuditLogs).where(and(eq(propertyAgentAuditLogs.caseId, caseId), eq(propertyAgentAuditLogs.userId, userId))).orderBy(desc(propertyAgentAuditLogs.createdAt)),
+  ]);
+  return { case: propertyCase, tasks, documents, appointments, communications, handOffs, audit };
+}
+
+async function isPropertyAgentCaseOwner(userId: number, caseId: number) {
+  const db = await getDb();
+  if (!db) return false;
+  const rows = await db.select({ id: propertyAgentCases.id }).from(propertyAgentCases).where(and(eq(propertyAgentCases.id, caseId), eq(propertyAgentCases.userId, userId))).limit(1);
+  return rows.length > 0;
+}
+
+export async function createPropertyAgentCase(userId: number, input: PropertyAgentCaseInput) {
+  const db = await getDb();
+  if (!db) return null;
+  const now = new Date();
+  const result = await db.insert(propertyAgentCases).values({
+    userId,
+    marketId: "singapore",
+    journey: input.journey,
+    title: input.title,
+    propertyId: input.propertyId || null,
+    processingConsent: input.processingConsent,
+    processingConsentAt: input.processingConsent ? now : null,
+  });
+  const caseId = Number(result[0].insertId);
+  const blueprint = singaporeJourneyBlueprints[input.journey];
+  await Promise.all([
+    db.insert(propertyAgentTasks).values(blueprint.tasks.map(task => ({
+      caseId,
+      title: task.title,
+      category: task.category,
+      ownerRole: task.ownerRole,
+      requiresAuthorization: Boolean(task.requiresAuthorization),
+      status: task.ownerRole === "customer" ? ("waiting_customer" as const) : ("pending" as const),
+    }))),
+    db.insert(propertyAgentDocuments).values(blueprint.documents.map(document => ({
+      caseId,
+      userId,
+      label: document.label,
+      category: document.category,
+      requiresAuthorization: Boolean(document.requiresAuthorization),
+    }))),
+    db.insert(propertyAgentHandOffs).values(blueprint.handoffs.map(handOff => ({
+      caseId,
+      destination: handOff.destination,
+      title: handOff.title,
+      purpose: handOff.purpose,
+      requiresAuthorization: handOff.requiresAuthorization !== false,
+      status: handOff.requiresAuthorization === false ? ("pack_ready" as const) : ("approval_required" as const),
+    }))),
+    db.insert(propertyAgentAuditLogs).values({ caseId, userId, action: "case_created", actorRole: "customer", detail: `Created a Singapore ${input.journey} workflow with consent ${input.processingConsent ? "recorded" : "not yet recorded"}.` }),
+  ]);
+  return getPropertyAgentCase(userId, caseId);
+}
+
+export async function updatePropertyAgentCaseStatus(userId: number, caseId: number, status: PropertyAgentCaseStatus) {
+  const db = await getDb();
+  if (!db) return false;
+  const result = await db.update(propertyAgentCases).set({ status }).where(and(eq(propertyAgentCases.id, caseId), eq(propertyAgentCases.userId, userId)));
+  if (Number(result[0].affectedRows) > 0) await db.insert(propertyAgentAuditLogs).values({ caseId, userId, action: "case_status_updated", actorRole: "customer", detail: `Case status changed to ${status}.` });
+  return Number(result[0].affectedRows) > 0;
+}
+
+export async function recordPropertyAgentConsent(userId: number, caseId: number) {
+  const db = await getDb();
+  if (!db) return false;
+  const consentAt = new Date();
+  const result = await db.update(propertyAgentCases).set({ processingConsent: true, processingConsentAt: consentAt }).where(and(eq(propertyAgentCases.id, caseId), eq(propertyAgentCases.userId, userId)));
+  if (Number(result[0].affectedRows) > 0) await db.insert(propertyAgentAuditLogs).values({ caseId, userId, action: "processing_consent_recorded", actorRole: "customer", detail: "Customer recorded consent for workflow preparation and tracking. External actions remain separately approval-gated." });
+  return Number(result[0].affectedRows) > 0;
+}
+
+export async function updatePropertyAgentTask(userId: number, caseId: number, taskId: number, status: "pending" | "in_progress" | "waiting_customer" | "waiting_professional" | "completed" | "blocked", authorize = false) {
+  const db = await getDb();
+  if (!db || !await isPropertyAgentCaseOwner(userId, caseId)) return false;
+  const taskRows = await db.select().from(propertyAgentTasks).where(and(eq(propertyAgentTasks.id, taskId), eq(propertyAgentTasks.caseId, caseId))).limit(1);
+  const task = taskRows[0];
+  if (!task || (task.requiresAuthorization && status === "completed" && !authorize && !task.authorizedAt)) return false;
+  const now = new Date();
+  const result = await db.update(propertyAgentTasks).set({
+    status,
+    authorizedAt: authorize ? now : task.authorizedAt,
+    completedAt: status === "completed" ? now : null,
+  }).where(and(eq(propertyAgentTasks.id, taskId), eq(propertyAgentTasks.caseId, caseId)));
+  if (Number(result[0].affectedRows) > 0) await db.insert(propertyAgentAuditLogs).values({ caseId, userId, action: "task_updated", actorRole: "customer", detail: `Updated task “${task.title}” to ${status}${authorize ? " with customer authorisation" : ""}.` });
+  return Number(result[0].affectedRows) > 0;
+}
+
+export async function updatePropertyAgentDocumentStatus(userId: number, caseId: number, documentId: number, status: "requested" | "uploaded" | "prepared" | "review_required" | "ready_for_handoff" | "handed_to_professional") {
+  const db = await getDb();
+  if (!db || !await isPropertyAgentCaseOwner(userId, caseId)) return false;
+  const result = await db.update(propertyAgentDocuments).set({ status }).where(and(eq(propertyAgentDocuments.id, documentId), eq(propertyAgentDocuments.caseId, caseId), eq(propertyAgentDocuments.userId, userId)));
+  if (Number(result[0].affectedRows) > 0) await db.insert(propertyAgentAuditLogs).values({ caseId, userId, action: "document_status_updated", actorRole: "customer", detail: `Updated a document checklist item to ${status}.` });
+  return Number(result[0].affectedRows) > 0;
+}
+
+export async function attachPropertyAgentDocument(userId: number, caseId: number, documentId: number, file: { storageKey: string; url: string; fileName: string; mimeType: string; fileSize: number }) {
+  const db = await getDb();
+  if (!db || !await isPropertyAgentCaseOwner(userId, caseId)) return false;
+  const result = await db.update(propertyAgentDocuments).set({ ...file, status: "uploaded" }).where(and(eq(propertyAgentDocuments.id, documentId), eq(propertyAgentDocuments.caseId, caseId), eq(propertyAgentDocuments.userId, userId)));
+  if (Number(result[0].affectedRows) > 0) await db.insert(propertyAgentAuditLogs).values({ caseId, userId, action: "document_attached", actorRole: "customer", detail: `Attached “${file.fileName}” to a checklist item. The document is stored for workflow preparation and remains subject to the case’s approval gates.` });
+  return Number(result[0].affectedRows) > 0;
+}
+
+export async function createPropertyAgentCommunication(userId: number, caseId: number, input: { channel: "email" | "whatsapp"; recipient: string; subject?: string; message: string }) {
+  const db = await getDb();
+  if (!db || !await isPropertyAgentCaseOwner(userId, caseId)) return null;
+  const result = await db.insert(propertyAgentCommunications).values({ ...input, caseId, status: "approval_required", requiresAuthorization: true });
+  const id = Number(result[0].insertId);
+  await db.insert(propertyAgentAuditLogs).values({ caseId, userId, action: "communication_draft_created", actorRole: "customer", detail: `Created a ${input.channel} communication draft that requires approval before it can be sent.` });
+  return { id, ...input, status: "approval_required" as const };
+}
+
+export async function authorizePropertyAgentCommunication(userId: number, caseId: number, communicationId: number) {
+  const db = await getDb();
+  if (!db || !await isPropertyAgentCaseOwner(userId, caseId)) return false;
+  const now = new Date();
+  const result = await db.update(propertyAgentCommunications).set({ status: "connection_required", customerAuthorizedAt: now }).where(and(eq(propertyAgentCommunications.id, communicationId), eq(propertyAgentCommunications.caseId, caseId)));
+  if (Number(result[0].affectedRows) > 0) await db.insert(propertyAgentAuditLogs).values({ caseId, userId, action: "communication_authorized", actorRole: "customer", detail: "Customer authorised a communication. It remains unsent until an approved channel connection is configured and reviewed." });
+  return Number(result[0].affectedRows) > 0;
+}
+
+export async function createPropertyAgentAppointment(userId: number, caseId: number, input: { kind: "viewing" | "owner_contact" | "lawyer_review" | "completion" | "other"; counterparty: string; preferredAt?: Date; notes?: string }) {
+  const db = await getDb();
+  if (!db || !await isPropertyAgentCaseOwner(userId, caseId)) return null;
+  const result = await db.insert(propertyAgentAppointments).values({ ...input, caseId, status: "approval_required", requiresAuthorization: true });
+  const id = Number(result[0].insertId);
+  await db.insert(propertyAgentAuditLogs).values({ caseId, userId, action: "appointment_draft_created", actorRole: "customer", detail: `Created a ${input.kind} appointment request requiring approval before outreach.` });
+  return { id, ...input, status: "approval_required" as const };
+}
+
+export async function authorizePropertyAgentAppointment(userId: number, caseId: number, appointmentId: number) {
+  const db = await getDb();
+  if (!db || !await isPropertyAgentCaseOwner(userId, caseId)) return false;
+  const now = new Date();
+  const result = await db.update(propertyAgentAppointments).set({ status: "requested", authorizedAt: now }).where(and(eq(propertyAgentAppointments.id, appointmentId), eq(propertyAgentAppointments.caseId, caseId)));
+  if (Number(result[0].affectedRows) > 0) await db.insert(propertyAgentAuditLogs).values({ caseId, userId, action: "appointment_authorized", actorRole: "customer", detail: "Customer authorised an appointment request. Scheduling remains pending approved outreach and counterparty confirmation." });
+  return Number(result[0].affectedRows) > 0;
+}
+
+export async function authorizePropertyAgentHandOff(userId: number, caseId: number, handOffId: number) {
+  const db = await getDb();
+  if (!db || !await isPropertyAgentCaseOwner(userId, caseId)) return false;
+  const now = new Date();
+  const result = await db.update(propertyAgentHandOffs).set({ status: "authorized_for_handoff", authorizedAt: now }).where(and(eq(propertyAgentHandOffs.id, handOffId), eq(propertyAgentHandOffs.caseId, caseId)));
+  if (Number(result[0].affectedRows) > 0) await db.insert(propertyAgentAuditLogs).values({ caseId, userId, action: "handoff_authorized", actorRole: "customer", detail: "Customer authorised a preparation pack for hand-off. Submission requires the relevant professional or official channel." });
   return Number(result[0].affectedRows) > 0;
 }

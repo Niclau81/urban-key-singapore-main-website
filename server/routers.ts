@@ -1,5 +1,6 @@
 import { COOKIE_NAME } from "@shared/const";
 import { defaultMarketId, getMarketConfig, marketIds } from "@shared/marketConfig";
+import { propertyAgentCaseStatuses, propertyAgentSafeguardNotice, singaporeJourneyIds } from "@shared/propertyAgent";
 import { properties, propertyHistoryDisclaimer } from "@shared/propertyData";
 import { AUTOMATED_PAYMENT_METHODS, calculateSubscriptionPrice, getSubscriptionPlan, SUBSCRIPTION_PLANS } from "@shared/subscriptionPlans";
 import { TRPCError } from "@trpc/server";
@@ -34,6 +35,22 @@ const listingInputSchema = z.object({
   parkingLots: z.number().int().min(0).max(10000).optional(),
   availableFrom: z.string().max(24).optional(),
 });
+
+const propertyAgentCaseInputSchema = z.object({
+  journey: z.enum(singaporeJourneyIds),
+  title: z.string().trim().min(4).max(180),
+  propertyId: z.string().trim().max(96).optional(),
+  processingConsent: z.boolean(),
+});
+
+const propertyAgentCaseIdSchema = z.object({ caseId: z.number().int().positive() });
+
+async function requireConsentedPropertyAgentCase(userId: number, caseId: number) {
+  const workflow = await db.getPropertyAgentCase(userId, caseId);
+  if (!workflow) throw new TRPCError({ code: "NOT_FOUND", message: "Property Agent case not found" });
+  if (!workflow.case.processingConsent) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Record customer consent before preparing, storing, or coordinating this case" });
+  return workflow;
+}
 
 export const agentRegistrationSchema = z.object({
   accountType: z.enum(["agent", "co_broker"]),
@@ -152,6 +169,94 @@ export const appRouter = router({
   enquiry: router({
     list: protectedProcedure.query(({ ctx }) => db.listEnquiries(ctx.user.id)),
     create: protectedProcedure.input(z.object({ propertyId: z.string(), message: z.string().min(10).max(2000) })).mutation(({ ctx, input }) => db.createEnquiry(ctx.user.id, input.propertyId, input.message)),
+  }),
+  propertyAgent: router({
+    safeguardNotice: publicProcedure.query(() => propertyAgentSafeguardNotice),
+    listCases: protectedProcedure.query(({ ctx }) => db.listPropertyAgentCases(ctx.user.id)),
+    getCase: protectedProcedure.input(propertyAgentCaseIdSchema).query(async ({ ctx, input }) => {
+      const workflow = await db.getPropertyAgentCase(ctx.user.id, input.caseId);
+      if (!workflow) throw new TRPCError({ code: "NOT_FOUND", message: "Property Agent case not found" });
+      return workflow;
+    }),
+    createCase: protectedProcedure.input(propertyAgentCaseInputSchema).mutation(async ({ ctx, input }) => {
+      const workflow = await db.createPropertyAgentCase(ctx.user.id, input);
+      if (!workflow) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Unable to create the Property Agent case" });
+      return workflow;
+    }),
+    recordConsent: protectedProcedure.input(propertyAgentCaseIdSchema).mutation(async ({ ctx, input }) => {
+      if (!await db.recordPropertyAgentConsent(ctx.user.id, input.caseId)) throw new TRPCError({ code: "NOT_FOUND", message: "Property Agent case not found" });
+      return { caseId: input.caseId, processingConsent: true };
+    }),
+    updateCaseStatus: protectedProcedure.input(propertyAgentCaseIdSchema.extend({ status: z.enum(propertyAgentCaseStatuses) })).mutation(async ({ ctx, input }) => {
+      await requireConsentedPropertyAgentCase(ctx.user.id, input.caseId);
+      if (!await db.updatePropertyAgentCaseStatus(ctx.user.id, input.caseId, input.status)) throw new TRPCError({ code: "NOT_FOUND", message: "Property Agent case not found" });
+      return input;
+    }),
+    updateTask: protectedProcedure.input(propertyAgentCaseIdSchema.extend({ taskId: z.number().int().positive(), status: z.enum(["pending", "in_progress", "waiting_customer", "waiting_professional", "completed", "blocked"]), authorize: z.boolean().optional() })).mutation(async ({ ctx, input }) => {
+      await requireConsentedPropertyAgentCase(ctx.user.id, input.caseId);
+      if (!await db.updatePropertyAgentTask(ctx.user.id, input.caseId, input.taskId, input.status, input.authorize)) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "This task requires a case record and, where applicable, explicit customer authorisation before completion" });
+      return input;
+    }),
+    updateDocumentStatus: protectedProcedure.input(propertyAgentCaseIdSchema.extend({ documentId: z.number().int().positive(), status: z.enum(["requested", "uploaded", "prepared", "review_required", "ready_for_handoff", "handed_to_professional"]) })).mutation(async ({ ctx, input }) => {
+      await requireConsentedPropertyAgentCase(ctx.user.id, input.caseId);
+      if (!await db.updatePropertyAgentDocumentStatus(ctx.user.id, input.caseId, input.documentId, input.status)) throw new TRPCError({ code: "NOT_FOUND", message: "Document checklist item not found" });
+      return input;
+    }),
+    uploadDocument: protectedProcedure.input(propertyAgentCaseIdSchema.extend({
+      documentId: z.number().int().positive(),
+      fileName: z.string().min(1).max(255),
+      mimeType: z.enum(["application/pdf", "image/jpeg", "image/png"]),
+      base64: z.string().min(1).max(11_500_000),
+    })).mutation(async ({ ctx, input }) => {
+      await requireConsentedPropertyAgentCase(ctx.user.id, input.caseId);
+      const data = Buffer.from(input.base64, "base64");
+      if (!data.length || data.length > 8 * 1024 * 1024) throw new TRPCError({ code: "BAD_REQUEST", message: "Each workflow document must be smaller than 8 MB" });
+      const extension = input.mimeType === "application/pdf" ? "pdf" : input.mimeType === "image/png" ? "png" : "jpg";
+      const stored = await storagePut(`property-agent/${ctx.user.id}/${input.caseId}/documents/${input.documentId}/${randomUUID()}.${extension}`, data, input.mimeType);
+      if (!await db.attachPropertyAgentDocument(ctx.user.id, input.caseId, input.documentId, { storageKey: stored.key, url: stored.url, fileName: input.fileName, mimeType: input.mimeType, fileSize: data.length })) throw new TRPCError({ code: "NOT_FOUND", message: "Document checklist item not found" });
+      return { documentId: input.documentId, fileName: input.fileName };
+    }),
+    createAppointment: protectedProcedure.input(propertyAgentCaseIdSchema.extend({ kind: z.enum(["viewing", "owner_contact", "lawyer_review", "completion", "other"]), counterparty: z.string().trim().min(2).max(180), preferredAt: z.date().optional(), notes: z.string().trim().max(2000).optional() })).mutation(async ({ ctx, input }) => {
+      await requireConsentedPropertyAgentCase(ctx.user.id, input.caseId);
+      const appointment = await db.createPropertyAgentAppointment(ctx.user.id, input.caseId, input);
+      if (!appointment) throw new TRPCError({ code: "NOT_FOUND", message: "Property Agent case not found" });
+      return appointment;
+    }),
+    authorizeAppointment: protectedProcedure.input(propertyAgentCaseIdSchema.extend({ appointmentId: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+      await requireConsentedPropertyAgentCase(ctx.user.id, input.caseId);
+      if (!await db.authorizePropertyAgentAppointment(ctx.user.id, input.caseId, input.appointmentId)) throw new TRPCError({ code: "NOT_FOUND", message: "Appointment request not found" });
+      return input;
+    }),
+    createCommunication: protectedProcedure.input(propertyAgentCaseIdSchema.extend({ channel: z.enum(["email", "whatsapp"]), recipient: z.string().trim().min(3).max(320), subject: z.string().trim().max(240).optional(), message: z.string().trim().min(10).max(5000) })).mutation(async ({ ctx, input }) => {
+      await requireConsentedPropertyAgentCase(ctx.user.id, input.caseId);
+      const communication = await db.createPropertyAgentCommunication(ctx.user.id, input.caseId, input);
+      if (!communication) throw new TRPCError({ code: "NOT_FOUND", message: "Property Agent case not found" });
+      return communication;
+    }),
+    authorizeCommunication: protectedProcedure.input(propertyAgentCaseIdSchema.extend({ communicationId: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+      await requireConsentedPropertyAgentCase(ctx.user.id, input.caseId);
+      if (!await db.authorizePropertyAgentCommunication(ctx.user.id, input.caseId, input.communicationId)) throw new TRPCError({ code: "NOT_FOUND", message: "Communication draft not found" });
+      return { ...input, status: "connection_required" as const };
+    }),
+    authorizeHandOff: protectedProcedure.input(propertyAgentCaseIdSchema.extend({ handOffId: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+      await requireConsentedPropertyAgentCase(ctx.user.id, input.caseId);
+      if (!await db.authorizePropertyAgentHandOff(ctx.user.id, input.caseId, input.handOffId)) throw new TRPCError({ code: "NOT_FOUND", message: "Professional or agency hand-off not found" });
+      return input;
+    }),
+    draft: protectedProcedure.input(propertyAgentCaseIdSchema.extend({ purpose: z.enum(["property_enquiry", "viewing_request", "document_request", "lawyer_handoff"]), notes: z.string().trim().min(4).max(2500) })).mutation(async ({ ctx, input }) => {
+      const workflow = await requireConsentedPropertyAgentCase(ctx.user.id, input.caseId);
+      const response = await invokeLLM({
+        model: "gpt-5-mini",
+        messages: [
+          { role: "system", content: "You prepare concise editable Singapore property-workflow drafts. Do not give legal, tax, financial, eligibility, licensing, or regulatory advice. Do not make an offer, accept terms, promise an outcome, request payment, claim that a document is complete, or imply an external message has been sent. Label the draft as requiring customer authorisation and, where applicable, professional review. Keep it factual, neutral, and under 250 words." },
+          { role: "user", content: `Prepare a ${input.purpose.replaceAll("_", " ")} draft for a ${workflow.case.journey} case titled “${workflow.case.title}”. Customer notes: ${input.notes}` },
+        ],
+        maxTokens: 600,
+      });
+      const content = response.choices?.[0]?.message?.content;
+      if (typeof content !== "string" || !content.trim()) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Unable to prepare a workflow draft" });
+      return { content, safeguardNotice: propertyAgentSafeguardNotice };
+    }),
   }),
   listing: router({
     listMine: protectedProcedure.input(z.object({ marketId: z.enum(marketIds) }).optional()).query(({ ctx, input }) => db.listManagedProperties(ctx.user.id, input?.marketId)),

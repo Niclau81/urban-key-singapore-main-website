@@ -1,4 +1,4 @@
-import { decimal, int, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import { boolean, decimal, int, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -134,6 +134,104 @@ export const propertyListingFloorPlans = mysqlTable("propertyListingFloorPlans",
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, table => ({ listingUnique: uniqueIndex("propertyListingFloorPlans_listing_unique").on(table.listingId) }));
 
+export const propertyAgentCases = mysqlTable("propertyAgentCases", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  marketId: varchar("marketId", { length: 40 }).default("singapore").notNull(),
+  journey: mysqlEnum("journey", ["buy", "sell", "rent", "rent_out"]).notNull(),
+  title: varchar("title", { length: 180 }).notNull(),
+  propertyId: varchar("propertyId", { length: 96 }),
+  status: mysqlEnum("status", ["intake", "sourcing", "viewings", "paperwork", "professional_review", "awaiting_authorisation", "coordination", "completed", "on_hold", "closed"]).default("intake").notNull(),
+  processingConsent: boolean("processingConsent").default(false).notNull(),
+  processingConsentAt: timestamp("processingConsentAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const propertyAgentTasks = mysqlTable("propertyAgentTasks", {
+  id: int("id").autoincrement().primaryKey(),
+  caseId: int("caseId").notNull(),
+  title: varchar("title", { length: 240 }).notNull(),
+  category: mysqlEnum("category", ["sourcing", "paperwork", "appointment", "professional", "government", "communication"]).notNull(),
+  ownerRole: mysqlEnum("ownerRole", ["customer", "agent", "lawyer", "government", "system"]).notNull(),
+  status: mysqlEnum("status", ["pending", "in_progress", "waiting_customer", "waiting_professional", "completed", "blocked"]).default("pending").notNull(),
+  requiresAuthorization: boolean("requiresAuthorization").default(false).notNull(),
+  authorizedAt: timestamp("authorizedAt"),
+  completedAt: timestamp("completedAt"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export const propertyAgentDocuments = mysqlTable("propertyAgentDocuments", {
+  id: int("id").autoincrement().primaryKey(),
+  caseId: int("caseId").notNull(),
+  userId: int("userId").notNull(),
+  label: varchar("label", { length: 240 }).notNull(),
+  category: mysqlEnum("category", ["identity", "financial", "property", "offer", "tenancy", "tax", "legal", "other"]).notNull(),
+  status: mysqlEnum("status", ["requested", "uploaded", "prepared", "review_required", "ready_for_handoff", "handed_to_professional"]).default("requested").notNull(),
+  storageKey: varchar("storageKey", { length: 768 }),
+  url: text("url"),
+  fileName: varchar("fileName", { length: 255 }),
+  mimeType: varchar("mimeType", { length: 100 }),
+  fileSize: int("fileSize"),
+  requiresAuthorization: boolean("requiresAuthorization").default(false).notNull(),
+  authorizedAt: timestamp("authorizedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const propertyAgentAppointments = mysqlTable("propertyAgentAppointments", {
+  id: int("id").autoincrement().primaryKey(),
+  caseId: int("caseId").notNull(),
+  kind: mysqlEnum("kind", ["viewing", "owner_contact", "lawyer_review", "completion", "other"]).notNull(),
+  counterparty: varchar("counterparty", { length: 180 }).notNull(),
+  preferredAt: timestamp("preferredAt"),
+  status: mysqlEnum("status", ["draft", "approval_required", "requested", "confirmed", "completed", "cancelled"]).default("draft").notNull(),
+  requiresAuthorization: boolean("requiresAuthorization").default(true).notNull(),
+  authorizedAt: timestamp("authorizedAt"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export const propertyAgentCommunications = mysqlTable("propertyAgentCommunications", {
+  id: int("id").autoincrement().primaryKey(),
+  caseId: int("caseId").notNull(),
+  channel: mysqlEnum("channel", ["email", "whatsapp"]).notNull(),
+  recipient: varchar("recipient", { length: 320 }).notNull(),
+  subject: varchar("subject", { length: 240 }),
+  message: text("message").notNull(),
+  status: mysqlEnum("status", ["draft", "approval_required", "authorized_to_send", "connection_required", "sent", "failed", "cancelled"]).default("draft").notNull(),
+  requiresAuthorization: boolean("requiresAuthorization").default(true).notNull(),
+  customerAuthorizedAt: timestamp("customerAuthorizedAt"),
+  providerMessageId: varchar("providerMessageId", { length: 255 }),
+  sentAt: timestamp("sentAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export const propertyAgentHandOffs = mysqlTable("propertyAgentHandOffs", {
+  id: int("id").autoincrement().primaryKey(),
+  caseId: int("caseId").notNull(),
+  destination: mysqlEnum("destination", ["lawyer", "licensed_agent", "hdb", "iras", "sla", "ura", "bank", "other"]).notNull(),
+  title: varchar("title", { length: 240 }).notNull(),
+  purpose: text("purpose").notNull(),
+  status: mysqlEnum("status", ["not_ready", "pack_ready", "approval_required", "authorized_for_handoff", "professionally_submitted", "completed", "blocked"]).default("not_ready").notNull(),
+  requiresAuthorization: boolean("requiresAuthorization").default(true).notNull(),
+  authorizedAt: timestamp("authorizedAt"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const propertyAgentAuditLogs = mysqlTable("propertyAgentAuditLogs", {
+  id: int("id").autoincrement().primaryKey(),
+  caseId: int("caseId").notNull(),
+  userId: int("userId").notNull(),
+  action: varchar("action", { length: 160 }).notNull(),
+  actorRole: mysqlEnum("actorRole", ["customer", "system", "agent", "professional"]).notNull(),
+  detail: text("detail").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type UserProfile = typeof userProfiles.$inferSelect;
@@ -144,3 +242,10 @@ export type Enquiry = typeof enquiries.$inferSelect;
 export type PropertyListing = typeof propertyListings.$inferSelect;
 export type PropertyListingImage = typeof propertyListingImages.$inferSelect;
 export type PropertyListingFloorPlan = typeof propertyListingFloorPlans.$inferSelect;
+export type PropertyAgentCase = typeof propertyAgentCases.$inferSelect;
+export type PropertyAgentTask = typeof propertyAgentTasks.$inferSelect;
+export type PropertyAgentDocument = typeof propertyAgentDocuments.$inferSelect;
+export type PropertyAgentAppointment = typeof propertyAgentAppointments.$inferSelect;
+export type PropertyAgentCommunication = typeof propertyAgentCommunications.$inferSelect;
+export type PropertyAgentHandOff = typeof propertyAgentHandOffs.$inferSelect;
+export type PropertyAgentAuditLog = typeof propertyAgentAuditLogs.$inferSelect;

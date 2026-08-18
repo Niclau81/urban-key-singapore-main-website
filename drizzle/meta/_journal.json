@@ -57,6 +57,13 @@
       "when": 1785806618201,
       "tag": "0007_shallow_sleepwalker",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1787016369870,
+      "tag": "0008_woozy_vanisher",
+      "breakpoints": true
     }
   ]
 }
