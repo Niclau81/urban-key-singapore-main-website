@@ -18,6 +18,10 @@ export type VirtualTourRoom = {
   viewerPosition: { x: number; y: number };
   /** Optional original illustrative photo sequence for the honest guided-photo fallback. */
   timedPhotos?: VirtualTourTimedPhoto[];
+  /** Optional panorama source per selected time; used only for approved or explicitly illustrative panorama states. */
+  panoramaPreviewByTiming?: Partial<Record<VirtualTourTimedPhoto["id"], string>>;
+  /** Connected rooms are used for deliberate door-to-door traversal rather than exposing every room from every panorama. */
+  connections?: Array<{ roomId: string; direction: "left" | "right" | "up" | "down" }>;
 };
 
 export type VirtualPropertyTour = {

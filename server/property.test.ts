@@ -167,9 +167,13 @@ describe("property intelligence procedures", () => {
     expect(marinaTour.gallery.every(url => url.includes("/manus-storage/marina-cove-demo-"))).toBe(true);
     expect(marinaTour.virtualTour!.floors[0]?.roomIds).toEqual(["living", "kitchen", "utility", "primary", "room2", "room3"]);
     expect(marinaTour.virtualTour!.rooms.map(room => room.label)).toEqual(["Living / dining", "Kitchen", "Utility / bath", "Primary room", "Room 2", "Room 3"]);
-    expect(Object.values(marinaTour.virtualTour!.panoramaPreviewUrls ?? {})).toHaveLength(7);
+    expect(Object.values(marinaTour.virtualTour!.panoramaPreviewUrls ?? {})).toHaveLength(6);
     expect(marinaTour.virtualTour!.rooms.every(room => room.floorPlanBounds && room.floorPlanBounds.width > 0 && room.floorPlanBounds.height > 0)).toBe(true);
-    expect(marinaTour.virtualTour!.rooms.find(room => room.id === "living")?.timedPhotos?.map(photo => photo.id)).toEqual(["morning", "noon", "night"]);
+    const marinaLiving = marinaTour.virtualTour!.rooms.find(room => room.id === "living");
+    expect(marinaLiving?.timedPhotos?.map(photo => photo.id)).toEqual(["morning", "noon", "night"]);
+    expect(Object.keys(marinaLiving?.panoramaPreviewByTiming ?? {})).toEqual(["morning", "noon", "night"]);
+    expect(marinaLiving?.connections).toEqual(expect.arrayContaining([{ roomId: "kitchen", direction: "right" }, { roomId: "primary", direction: "down" }]));
+    expect(marinaTour.virtualTour!.rooms.find(room => room.id === "room2")?.connections).toEqual(expect.arrayContaining([{ roomId: "room3", direction: "right" }]));
     expect(marinaTour.virtualTour!.disclosure).toContain("not a real property tour");
 
     const interlaceTour = tourListings.find(property => property.id === "interlace-garden-06-12")!;
@@ -212,6 +216,9 @@ describe("property intelligence procedures", () => {
     expect(guidedSource).toContain("timingByRoom");
     expect(guidedSource).toContain("guidedPhotoRoomIds");
     expect(guidedSource).toContain("selectTiming");
+    expect(guidedSource).toContain("panoramaPreviewByTiming");
+    expect(guidedSource).toContain("connectedRooms");
+    expect(guidedSource).toContain("Move ${room.direction}");
     expect(guidedSource).toContain("showPanoramaPreview");
     expect(guidedSource).toContain("visible-photo-timing-choices");
     expect(guidedSource).toContain("Photo timing · changes daylight and outlook");

@@ -8,6 +8,7 @@ export type PanoramaHotspot = {
   /** Horizontal and vertical placement expressed as a percentage of the panorama's virtual view. */
   x: number;
   y: number;
+  direction?: "left" | "right" | "up" | "down";
 };
 
 type Props = {
@@ -173,7 +174,7 @@ export function EquirectangularPanorama({ src, alt, hotspots, onSelectHotspot, c
   return <div className={`relative h-full w-full overflow-hidden bg-[#0d1110] ${className}`} tabIndex={0} onKeyDown={keyDown} aria-label="Interactive panorama. Drag to look around, use arrow keys to move the camera, and select a blue node to jump rooms." data-equirectangular-panorama data-panorama-yaw={cameraState.yaw} data-panorama-pitch={cameraState.pitch} data-panorama-fov={cameraState.fov}>
     <div ref={mountRef} className="absolute inset-0" />
     {rendererFailed && <><img src={src} alt={alt} className="absolute inset-0 h-full w-full object-cover" /><p className="absolute inset-x-4 bottom-20 rounded-lg bg-black/75 px-3 py-2 text-xs text-white">Panorama rendering is unavailable in this browser. Showing the approved flat preview instead.</p></>}
-    {projectedHotspots.filter(hotspot => hotspot.visible).map(hotspot => <button key={hotspot.id} type="button" onClick={() => onSelectHotspot(hotspot.id)} style={{ left: `${hotspot.left}%`, top: `${hotspot.top}%` }} aria-label={`Jump to ${hotspot.label}`} className="absolute z-20 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full border border-white/80 bg-[#087ff5] px-2 py-1.5 text-[10px] font-bold text-white shadow-[0_6px_20px_rgba(0,0,0,.45)] transition hover:scale-105 focus-visible:ring-4 focus-visible:ring-white/60 motion-reduce:transform-none motion-reduce:transition-none"><MoveHorizontal className="size-3" />{hotspot.label}</button>)}
+    {projectedHotspots.filter(hotspot => hotspot.visible).map(hotspot => <button key={hotspot.id} type="button" onClick={() => onSelectHotspot(hotspot.id)} style={{ left: `${hotspot.left}%`, top: `${hotspot.top}%` }} aria-label={`Move ${hotspot.direction ?? "forward"} to ${hotspot.label}`} className="absolute z-20 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full border border-white/80 bg-[#087ff5] px-2 py-1.5 text-[10px] font-bold text-white shadow-[0_6px_20px_rgba(0,0,0,.45)] transition hover:scale-105 focus-visible:ring-4 focus-visible:ring-white/60 motion-reduce:transform-none motion-reduce:transition-none"><MoveHorizontal className="size-3" />{hotspot.direction === "left" ? "←" : hotspot.direction === "right" ? "→" : hotspot.direction === "up" ? "↑" : hotspot.direction === "down" ? "↓" : "→"} {hotspot.label}</button>)}
     <div className="absolute right-4 top-20 z-20 flex flex-col overflow-hidden rounded-xl border border-white/20 bg-[#17171e]/85 shadow-lg backdrop-blur">
       <button type="button" aria-label="Zoom in panorama" onClick={() => controlsRef.current?.adjustFov(-8)} className="flex size-10 items-center justify-center text-white hover:bg-white/15"><ZoomIn className="size-4" /></button>
       <button type="button" aria-label="Zoom out panorama" onClick={() => controlsRef.current?.adjustFov(8)} className="flex size-10 items-center justify-center border-t border-white/15 text-white hover:bg-white/15"><ZoomOut className="size-4" /></button>
