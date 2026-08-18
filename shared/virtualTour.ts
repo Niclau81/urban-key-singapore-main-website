@@ -13,6 +13,8 @@ export type VirtualTourRoom = {
   note: string;
   approvedHighlights: string[];
   floorPlanPosition: { x: number; y: number };
+  /** Approximate room rectangle on the interactive floor plan, expressed as percentages. */
+  floorPlanBounds?: { x: number; y: number; width: number; height: number };
   viewerPosition: { x: number; y: number };
   /** Optional original illustrative photo sequence for the honest guided-photo fallback. */
   timedPhotos?: VirtualTourTimedPhoto[];

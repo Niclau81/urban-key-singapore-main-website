@@ -458,22 +458,28 @@ const singaporeVirtualTours: Record<string, VirtualPropertyTour> = {
     captureMode: "illustrative-panorama",
     panoramaPreviewUrls: {
       living: "/manus-storage/queenstown-demo-living-panorama_49eaf814.jpg",
-      kitchen: "/manus-storage/queenstown-demo-arrival-panorama_b77a19f9.jpg",
-      rooms: "/manus-storage/queenstown-demo-window-panorama_18abf47a.jpg",
+      kitchen: "/manus-storage/queenstown-kitchen-panorama-floorplan_04ac668a.jpg",
+      utility: "/manus-storage/queenstown-utility-bath-panorama-floorplan_3200dd95.jpg",
+      primary: "/manus-storage/queenstown-primary-panorama-floorplan_4250a595.jpg",
+      room2: "/manus-storage/queenstown-bedroom-panorama-floorplan_44a377e7.jpg",
+      room3: "/manus-storage/queenstown-bedroom-panorama-floorplan_44a377e7.jpg",
     },
-    floors: [{ id: "main", label: "Illustrative layout", roomIds: ["living", "kitchen", "rooms"] }],
+    floors: [{ id: "main", label: "Illustrative layout", roomIds: ["living", "kitchen", "utility", "primary", "room2", "room3"] }],
     rooms: [
-      { id: "living", label: "Living / dining", imageIndex: 0, note: "Illustrative generated panorama-style preview; it is not a real property capture.", approvedHighlights: ["Illustrative generated media", "Floor-plan reference"], floorPlanPosition: { x: 28, y: 42 }, viewerPosition: { x: 50, y: 66 }, timedPhotos: [
+      { id: "living", label: "Living / dining", imageIndex: 0, note: "Illustrative generated panorama-style preview; it is not a real property capture.", approvedHighlights: ["Illustrative generated media", "Floor-plan reference"], floorPlanPosition: { x: 26, y: 27 }, floorPlanBounds: { x: 5, y: 5, width: 42, height: 41 }, viewerPosition: { x: 50, y: 66 }, timedPhotos: [
         { id: "morning", label: "Morning", timeRange: "7:30 AM", description: "Soft early daylight across the illustrative living and dining room.", src: "/manus-storage/queenstown-living-morning-timed_bde75619.jpg" },
         { id: "noon", label: "Noon", timeRange: "12:30 PM", description: "Bright neutral daylight across the illustrative living and dining room.", src: "/manus-storage/queenstown-living-noon-timed_8650ca0e.jpg" },
         { id: "night", label: "Night", timeRange: "8:30 PM", description: "Warm interior lighting across the illustrative living and dining room.", src: "/manus-storage/queenstown-living-night-timed_abaedb10.jpg" },
       ] },
-      { id: "kitchen", label: "Kitchen", imageIndex: 1, note: "Illustrative generated panorama-style preview; it is not a real property capture.", approvedHighlights: ["Illustrative generated media", "Demo room sequence"], floorPlanPosition: { x: 58, y: 42 }, viewerPosition: { x: 68, y: 61 }, timedPhotos: [
+      { id: "kitchen", label: "Kitchen", imageIndex: 1, note: "Illustrative generated panorama-style preview; it is not a real property capture.", approvedHighlights: ["Illustrative generated media", "Demo room sequence"], floorPlanPosition: { x: 73, y: 17 }, floorPlanBounds: { x: 51, y: 5, width: 44, height: 23 }, viewerPosition: { x: 68, y: 61 }, timedPhotos: [
         { id: "morning", label: "Morning", timeRange: "7:30 AM", description: "Soft early daylight across the illustrative kitchen.", src: "/manus-storage/queenstown-kitchen-morning-timed_d5b847ce.jpg" },
         { id: "noon", label: "Noon", timeRange: "12:30 PM", description: "Bright neutral daylight across the illustrative kitchen.", src: "/manus-storage/queenstown-kitchen-noon-timed_7f793736.jpg" },
         { id: "night", label: "Night", timeRange: "8:30 PM", description: "Warm task lighting across the illustrative kitchen.", src: "/manus-storage/queenstown-kitchen-night-timed_733de0e6.jpg" },
       ] },
-      { id: "rooms", label: "Room zone", imageIndex: 2, note: "Illustrative generated panorama-style preview; request a real viewing to verify any actual property.", approvedHighlights: ["Illustrative generated media", "Request a real viewing to verify"], floorPlanPosition: { x: 52, y: 75 }, viewerPosition: { x: 36, y: 72 } },
+      { id: "utility", label: "Utility / bath", imageIndex: 2, note: "Illustrative generated panorama-style preview; it is not a real property capture.", approvedHighlights: ["Illustrative generated media", "Privacy-safe room preview"], floorPlanPosition: { x: 73, y: 39 }, floorPlanBounds: { x: 51, y: 32, width: 44, height: 15 }, viewerPosition: { x: 36, y: 56 } },
+      { id: "primary", label: "Primary room", imageIndex: 2, note: "Illustrative generated panorama-style preview; request a real viewing to verify any actual property.", approvedHighlights: ["Illustrative generated media", "Request a real viewing to verify"], floorPlanPosition: { x: 20, y: 71 }, floorPlanBounds: { x: 5, y: 52, width: 29, height: 39 }, viewerPosition: { x: 34, y: 72 } },
+      { id: "room2", label: "Room 2", imageIndex: 2, note: "Illustrative generated panorama-style preview; request a real viewing to verify any actual property.", approvedHighlights: ["Illustrative generated media", "Request a real viewing to verify"], floorPlanPosition: { x: 50, y: 71 }, floorPlanBounds: { x: 36, y: 52, width: 28, height: 39 }, viewerPosition: { x: 58, y: 69 } },
+      { id: "room3", label: "Room 3", imageIndex: 2, note: "Illustrative generated panorama-style preview; request a real viewing to verify any actual property.", approvedHighlights: ["Illustrative generated media", "Request a real viewing to verify"], floorPlanPosition: { x: 80, y: 71 }, floorPlanBounds: { x: 66, y: 52, width: 29, height: 39 }, viewerPosition: { x: 74, y: 72 } },
     ],
     aiGuide: { enabled: true, intro: "This is an illustrative UrbanKey product demonstration. I can explain its viewing controls, but no property particulars, availability, or conditions are represented as factual." },
     privacyReview: { automatedRedactionRequired: true, manualReviewRequired: true, protectedTargets: ["Faces", "Family photos", "Letters and cards", "Name cards", "Access codes", "Visible personal information"], status: "demo-review-required" },

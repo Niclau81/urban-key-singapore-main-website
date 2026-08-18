@@ -282,3 +282,9 @@
 - [x] Replace unavailable generated Morning, Noon, and Night room assets with reliable working illustrative media for the Living / Dining and Kitchen views.
 - [x] Add interaction regressions that prove timing selection changes the displayed source and remains in photo mode for both rooms.
 - [x] Verify working Morning, Noon, and Night transitions across both rooms on desktop and mobile, then save the functional repair checkpoint.
+- [x] Map the supplied Queenstown floor plan into Living / dining, Kitchen, Utility / bath, Primary room, Room 2, and Room 3 navigable tour nodes.
+- [x] Add a prominently visible and unobstructed Morning, Noon, and Night timing chooser within the room viewer.
+- [x] Generate or assign privacy-safe illustrative room media so selecting each timing visibly changes both interior light and the room’s external window context.
+- [x] Keep floor-plan position, room navigation, panorama view, and per-room timing state synchronized for all six rooms.
+- [x] Add regression coverage and desktop/mobile verification for the floor-plan room map, timing control visibility, selection interaction, and time-specific visual sources.
+- [ ] Save the verified floor-plan-mapped timed-lighting tour checkpoint and report the corrected interaction.
