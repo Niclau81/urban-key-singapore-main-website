@@ -270,4 +270,4 @@
 - [x] Preserve a clearly labelled guided-photo fallback for listings without approved real 360° assets and retain time-aware photo controls only in that fallback.
 - [x] Define the verified-public-tour asset contract so private captures remain excluded until an independent approval workflow deliberately binds approved equirectangular assets to room-specific panorama URLs.
 - [x] Add regression coverage and desktop/mobile interaction verification for camera movement, hotspots, floor maps, full screen, accessible controls, and fallback truthfulness.
-- [ ] Save the verified interactive 3D-tour checkpoint and document required 360° capture and approval steps.
+- [x] Save the verified interactive 3D-tour checkpoint and document required 360° capture and approval steps.
