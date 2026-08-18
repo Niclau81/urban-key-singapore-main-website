@@ -248,4 +248,4 @@
 - [x] Clearly distinguish verified 360° panorama assets from the retained time-aware photo fallback, without presenting ordinary photos as a panorama.
 - [x] Preserve optional AI guide, privacy review, appointment intent, and session-only analytics within the immersive viewer shell.
 - [x] Add focused regression coverage and desktop/mobile visual verification for the immersive viewer, floor selector, room jump interactions, and fallback state.
-- [ ] Save the verified immersive-tour checkpoint and document required real 360° capture, upload, redaction, and publication workflows.
+- [x] Save the verified immersive-tour checkpoint and document required real 360° capture, upload, redaction, and publication workflows.
