@@ -221,3 +221,7 @@
 - [x] Produce a clear narration script and English captions that explain the approval-controlled operating model without overstating automation.
 - [x] Assemble and verify the accessible demo video, captions, and any supporting production notes.
 - [x] Save the video-production checkpoint and deliver the completed demo artifacts.
+- [x] Identify a working spoken-narration fallback after the silent demo-video delivery defect.
+- [x] Generate an audible English narration and synchronize it to the existing AI Property Agent demonstration visuals and captions.
+- [x] Verify the corrected video includes an audible non-silent track, synchronized captions, and intact safeguard content.
+- [ ] Save and deliver the corrected narrated video artifact.
