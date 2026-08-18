@@ -12,7 +12,10 @@ export type VirtualPropertyTour = {
   badgeLabel: string;
   disclosure: string;
   captureMode: "guided-photo" | "illustrative-panorama" | "verified-360";
+  /** Legacy single-room panorama source. New real tours should provide `panoramaUrls` per room. */
   panoramaUrl?: string;
+  /** Room-specific equirectangular sources. Verified sources can be shown as a true interactive photo sphere after approval. */
+  panoramaUrls?: Partial<Record<string, string>>;
   panoramaPreviewUrls?: Partial<Record<string, string>>;
   floors: Array<{
     id: string;

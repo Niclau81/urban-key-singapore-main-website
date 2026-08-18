@@ -168,6 +168,7 @@ describe("property intelligence procedures", () => {
     const cardSource = readFileSync(resolve(process.cwd(), "client/src/components/PropertyCard.tsx"), "utf8");
     const detailSource = readFileSync(resolve(process.cwd(), "client/src/pages/PropertyDetail.tsx"), "utf8");
     const guidedSource = readFileSync(resolve(process.cwd(), "client/src/components/VirtualPropertyTour.tsx"), "utf8");
+    const panoramaSource = readFileSync(resolve(process.cwd(), "client/src/components/EquirectangularPanorama.tsx"), "utf8");
     const timedSource = readFileSync(resolve(process.cwd(), "client/src/components/VirtualTour.tsx"), "utf8");
 
     expect(cardSource).toContain("data-virtual-tour-badge");
@@ -176,8 +177,8 @@ describe("property intelligence procedures", () => {
     expect(guidedSource).toContain("recordLocalTourEvent");
     expect(guidedSource).toContain('data-virtual-property-tour="immersive-viewer"');
     expect(guidedSource).toContain("guided-photo-fallback");
-    expect(guidedSource).toContain("illustrative-panorama-preview");
-    expect(guidedSource).toContain("Illustrative generated panorama preview");
+    expect(guidedSource).toContain("isIllustrativePanoramaPreview");
+    expect(guidedSource).toContain("Illustrative 360° preview");
     expect(guidedSource).toContain("not a captured 360° property tour");
     expect(guidedSource).toContain("requestFullscreen");
     expect(guidedSource).toContain("data-tour-zoom");
@@ -190,6 +191,16 @@ describe("property intelligence procedures", () => {
     expect(guidedSource).toContain('data-tour-guide-scope="approved-metadata"');
     expect(timedSource).toContain("data-tour-photo-timing");
     expect(guidedSource).toContain("photo-timing-select");
+    expect(guidedSource).toContain("<EquirectangularPanorama");
+    expect(guidedSource).toContain("interactivePanoramaUrl");
+    expect(guidedSource).toContain("Illustrative 360° preview");
+    expect(panoramaSource).toContain("SphereGeometry");
+    expect(panoramaSource).toContain("geometry.scale(-1, 1, 1)");
+    expect(panoramaSource).toContain("TextureLoader");
+    expect(panoramaSource).toContain("pointermove");
+    expect(panoramaSource).toContain("ArrowLeft");
+    expect(panoramaSource).toContain("vector.project(activeCamera)");
+    expect(panoramaSource).toContain("Panorama rendering is unavailable");
   });
 
   it("matches commercial usage text without including residential listings", async () => {

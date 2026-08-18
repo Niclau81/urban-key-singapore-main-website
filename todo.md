@@ -263,3 +263,11 @@
 - [x] Integrate the new illustrative assets under persistent generated-demo disclosure, without changing the semantics of real approved 360° captures.
 - [x] Add regression coverage and desktop/mobile verification for capture validation, approval gates, private storage, and all three illustrative tour listings.
 - [x] Document agent operating procedures, run final validation, and save the real-capture and multi-listing-media checkpoint.
+- [x] Interactively inspect and document the observable room traversal, panorama camera, floor-card, floor-plan node, zoom, full-screen, and control behavior in the supplied public 3D Home reference.
+- [x] Audit the current UrbanKey panorama-preview implementation and define an original true-equirectangular viewer contract that does not misrepresent wide still images as 360° capture.
+- [x] Add an interactive equirectangular panorama renderer with drag or touch camera movement, field-of-view zoom, keyboard controls, and full-screen support for verified 360° assets.
+- [x] Add clickable room-navigation nodes over the panorama and synchronised multi-floor plan cards with active panorama positioning.
+- [x] Preserve a clearly labelled guided-photo fallback for listings without approved real 360° assets and retain time-aware photo controls only in that fallback.
+- [x] Define the verified-public-tour asset contract so private captures remain excluded until an independent approval workflow deliberately binds approved equirectangular assets to room-specific panorama URLs.
+- [x] Add regression coverage and desktop/mobile interaction verification for camera movement, hotspots, floor maps, full screen, accessible controls, and fallback truthfulness.
+- [ ] Save the verified interactive 3D-tour checkpoint and document required 360° capture and approval steps.
