@@ -299,4 +299,4 @@
 - [x] Map time selection to the corresponding panorama state while retaining the guided-photo fallback and explicit capture disclosure.
 - [x] Add directional door-arrow movement between connected rooms and keep the floor-plan active room position synchronized after each transition.
 - [x] Add regression coverage and desktop/mobile verification for timed panorama changes, clean Room 2/Room 3 media, arrows, and floor-plan traversal.
-- [ ] Save the verified timed-panorama and directional-traversal checkpoint and report the enhanced tour.
+- [x] Save the verified timed-panorama and directional-traversal checkpoint and report the enhanced tour.
