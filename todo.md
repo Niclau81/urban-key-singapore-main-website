@@ -287,4 +287,4 @@
 - [x] Generate or assign privacy-safe illustrative room media so selecting each timing visibly changes both interior light and the room’s external window context.
 - [x] Keep floor-plan position, room navigation, panorama view, and per-room timing state synchronized for all six rooms.
 - [x] Add regression coverage and desktop/mobile verification for the floor-plan room map, timing control visibility, selection interaction, and time-specific visual sources.
-- [ ] Save the verified floor-plan-mapped timed-lighting tour checkpoint and report the corrected interaction.
+- [x] Save the verified floor-plan-mapped timed-lighting tour checkpoint and report the corrected interaction.
