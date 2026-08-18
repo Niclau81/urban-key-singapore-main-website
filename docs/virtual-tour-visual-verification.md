@@ -11,3 +11,7 @@ After successful property API responses, Explore rendered 12 Singapore listings.
 ## Compact mobile verification
 
 At 390 × 844, the property detail page retained the optional tour entry and the guided experience reflowed into a single column. The photo-time control remained above the image, followed by the floor-plan hotspots, room status, previous/next controls, optional guide, appointment request, privacy-review disclosure, and explicit tour-scope statement. The dense property page remained vertically scrollable with no horizontal clipping observed.
+
+## Immersive viewer redesign verification
+
+The immersive redesign replaced the previous light guided-gallery composition with a dark, edge-to-edge room viewer. On desktop, the primary image canvas carries the active room name, an explicit `Photos, not panorama` capture label, blue on-canvas jump markers, room progression controls, the retained timing control, and an adjacent floor card with blue panorama dots. On mobile, the canvas and floor card stack without clipping while preserving the room-jump markers, photo fallback warning, and viewing-request action. This responsive implementation reflects the supplied interaction reference while remaining explicit that the currently approved media are guided photographs rather than verified 360-degree capture.

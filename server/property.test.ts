@@ -133,7 +133,10 @@ describe("property intelligence procedures", () => {
     for (const property of tourListings) {
       const tour = property.virtualTour!;
       expect(tour.rooms.length).toBeGreaterThanOrEqual(3);
-      expect(tour.rooms.every(room => room.imageIndex >= 0 && room.imageIndex < property.gallery.length)).toBe(true);
+      expect(tour.captureMode).toBe("guided-photo");
+      expect(tour.panoramaUrl).toBeUndefined();
+      expect(tour.floors.length).toBeGreaterThanOrEqual(1);
+      expect(tour.rooms.every(room => room.imageIndex >= 0 && room.imageIndex < property.gallery.length && room.viewerPosition.x > 0 && room.viewerPosition.x < 100 && room.viewerPosition.y > 0 && room.viewerPosition.y < 100)).toBe(true);
       expect(tour.aiGuide).toMatchObject({ enabled: true, intro: expect.any(String) });
       expect(tour.aiGuide.intro.length).toBeGreaterThan(80);
       expect(tour.privacyReview).toMatchObject({ automatedRedactionRequired: true, manualReviewRequired: true, status: "demo-review-required" });
@@ -153,13 +156,19 @@ describe("property intelligence procedures", () => {
     expect(detailSource).toContain("<VirtualPropertyTour");
     expect(detailSource).toContain("#virtual-property-tour");
     expect(guidedSource).toContain("recordLocalTourEvent");
-    expect(guidedSource).toContain("Privacy review required.");
-    expect(guidedSource).toContain("privacyReview.protectedTargets");
-    expect(guidedSource).toContain("onImageIndexChange");
+    expect(guidedSource).toContain('data-virtual-property-tour="immersive-viewer"');
+    expect(guidedSource).toContain("guided-photo-fallback");
+    expect(guidedSource).toContain("requestFullscreen");
+    expect(guidedSource).toContain("data-tour-zoom");
+    expect(guidedSource).toContain("Zoom in guided photo");
+    expect(guidedSource).toContain("motion-reduce:transition-none");
+    expect(guidedSource).toContain("ArrowLeft");
+    expect(guidedSource).toContain("floorPlanPosition");
+    expect(guidedSource).toContain("viewerPosition");
     expect(guidedSource).toContain("speechSynthesis.speak");
     expect(guidedSource).toContain('data-tour-guide-scope="approved-metadata"');
     expect(timedSource).toContain("data-tour-photo-timing");
-    expect(timedSource).toContain("photo-timing-select");
+    expect(guidedSource).toContain("photo-timing-select");
   });
 
   it("matches commercial usage text without including residential listings", async () => {

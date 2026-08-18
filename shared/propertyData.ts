@@ -393,10 +393,12 @@ const singaporeVirtualTours: Record<string, VirtualPropertyTour> = {
   "marina-cove-28-08": {
     badgeLabel: "Virtual Property Tour",
     disclosure: "Guided photo-and-floor-plan tour based on the listing media. It is not a 360° survey, an as-built model, or a substitute for an in-person viewing.",
+    captureMode: "guided-photo",
+    floors: [{ id: "main", label: "Main floor", roomIds: ["arrival", "living", "view"] }],
     rooms: [
-      { id: "arrival", label: "Arrival", imageIndex: 0, note: "Begin with the primary listing perspective.", approvedHighlights: ["Listing photo", "Timed view available where supplied"], floorPlanPosition: { x: 20, y: 58 } },
-      { id: "living", label: "Living space", imageIndex: 1, note: "Move to the shared living perspective in the published gallery.", approvedHighlights: ["Published gallery image", "Room sequence"], floorPlanPosition: { x: 50, y: 40 } },
-      { id: "view", label: "View context", imageIndex: 2, note: "Review the final published perspective before arranging an in-person viewing.", approvedHighlights: ["Published gallery image", "Follow-up viewing available"], floorPlanPosition: { x: 78, y: 58 } },
+      { id: "arrival", label: "Arrival", imageIndex: 0, note: "Begin with the primary listing perspective.", approvedHighlights: ["Listing photo", "Timed view available where supplied"], floorPlanPosition: { x: 20, y: 58 }, viewerPosition: { x: 50, y: 66 } },
+      { id: "living", label: "Living space", imageIndex: 1, note: "Move to the shared living perspective in the published gallery.", approvedHighlights: ["Published gallery image", "Room sequence"], floorPlanPosition: { x: 50, y: 40 }, viewerPosition: { x: 68, y: 62 } },
+      { id: "view", label: "View context", imageIndex: 2, note: "Review the final published perspective before arranging an in-person viewing.", approvedHighlights: ["Published gallery image", "Follow-up viewing available"], floorPlanPosition: { x: 78, y: 58 }, viewerPosition: { x: 37, y: 70 } },
     ],
     aiGuide: { enabled: true, intro: "I can guide you through the approved room sequence and explain the tour controls. I only describe published listing media and do not verify property conditions or provide advice." },
     privacyReview: { automatedRedactionRequired: true, manualReviewRequired: true, protectedTargets: ["Faces", "Family photos", "Letters and cards", "Name cards", "Access codes", "Visible personal information"], status: "demo-review-required" },
@@ -405,10 +407,12 @@ const singaporeVirtualTours: Record<string, VirtualPropertyTour> = {
   "interlace-garden-06-12": {
     badgeLabel: "Virtual Property Tour",
     disclosure: "Guided photo-and-floor-plan tour based on the listing media. It is not a 360° survey, an as-built model, or a substitute for an in-person viewing.",
+    captureMode: "guided-photo",
+    floors: [{ id: "main", label: "Main floor", roomIds: ["entry", "gather", "outlook"] }],
     rooms: [
-      { id: "entry", label: "Entry", imageIndex: 0, note: "Start with the published arrival perspective.", approvedHighlights: ["Listing photo", "Guided room sequence"], floorPlanPosition: { x: 18, y: 62 } },
-      { id: "gather", label: "Gathering area", imageIndex: 1, note: "Continue to the shared-space gallery perspective.", approvedHighlights: ["Published gallery image", "Floor-plan context"], floorPlanPosition: { x: 50, y: 40 } },
-      { id: "outlook", label: "Outlook", imageIndex: 2, note: "End with a further approved gallery perspective.", approvedHighlights: ["Published gallery image", "Viewing request available"], floorPlanPosition: { x: 80, y: 62 } },
+      { id: "entry", label: "Entry", imageIndex: 0, note: "Start with the published arrival perspective.", approvedHighlights: ["Listing photo", "Guided room sequence"], floorPlanPosition: { x: 18, y: 62 }, viewerPosition: { x: 48, y: 68 } },
+      { id: "gather", label: "Gathering area", imageIndex: 1, note: "Continue to the shared-space gallery perspective.", approvedHighlights: ["Published gallery image", "Floor-plan context"], floorPlanPosition: { x: 50, y: 40 }, viewerPosition: { x: 64, y: 61 } },
+      { id: "outlook", label: "Outlook", imageIndex: 2, note: "End with a further approved gallery perspective.", approvedHighlights: ["Published gallery image", "Viewing request available"], floorPlanPosition: { x: 80, y: 62 }, viewerPosition: { x: 34, y: 72 } },
     ],
     aiGuide: { enabled: true, intro: "I can keep the viewing sequence clear and point to approved gallery and floor-plan context. For condition, measurements, or availability, please arrange a viewing and verify with the appointed agent." },
     privacyReview: { automatedRedactionRequired: true, manualReviewRequired: true, protectedTargets: ["Faces", "Family photos", "Letters and cards", "Name cards", "Access codes", "Visible personal information"], status: "demo-review-required" },
@@ -417,10 +421,12 @@ const singaporeVirtualTours: Record<string, VirtualPropertyTour> = {
   "queenstown-skyline-demo": {
     badgeLabel: "Virtual Property Tour",
     disclosure: "Illustrative guided photo-and-floor-plan demonstration. This is not a real property tour, 360° survey, official plan, or representation of an actual unit.",
+    captureMode: "guided-photo",
+    floors: [{ id: "main", label: "Illustrative layout", roomIds: ["living", "kitchen", "rooms"] }],
     rooms: [
-      { id: "living", label: "Living / dining", imageIndex: 0, note: "Illustrative tour start using the curated demonstration gallery.", approvedHighlights: ["Illustrative demo", "Floor-plan reference"], floorPlanPosition: { x: 28, y: 42 } },
-      { id: "kitchen", label: "Kitchen", imageIndex: 1, note: "Illustrative second viewpoint in the demonstration sequence.", approvedHighlights: ["Illustrative demo", "Published sequence"], floorPlanPosition: { x: 58, y: 42 } },
-      { id: "rooms", label: "Room zone", imageIndex: 2, note: "Illustrative final room-zone viewpoint.", approvedHighlights: ["Illustrative demo", "Request a real viewing to verify"], floorPlanPosition: { x: 52, y: 75 } },
+      { id: "living", label: "Living / dining", imageIndex: 0, note: "Illustrative tour start using the curated demonstration gallery.", approvedHighlights: ["Illustrative demo", "Floor-plan reference"], floorPlanPosition: { x: 28, y: 42 }, viewerPosition: { x: 50, y: 66 } },
+      { id: "kitchen", label: "Kitchen", imageIndex: 1, note: "Illustrative second viewpoint in the demonstration sequence.", approvedHighlights: ["Illustrative demo", "Published sequence"], floorPlanPosition: { x: 58, y: 42 }, viewerPosition: { x: 68, y: 61 } },
+      { id: "rooms", label: "Room zone", imageIndex: 2, note: "Illustrative final room-zone viewpoint.", approvedHighlights: ["Illustrative demo", "Request a real viewing to verify"], floorPlanPosition: { x: 52, y: 75 }, viewerPosition: { x: 36, y: 72 } },
     ],
     aiGuide: { enabled: true, intro: "This is an illustrative UrbanKey product demonstration. I can explain its viewing controls, but no property particulars, availability, or conditions are represented as factual." },
     privacyReview: { automatedRedactionRequired: true, manualReviewRequired: true, protectedTargets: ["Faces", "Family photos", "Letters and cards", "Name cards", "Access codes", "Visible personal information"], status: "demo-review-required" },

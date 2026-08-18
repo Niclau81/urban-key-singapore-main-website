@@ -3,7 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ChevronLeft, ChevronRight, Clock3, Image as ImageIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
-type TimingPhoto = {
+export type TimingPhoto = {
   id: string;
   label: string;
   timeRange: string;
@@ -39,7 +39,7 @@ const OFFICE_INTERIOR_TIMING_PHOTOS: TimingPhoto[] = [
   },
 ];
 
-function getTimingPhotos(imageUrl: string): TimingPhoto[] {
+export function getTimingPhotos(imageUrl: string): TimingPhoto[] {
   if (imageUrl.toLowerCase().includes("office-interior_791afa97")) {
     return OFFICE_INTERIOR_TIMING_PHOTOS;
   }

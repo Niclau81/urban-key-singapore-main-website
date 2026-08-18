@@ -242,3 +242,10 @@
 - [x] Add optional AI Tour Guide narration and text that use only approved room and listing metadata.
 - [x] Add AI-assisted privacy-redaction review requirements for faces, personal images, letters, cards, name cards, access codes, and other identifying information, with manual publication review.
 - [x] Add privacy-first viewer analytics for tour entry, rooms visited, and appointment intent without automated lead scoring or cross-list profiling.
+- [x] Analyze the supplied immersive property-tour reference and document the original UrbanKey interaction model: panoramic canvas, room labels, jump markers, floor navigator, and full-screen control.
+- [x] Redesign the selected Singapore Virtual Property Tour examples around a true immersive 360°-ready canvas rather than the current guided-gallery layout.
+- [x] Add room-jump hotspot overlays, multi-floor navigation cards with active panorama dots, zoom, full-screen, keyboard navigation, and reduced-motion support.
+- [x] Clearly distinguish verified 360° panorama assets from the retained time-aware photo fallback, without presenting ordinary photos as a panorama.
+- [x] Preserve optional AI guide, privacy review, appointment intent, and session-only analytics within the immersive viewer shell.
+- [x] Add focused regression coverage and desktop/mobile visual verification for the immersive viewer, floor selector, room jump interactions, and fallback state.
+- [ ] Save the verified immersive-tour checkpoint and document required real 360° capture, upload, redaction, and publication workflows.

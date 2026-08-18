@@ -5,11 +5,19 @@ export type VirtualTourRoom = {
   note: string;
   approvedHighlights: string[];
   floorPlanPosition: { x: number; y: number };
+  viewerPosition: { x: number; y: number };
 };
 
 export type VirtualPropertyTour = {
   badgeLabel: string;
   disclosure: string;
+  captureMode: "guided-photo" | "verified-360";
+  panoramaUrl?: string;
+  floors: Array<{
+    id: string;
+    label: string;
+    roomIds: string[];
+  }>;
   rooms: VirtualTourRoom[];
   aiGuide: {
     enabled: boolean;
