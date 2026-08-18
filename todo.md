@@ -288,3 +288,8 @@
 - [x] Keep floor-plan position, room navigation, panorama view, and per-room timing state synchronized for all six rooms.
 - [x] Add regression coverage and desktop/mobile verification for the floor-plan room map, timing control visibility, selection interaction, and time-specific visual sources.
 - [x] Save the verified floor-plan-mapped timed-lighting tour checkpoint and report the corrected interaction.
+- [x] Trace the stale Arrival/Living space/View context tour record shown by the user and replace it where the approved six-room plan should apply.
+- [x] Make Morning, Noon, and Night direct buttons visible for any tour room that has timed media, without a prerequisite mode-switch click.
+- [x] Keep each listing’s floor plan, room labels, panorama nodes, and timing media internally consistent, with no mixed legacy layout shown to the user.
+- [x] Add cross-listing regressions and desktop/mobile verification for the active tour’s six-room plan and directly selectable timing buttons.
+- [ ] Save the verified cross-listing floor-plan and timing-control correction checkpoint.

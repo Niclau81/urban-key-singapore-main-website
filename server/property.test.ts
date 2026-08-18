@@ -161,15 +161,24 @@ describe("property intelligence procedures", () => {
     expect(generatedDemo.virtualTour!.floors[0]?.roomIds).toEqual(["living", "kitchen", "utility", "primary", "room2", "room3"]);
     expect(generatedDemo.virtualTour!.rooms.map(room => room.label)).toEqual(["Living / dining", "Kitchen", "Utility / bath", "Primary room", "Room 2", "Room 3"]);
     expect(generatedDemo.virtualTour!.rooms.every(room => room.floorPlanBounds && room.floorPlanBounds.width > 0 && room.floorPlanBounds.height > 0)).toBe(true);
-    for (const [listingId, assetPrefix] of [["marina-cove-28-08", "marina-cove-demo-"], ["interlace-garden-06-12", "interlace-demo-"]] as const) {
-      const generatedTour = tourListings.find(property => property.id === listingId)!;
-      expect(generatedTour.virtualTour).toMatchObject({ captureMode: "illustrative-panorama" });
-      expect(generatedTour.gallery).toHaveLength(3);
-      expect(generatedTour.gallery.every(url => url.includes(`/manus-storage/${assetPrefix}`))).toBe(true);
-      expect(Object.values(generatedTour.virtualTour!.panoramaPreviewUrls ?? {})).toHaveLength(3);
-      expect(Object.values(generatedTour.virtualTour!.panoramaPreviewUrls ?? {}).every(url => url.includes(`/manus-storage/${assetPrefix}`))).toBe(true);
-      expect(generatedTour.virtualTour!.disclosure).toContain("not a real property tour");
-    }
+    const marinaTour = tourListings.find(property => property.id === "marina-cove-28-08")!;
+    expect(marinaTour.virtualTour).toMatchObject({ captureMode: "illustrative-panorama" });
+    expect(marinaTour.gallery).toHaveLength(3);
+    expect(marinaTour.gallery.every(url => url.includes("/manus-storage/marina-cove-demo-"))).toBe(true);
+    expect(marinaTour.virtualTour!.floors[0]?.roomIds).toEqual(["living", "kitchen", "utility", "primary", "room2", "room3"]);
+    expect(marinaTour.virtualTour!.rooms.map(room => room.label)).toEqual(["Living / dining", "Kitchen", "Utility / bath", "Primary room", "Room 2", "Room 3"]);
+    expect(Object.values(marinaTour.virtualTour!.panoramaPreviewUrls ?? {})).toHaveLength(7);
+    expect(marinaTour.virtualTour!.rooms.every(room => room.floorPlanBounds && room.floorPlanBounds.width > 0 && room.floorPlanBounds.height > 0)).toBe(true);
+    expect(marinaTour.virtualTour!.rooms.find(room => room.id === "living")?.timedPhotos?.map(photo => photo.id)).toEqual(["morning", "noon", "night"]);
+    expect(marinaTour.virtualTour!.disclosure).toContain("not a real property tour");
+
+    const interlaceTour = tourListings.find(property => property.id === "interlace-garden-06-12")!;
+    expect(interlaceTour.virtualTour).toMatchObject({ captureMode: "illustrative-panorama" });
+    expect(interlaceTour.gallery).toHaveLength(3);
+    expect(interlaceTour.gallery.every(url => url.includes("/manus-storage/interlace-demo-"))).toBe(true);
+    expect(Object.values(interlaceTour.virtualTour!.panoramaPreviewUrls ?? {})).toHaveLength(3);
+    expect(Object.values(interlaceTour.virtualTour!.panoramaPreviewUrls ?? {}).every(url => url.includes("/manus-storage/interlace-demo-"))).toBe(true);
+    expect(interlaceTour.virtualTour!.disclosure).toContain("not a real property tour");
     expect(properties.filter(property => property.marketId === "singapore" && !property.virtualTour).length).toBeGreaterThan(0);
   });
 
@@ -205,9 +214,9 @@ describe("property intelligence procedures", () => {
     expect(guidedSource).toContain("selectTiming");
     expect(guidedSource).toContain("showPanoramaPreview");
     expect(guidedSource).toContain("visible-photo-timing-choices");
-    expect(guidedSource).toContain("Choose Morning, Noon or Night");
     expect(guidedSource).toContain("Photo timing · changes daylight and outlook");
     expect(guidedSource).toContain("floorPlanBounds");
+    expect(guidedSource).toContain("!isVerified360 && timingPhotos.length > 1");
     expect(guidedSource).toContain("<EquirectangularPanorama");
     expect(guidedSource).toContain("interactivePanoramaUrl");
     expect(guidedSource).toContain("Illustrative 360° preview");
