@@ -249,3 +249,9 @@
 - [x] Preserve optional AI guide, privacy review, appointment intent, and session-only analytics within the immersive viewer shell.
 - [x] Add focused regression coverage and desktop/mobile visual verification for the immersive viewer, floor selector, room jump interactions, and fallback state.
 - [x] Save the verified immersive-tour checkpoint and document required real 360° capture, upload, redaction, and publication workflows.
+- [x] Define a consistent original Singapore demonstration-media shot list and panorama-ready scene specification for tour-ready listings.
+- [x] Generate privacy-safe illustrative interior photos and equirectangular-style panorama assets without people, personal data, documents, cards, access codes, or real-property claims.
+- [x] Store generated static assets through the managed web asset workflow and associate them only with clearly disclosed demonstration tour listings.
+- [x] Integrate demonstration panorama assets into the immersive viewer while retaining the labelled guided-photo fallback and time-aware photo selector.
+- [x] Add regression coverage and desktop/mobile visual verification for generated demo media, panorama readiness, labels, and fallback integrity.
+- [ ] Save the verified demonstration-media checkpoint and deliver the generated asset package.

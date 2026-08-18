@@ -389,6 +389,12 @@ const southeastAsiaPlanningProperties: Property[] = southeastAsiaPlanningSeeds.m
   },
 }));
 
+const queenstownGeneratedDemoGallery = [
+  "/manus-storage/queenstown-demo-arrival_14745fbb.jpg",
+  "/manus-storage/queenstown-demo-living_2085c0f5.jpg",
+  "/manus-storage/queenstown-demo-window_ce0aa380.jpg",
+];
+
 const singaporeVirtualTours: Record<string, VirtualPropertyTour> = {
   "marina-cove-28-08": {
     badgeLabel: "Virtual Property Tour",
@@ -420,13 +426,18 @@ const singaporeVirtualTours: Record<string, VirtualPropertyTour> = {
   },
   "queenstown-skyline-demo": {
     badgeLabel: "Virtual Property Tour",
-    disclosure: "Illustrative guided photo-and-floor-plan demonstration. This is not a real property tour, 360° survey, official plan, or representation of an actual unit.",
-    captureMode: "guided-photo",
+    disclosure: "Illustrative generated photo-and-panorama demonstration. This is not a real property tour, captured 360° survey, official plan, or representation of an actual unit.",
+    captureMode: "illustrative-panorama",
+    panoramaPreviewUrls: {
+      living: "/manus-storage/queenstown-demo-living-panorama_49eaf814.jpg",
+      kitchen: "/manus-storage/queenstown-demo-arrival-panorama_b77a19f9.jpg",
+      rooms: "/manus-storage/queenstown-demo-window-panorama_18abf47a.jpg",
+    },
     floors: [{ id: "main", label: "Illustrative layout", roomIds: ["living", "kitchen", "rooms"] }],
     rooms: [
-      { id: "living", label: "Living / dining", imageIndex: 0, note: "Illustrative tour start using the curated demonstration gallery.", approvedHighlights: ["Illustrative demo", "Floor-plan reference"], floorPlanPosition: { x: 28, y: 42 }, viewerPosition: { x: 50, y: 66 } },
-      { id: "kitchen", label: "Kitchen", imageIndex: 1, note: "Illustrative second viewpoint in the demonstration sequence.", approvedHighlights: ["Illustrative demo", "Published sequence"], floorPlanPosition: { x: 58, y: 42 }, viewerPosition: { x: 68, y: 61 } },
-      { id: "rooms", label: "Room zone", imageIndex: 2, note: "Illustrative final room-zone viewpoint.", approvedHighlights: ["Illustrative demo", "Request a real viewing to verify"], floorPlanPosition: { x: 52, y: 75 }, viewerPosition: { x: 36, y: 72 } },
+      { id: "living", label: "Living / dining", imageIndex: 0, note: "Illustrative generated panorama-style preview; it is not a real property capture.", approvedHighlights: ["Illustrative generated media", "Floor-plan reference"], floorPlanPosition: { x: 28, y: 42 }, viewerPosition: { x: 50, y: 66 } },
+      { id: "kitchen", label: "Kitchen", imageIndex: 1, note: "Illustrative generated panorama-style preview; it is not a real property capture.", approvedHighlights: ["Illustrative generated media", "Demo room sequence"], floorPlanPosition: { x: 58, y: 42 }, viewerPosition: { x: 68, y: 61 } },
+      { id: "rooms", label: "Room zone", imageIndex: 2, note: "Illustrative generated panorama-style preview; request a real viewing to verify any actual property.", approvedHighlights: ["Illustrative generated media", "Request a real viewing to verify"], floorPlanPosition: { x: 52, y: 75 }, viewerPosition: { x: 36, y: 72 } },
     ],
     aiGuide: { enabled: true, intro: "This is an illustrative UrbanKey product demonstration. I can explain its viewing controls, but no property particulars, availability, or conditions are represented as factual." },
     privacyReview: { automatedRedactionRequired: true, manualReviewRequired: true, protectedTargets: ["Faces", "Family photos", "Letters and cards", "Name cards", "Access codes", "Visible personal information"], status: "demo-review-required" },
@@ -437,7 +448,10 @@ const singaporeVirtualTours: Record<string, VirtualPropertyTour> = {
 export const properties: Property[] = [
   ...[...residentialProperties, ...hdbProperties, ...commercialProperties]
     .map(withIllustrativeFloorPlan)
-    .map(property => ({ ...property, marketId: "singapore" as MarketId, virtualTour: singaporeVirtualTours[property.id] })),
+    .map(property => {
+      const gallery = property.id === "queenstown-skyline-demo" ? queenstownGeneratedDemoGallery : property.gallery;
+      return { ...property, image: gallery[0], gallery, marketId: "singapore" as MarketId, virtualTour: singaporeVirtualTours[property.id] };
+    }),
   ...southeastAsiaPlanningProperties,
 ];
 

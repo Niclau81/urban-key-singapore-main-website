@@ -11,8 +11,9 @@ export type VirtualTourRoom = {
 export type VirtualPropertyTour = {
   badgeLabel: string;
   disclosure: string;
-  captureMode: "guided-photo" | "verified-360";
+  captureMode: "guided-photo" | "illustrative-panorama" | "verified-360";
   panoramaUrl?: string;
+  panoramaPreviewUrls?: Partial<Record<string, string>>;
   floors: Array<{
     id: string;
     label: string;

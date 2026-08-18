@@ -133,7 +133,7 @@ describe("property intelligence procedures", () => {
     for (const property of tourListings) {
       const tour = property.virtualTour!;
       expect(tour.rooms.length).toBeGreaterThanOrEqual(3);
-      expect(tour.captureMode).toBe("guided-photo");
+      expect(["guided-photo", "illustrative-panorama"]).toContain(tour.captureMode);
       expect(tour.panoramaUrl).toBeUndefined();
       expect(tour.floors.length).toBeGreaterThanOrEqual(1);
       expect(tour.rooms.every(room => room.imageIndex >= 0 && room.imageIndex < property.gallery.length && room.viewerPosition.x > 0 && room.viewerPosition.x < 100 && room.viewerPosition.y > 0 && room.viewerPosition.y < 100)).toBe(true);
@@ -143,6 +143,15 @@ describe("property intelligence procedures", () => {
       expect(tour.privacyReview.protectedTargets).toEqual(expect.arrayContaining(["Faces", "Family photos", "Letters and cards", "Name cards", "Access codes"]));
       expect(tour.analytics).toEqual({ scope: "on-device", events: ["tour_opened", "room_visited", "appointment_intent"] });
     }
+    const generatedDemo = tourListings.find(property => property.id === "queenstown-skyline-demo")!;
+    expect(generatedDemo.gallery).toEqual([
+      "/manus-storage/queenstown-demo-arrival_14745fbb.jpg",
+      "/manus-storage/queenstown-demo-living_2085c0f5.jpg",
+      "/manus-storage/queenstown-demo-window_ce0aa380.jpg",
+    ]);
+    expect(generatedDemo.virtualTour).toMatchObject({ captureMode: "illustrative-panorama" });
+    expect(Object.values(generatedDemo.virtualTour!.panoramaPreviewUrls ?? {})).toHaveLength(3);
+    expect(Object.values(generatedDemo.virtualTour!.panoramaPreviewUrls ?? {}).every(url => url.includes("/manus-storage/queenstown-demo-") )).toBe(true);
     expect(properties.filter(property => property.marketId === "singapore" && !property.virtualTour).length).toBeGreaterThan(0);
   });
 
@@ -158,6 +167,9 @@ describe("property intelligence procedures", () => {
     expect(guidedSource).toContain("recordLocalTourEvent");
     expect(guidedSource).toContain('data-virtual-property-tour="immersive-viewer"');
     expect(guidedSource).toContain("guided-photo-fallback");
+    expect(guidedSource).toContain("illustrative-panorama-preview");
+    expect(guidedSource).toContain("Illustrative generated panorama preview");
+    expect(guidedSource).toContain("not a captured 360° property tour");
     expect(guidedSource).toContain("requestFullscreen");
     expect(guidedSource).toContain("data-tour-zoom");
     expect(guidedSource).toContain("Zoom in guided photo");
