@@ -199,6 +199,10 @@ describe("property intelligence procedures", () => {
     expect(guidedSource).toContain("photo-timing-select");
     expect(guidedSource).toContain("View photo timings");
     expect(guidedSource).toContain("activeRoom?.timedPhotos");
+    expect(guidedSource).toContain("timingByRoom");
+    expect(guidedSource).toContain("guidedPhotoRoomIds");
+    expect(guidedSource).toContain("selectTiming");
+    expect(guidedSource).toContain("showPanoramaPreview");
     expect(guidedSource).toContain("<EquirectangularPanorama");
     expect(guidedSource).toContain("interactivePanoramaUrl");
     expect(guidedSource).toContain("Illustrative 360° preview");

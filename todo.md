@@ -277,3 +277,8 @@
 - [x] Correct the affected tour view context and preserve room, floor, panorama, and guided-photo transitions.
 - [x] Add focused regression coverage and desktop/mobile verification for both timed rooms, selector availability, and the repaired viewer state.
 - [x] Save the verified timed-view repair checkpoint and report the corrected experience.
+- [x] Reproduce the timing-state reset after a Morning, Noon, or Night selection and identify the unavailable generated room-media sources.
+- [x] Keep selected timed-photo mode active per room so it cannot revert to panorama preview until the user explicitly chooses the panorama control.
+- [x] Replace unavailable generated Morning, Noon, and Night room assets with reliable working illustrative media for the Living / Dining and Kitchen views.
+- [x] Add interaction regressions that prove timing selection changes the displayed source and remains in photo mode for both rooms.
+- [x] Verify working Morning, Noon, and Night transitions across both rooms on desktop and mobile, then save the functional repair checkpoint.

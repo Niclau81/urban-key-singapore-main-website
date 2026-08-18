@@ -26,9 +26,9 @@ export function VirtualPropertyTour({ title, gallery, tour, onAppointmentIntent 
   const tourRef = useRef<HTMLElement>(null);
   const [activeFloorId, setActiveFloorId] = useState(tour.floors[0]?.id ?? "");
   const [activeRoomId, setActiveRoomId] = useState(tour.floors[0]?.roomIds[0] ?? tour.rooms[0]?.id ?? "");
-  const [timingId, setTimingId] = useState("noon");
+  const [timingByRoom, setTimingByRoom] = useState<Record<string, string>>({});
   const [zoom, setZoom] = useState(1);
-  const [showGuidedPhoto, setShowGuidedPhoto] = useState(false);
+  const [guidedPhotoRoomIds, setGuidedPhotoRoomIds] = useState<Set<string>>(() => new Set());
   const [guideOpen, setGuideOpen] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -36,11 +36,13 @@ export function VirtualPropertyTour({ title, gallery, tour, onAppointmentIntent 
   const activeRoom = tour.rooms.find(room => room.id === activeRoomId) ?? tour.rooms[0];
   const activeFloorRooms = useMemo(() => tour.rooms.filter(room => activeFloor?.roomIds.includes(room.id)), [activeFloor, tour.rooms]);
   const timingPhotos = useMemo(() => activeRoom?.timedPhotos?.map(photo => ({ ...photo, kind: "example-simulation" as const })) ?? getTimingPhotos(gallery[activeRoom?.imageIndex ?? 0]), [activeRoom, gallery]);
+  const timingId = timingByRoom[activeRoom?.id ?? ""] ?? "noon";
   const activeTiming = timingPhotos.find(photo => photo.id === timingId) ?? timingPhotos[0];
   const verifiedPanoramaUrl = tour.panoramaUrls?.[activeRoom?.id ?? ""] ?? tour.panoramaUrl;
   const isVerified360 = tour.captureMode === "verified-360" && Boolean(verifiedPanoramaUrl);
   const panoramaPreviewUrl = tour.panoramaPreviewUrls?.[activeRoom?.id ?? ""];
-  const isIllustrativePanoramaPreview = tour.captureMode === "illustrative-panorama" && Boolean(panoramaPreviewUrl) && !showGuidedPhoto;
+  const isGuidedPhotoSelected = Boolean(activeRoom && guidedPhotoRoomIds.has(activeRoom.id));
+  const isIllustrativePanoramaPreview = tour.captureMode === "illustrative-panorama" && Boolean(panoramaPreviewUrl) && !isGuidedPhotoSelected;
   const interactivePanoramaUrl = isVerified360 ? verifiedPanoramaUrl : isIllustrativePanoramaPreview ? panoramaPreviewUrl : undefined;
   const visibleImageSource = isIllustrativePanoramaPreview ? panoramaPreviewUrl! : activeTiming.src;
 
@@ -55,10 +57,28 @@ export function VirtualPropertyTour({ title, gallery, tour, onAppointmentIntent 
   }, [title]);
 
   useEffect(() => {
-    setTimingId("noon");
     setZoom(1);
-    setShowGuidedPhoto(false);
   }, [activeRoomId]);
+
+  const selectTiming = (nextTimingId: string) => {
+    if (!activeRoom) return;
+    setGuidedPhotoRoomIds(current => new Set(current).add(activeRoom.id));
+    setTimingByRoom(current => ({ ...current, [activeRoom.id]: nextTimingId }));
+  };
+
+  const showGuidedPhoto = () => {
+    if (!activeRoom) return;
+    setGuidedPhotoRoomIds(current => new Set(current).add(activeRoom.id));
+  };
+
+  const showPanoramaPreview = () => {
+    if (!activeRoom) return;
+    setGuidedPhotoRoomIds(current => {
+      const next = new Set(current);
+      next.delete(activeRoom.id);
+      return next;
+    });
+  };
 
   const selectRoom = (roomId: string) => {
     const room = tour.rooms.find(candidate => candidate.id === roomId);
@@ -132,7 +152,7 @@ export function VirtualPropertyTour({ title, gallery, tour, onAppointmentIntent 
         {!interactivePanoramaUrl && activeFloorRooms.filter(room => room.id !== activeRoom.id).map(room => <button key={room.id} type="button" onClick={() => selectRoom(room.id)} style={{ left: `${room.viewerPosition.x}%`, top: `${room.viewerPosition.y}%` }} aria-label={`Jump to ${room.label}`} className="absolute z-20 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full border border-white/80 bg-[#087ff5] px-2 py-1.5 text-[10px] font-bold text-white shadow-[0_6px_20px_rgba(0,0,0,.45)] transition hover:scale-105 focus-visible:ring-4 focus-visible:ring-white/60 motion-reduce:transform-none motion-reduce:transition-none"><Footprints className="size-3" />{room.label}</button>)}
         <div className="absolute inset-x-0 bottom-0 z-20 flex flex-col gap-3 p-4 sm:p-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-xl"><p className="font-display text-xl text-white">{activeRoom.note}</p><p className="mt-1 text-xs text-white/75">{isVerified360 ? "Drag, swipe, or use arrow keys to look around this interactive panoramic room capture." : isIllustrativePanoramaPreview ? "Interactive illustrative panorama preview · not captured from a real property." : `${activeTiming.label} · ${activeTiming.timeRange} · ${activeTiming.description}`}</p></div>
-          <div className="flex flex-wrap items-center gap-2"><Button aria-label="Previous room" onClick={() => cycleRoom(-1)} size="icon" variant="ghost" className="size-10 rounded-full border border-white/20 bg-[#17171e]/80 text-white hover:bg-white/15"><ChevronLeft className="size-4" /></Button>{!isVerified360 && isIllustrativePanoramaPreview && <Button onClick={() => setShowGuidedPhoto(true)} variant="outline" className="h-10 rounded-full border-white/20 bg-[#17171e]/85 px-4 text-xs text-white hover:bg-white/15">View photo timings</Button>}{!isVerified360 && !isIllustrativePanoramaPreview && tour.captureMode === "illustrative-panorama" && panoramaPreviewUrl && <Button onClick={() => setShowGuidedPhoto(false)} variant="outline" className="h-10 rounded-full border-white/20 bg-[#17171e]/85 px-4 text-xs text-white hover:bg-white/15">View panorama preview</Button>}{!isVerified360 && !isIllustrativePanoramaPreview && timingPhotos.length > 1 && <label className="flex h-10 items-center rounded-full border border-white/20 bg-[#17171e]/85 px-3 text-xs font-semibold text-white shadow-lg"><Eye className="mr-2 size-3.5 text-[#d5ae72]" /><span className="sr-only">Select photo timing</span><select value={activeTiming.id} onChange={event => setTimingId(event.target.value)} data-tour-control="photo-timing-select" aria-label="Select an available photo timing" className="min-w-[116px] appearance-none bg-transparent pr-1 text-xs outline-none">{timingPhotos.map(photo => <option className="text-[#17382f]" key={photo.id} value={photo.id}>{photo.label}</option>)}</select></label>}<Button aria-label="Next room" onClick={() => cycleRoom(1)} size="icon" variant="ghost" className="size-10 rounded-full border border-white/20 bg-[#17171e]/80 text-white hover:bg-white/15"><ChevronRight className="size-4" /></Button></div>
+          <div className="flex flex-wrap items-center gap-2"><Button aria-label="Previous room" onClick={() => cycleRoom(-1)} size="icon" variant="ghost" className="size-10 rounded-full border border-white/20 bg-[#17171e]/80 text-white hover:bg-white/15"><ChevronLeft className="size-4" /></Button>{!isVerified360 && isIllustrativePanoramaPreview && <Button onClick={showGuidedPhoto} variant="outline" className="h-10 rounded-full border-white/20 bg-[#17171e]/85 px-4 text-xs text-white hover:bg-white/15">View photo timings</Button>}{!isVerified360 && !isIllustrativePanoramaPreview && tour.captureMode === "illustrative-panorama" && panoramaPreviewUrl && <Button onClick={showPanoramaPreview} variant="outline" className="h-10 rounded-full border-white/20 bg-[#17171e]/85 px-4 text-xs text-white hover:bg-white/15">View panorama preview</Button>}{!isVerified360 && !isIllustrativePanoramaPreview && timingPhotos.length > 1 && <label className="flex h-10 items-center rounded-full border border-white/20 bg-[#17171e]/85 px-3 text-xs font-semibold text-white shadow-lg"><Eye className="mr-2 size-3.5 text-[#d5ae72]" /><span className="sr-only">Select photo timing</span><select value={activeTiming.id} onChange={event => selectTiming(event.target.value)} data-tour-control="photo-timing-select" aria-label="Select an available photo timing" className="min-w-[116px] appearance-none bg-transparent pr-1 text-xs outline-none">{timingPhotos.map(photo => <option className="text-[#17382f]" key={photo.id} value={photo.id}>{photo.label}</option>)}</select></label>}<Button aria-label="Next room" onClick={() => cycleRoom(1)} size="icon" variant="ghost" className="size-10 rounded-full border border-white/20 bg-[#17171e]/80 text-white hover:bg-white/15"><ChevronRight className="size-4" /></Button></div>
         </div>
       </div>
 
