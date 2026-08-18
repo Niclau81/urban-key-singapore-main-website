@@ -216,3 +216,8 @@
 - [x] Add a homepage call to action that explains the controlled Singapore transaction workflow and links directly to the workspace.
 - [x] Add regression coverage that prevents the Property Agent route from being omitted from public navigation and homepage entry points.
 - [x] Verify the new entry points on desktop and mobile, run validation, and save the discoverability-fix checkpoint.
+- [x] Write a concise AI Property Agent demo narrative covering discovery, consent, case creation, paperwork, appointments, communications, professional hand-offs, and audit safeguards.
+- [x] Capture the relevant AI Property Agent workspace visuals in a coherent user-action sequence.
+- [x] Produce a clear narration script and English captions that explain the approval-controlled operating model without overstating automation.
+- [x] Assemble and verify the accessible demo video, captions, and any supporting production notes.
+- [ ] Save the video-production checkpoint and deliver the completed demo artifacts.
