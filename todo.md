@@ -228,4 +228,4 @@
 - [x] Select a natural female voice for the AI Property Agent demo narration while preserving the approved script and timing.
 - [x] Re-render the captioned demonstration with the female narration replacing the prior fallback voice.
 - [x] Verify the female narration is audible, synchronized, and preserves the consent and approval safeguards.
-- [ ] Save and deliver the female-narrated video artifact.
+- [x] Save and deliver the female-narrated video artifact.
