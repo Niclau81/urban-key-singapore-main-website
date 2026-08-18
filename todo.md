@@ -229,3 +229,16 @@
 - [x] Re-render the captioned demonstration with the female narration replacing the prior fallback voice.
 - [x] Verify the female narration is audible, synchronized, and preserves the consent and approval safeguards.
 - [x] Save and deliver the female-narrated video artifact.
+- [x] Research public virtual-tour, guided-viewing, 3D capture, AI agent, and interactive floor-plan patterns while preserving an original UrbanKey experience.
+- [x] Audit the existing property-detail viewer, virtual viewing, floor-plan, and photo-timing controls for an additive integration plan.
+- [x] Define the Virtual Property Tour data model, listing consent, capture-quality, privacy, AI-guidance, accessibility, and graceful no-3D fallback requirements.
+- [x] Build a listing-level Virtual Property Tour that combines guided room hotspots and interactive floor-plan navigation with retained time-aware photo controls.
+- [x] Add a safe optional AI Tour Guide layer that describes only listing-provided tour metadata and does not invent property facts, give advice, or perform external actions.
+- [x] Add regression coverage and desktop/mobile verification for tour entry, room navigation, photo-timing retention, keyboard controls, and fallback states.
+- [ ] Document capture and operational requirements, save the verified virtual-tour checkpoint, and report any remaining product decisions.
+- [x] Add optional Virtual Property Tour metadata to selected Singapore listings and a compact high-visibility listing badge that differentiates tours from standard photo listings.
+- [x] Create original guided photo-and-floor-plan tours for selected Singapore listings without misrepresenting the experience as a complete 360-degree capture.
+- [x] Preserve the existing photo-timing selector within Virtual Property Tour listings and allow it to remain independently usable per room image.
+- [x] Add optional AI Tour Guide narration and text that use only approved room and listing metadata.
+- [x] Add AI-assisted privacy-redaction review requirements for faces, personal images, letters, cards, name cards, access codes, and other identifying information, with manual publication review.
+- [x] Add privacy-first viewer analytics for tour entry, rooms visited, and appointment intent without automated lead scoring or cross-list profiling.

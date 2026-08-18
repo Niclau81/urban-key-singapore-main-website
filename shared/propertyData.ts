@@ -1,4 +1,5 @@
 import { getAllRegionsLabel, marketConfigs, type MarketId } from "./marketConfig";
+import type { VirtualPropertyTour } from "./virtualTour";
 
 export type ListingMode = "Buy" | "Sell" | "Rent" | "Rent-Out";
 
@@ -79,6 +80,8 @@ export type Property = {
   listingUnit?: string;
   /** Clearly separates future-market planning illustrations from live or verified supply. */
   isPlanningDemo?: boolean;
+  /** Optional guided photo-and-floor-plan experience. It is distinct from a complete 360° capture. */
+  virtualTour?: VirtualPropertyTour;
 };
 
 type SeedProperty = Omit<Property, "marketId">;
@@ -386,10 +389,49 @@ const southeastAsiaPlanningProperties: Property[] = southeastAsiaPlanningSeeds.m
   },
 }));
 
+const singaporeVirtualTours: Record<string, VirtualPropertyTour> = {
+  "marina-cove-28-08": {
+    badgeLabel: "Virtual Property Tour",
+    disclosure: "Guided photo-and-floor-plan tour based on the listing media. It is not a 360° survey, an as-built model, or a substitute for an in-person viewing.",
+    rooms: [
+      { id: "arrival", label: "Arrival", imageIndex: 0, note: "Begin with the primary listing perspective.", approvedHighlights: ["Listing photo", "Timed view available where supplied"], floorPlanPosition: { x: 20, y: 58 } },
+      { id: "living", label: "Living space", imageIndex: 1, note: "Move to the shared living perspective in the published gallery.", approvedHighlights: ["Published gallery image", "Room sequence"], floorPlanPosition: { x: 50, y: 40 } },
+      { id: "view", label: "View context", imageIndex: 2, note: "Review the final published perspective before arranging an in-person viewing.", approvedHighlights: ["Published gallery image", "Follow-up viewing available"], floorPlanPosition: { x: 78, y: 58 } },
+    ],
+    aiGuide: { enabled: true, intro: "I can guide you through the approved room sequence and explain the tour controls. I only describe published listing media and do not verify property conditions or provide advice." },
+    privacyReview: { automatedRedactionRequired: true, manualReviewRequired: true, protectedTargets: ["Faces", "Family photos", "Letters and cards", "Name cards", "Access codes", "Visible personal information"], status: "demo-review-required" },
+    analytics: { scope: "on-device", events: ["tour_opened", "room_visited", "appointment_intent"] },
+  },
+  "interlace-garden-06-12": {
+    badgeLabel: "Virtual Property Tour",
+    disclosure: "Guided photo-and-floor-plan tour based on the listing media. It is not a 360° survey, an as-built model, or a substitute for an in-person viewing.",
+    rooms: [
+      { id: "entry", label: "Entry", imageIndex: 0, note: "Start with the published arrival perspective.", approvedHighlights: ["Listing photo", "Guided room sequence"], floorPlanPosition: { x: 18, y: 62 } },
+      { id: "gather", label: "Gathering area", imageIndex: 1, note: "Continue to the shared-space gallery perspective.", approvedHighlights: ["Published gallery image", "Floor-plan context"], floorPlanPosition: { x: 50, y: 40 } },
+      { id: "outlook", label: "Outlook", imageIndex: 2, note: "End with a further approved gallery perspective.", approvedHighlights: ["Published gallery image", "Viewing request available"], floorPlanPosition: { x: 80, y: 62 } },
+    ],
+    aiGuide: { enabled: true, intro: "I can keep the viewing sequence clear and point to approved gallery and floor-plan context. For condition, measurements, or availability, please arrange a viewing and verify with the appointed agent." },
+    privacyReview: { automatedRedactionRequired: true, manualReviewRequired: true, protectedTargets: ["Faces", "Family photos", "Letters and cards", "Name cards", "Access codes", "Visible personal information"], status: "demo-review-required" },
+    analytics: { scope: "on-device", events: ["tour_opened", "room_visited", "appointment_intent"] },
+  },
+  "queenstown-skyline-demo": {
+    badgeLabel: "Virtual Property Tour",
+    disclosure: "Illustrative guided photo-and-floor-plan demonstration. This is not a real property tour, 360° survey, official plan, or representation of an actual unit.",
+    rooms: [
+      { id: "living", label: "Living / dining", imageIndex: 0, note: "Illustrative tour start using the curated demonstration gallery.", approvedHighlights: ["Illustrative demo", "Floor-plan reference"], floorPlanPosition: { x: 28, y: 42 } },
+      { id: "kitchen", label: "Kitchen", imageIndex: 1, note: "Illustrative second viewpoint in the demonstration sequence.", approvedHighlights: ["Illustrative demo", "Published sequence"], floorPlanPosition: { x: 58, y: 42 } },
+      { id: "rooms", label: "Room zone", imageIndex: 2, note: "Illustrative final room-zone viewpoint.", approvedHighlights: ["Illustrative demo", "Request a real viewing to verify"], floorPlanPosition: { x: 52, y: 75 } },
+    ],
+    aiGuide: { enabled: true, intro: "This is an illustrative UrbanKey product demonstration. I can explain its viewing controls, but no property particulars, availability, or conditions are represented as factual." },
+    privacyReview: { automatedRedactionRequired: true, manualReviewRequired: true, protectedTargets: ["Faces", "Family photos", "Letters and cards", "Name cards", "Access codes", "Visible personal information"], status: "demo-review-required" },
+    analytics: { scope: "on-device", events: ["tour_opened", "room_visited", "appointment_intent"] },
+  },
+};
+
 export const properties: Property[] = [
   ...[...residentialProperties, ...hdbProperties, ...commercialProperties]
     .map(withIllustrativeFloorPlan)
-    .map(property => ({ ...property, marketId: "singapore" as MarketId })),
+    .map(property => ({ ...property, marketId: "singapore" as MarketId, virtualTour: singaporeVirtualTours[property.id] })),
   ...southeastAsiaPlanningProperties,
 ];
 

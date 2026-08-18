@@ -54,17 +54,19 @@ function getTimingPhotos(imageUrl: string): TimingPhoto[] {
   }];
 }
 
-export function VirtualTour({ title, gallery, tourUrl }: { title: string; gallery: string[]; tourUrl?: string }) {
+export function VirtualTour({ title, gallery, tourUrl, activeImageIndex, onImageIndexChange }: { title: string; gallery: string[]; tourUrl?: string; activeImageIndex?: number; onImageIndexChange?: (index: number) => void }) {
   const [timingId, setTimingId] = useState("noon");
-  const [index, setIndex] = useState(() => {
+  const [uncontrolledIndex, setUncontrolledIndex] = useState(() => {
     const photoBackedExample = gallery.findIndex(image => getTimingPhotos(image).length > 1);
     return photoBackedExample >= 0 ? photoBackedExample : 0;
   });
+  const index = activeImageIndex ?? uncontrolledIndex;
   const timingPhotos = useMemo(() => getTimingPhotos(gallery[index]), [gallery, index]);
   const activeTiming = timingPhotos.find(photo => photo.id === timingId) ?? timingPhotos[0];
 
   const showImage = (nextIndex: number) => {
-    setIndex(nextIndex);
+    if (activeImageIndex === undefined) setUncontrolledIndex(nextIndex);
+    onImageIndexChange?.(nextIndex);
     setTimingId("noon");
   };
 
@@ -74,6 +76,7 @@ export function VirtualTour({ title, gallery, tourUrl }: { title: string; galler
     className="relative h-[clamp(260px,54svh,360px)] overflow-hidden rounded-[28px] border border-[#17382f]/10 bg-[#10231e] sm:h-[520px]"
     data-tour-fallback={tourUrl ? "panoramic-iframe" : "image-carousel"}
     data-tour-photo-timing={tourUrl ? "provider-controlled" : activeTiming.id}
+    data-tour-image-index={index}
   >
     {tourUrl ? <iframe
       title={`${title} panoramic virtual tour`}
