@@ -5,7 +5,7 @@ import { MarketSwitcher } from "@/components/MarketSwitcher";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMarket } from "@/contexts/MarketContext";
 import { startLogin } from "@/const";
-import { Building2, ChevronDown, Menu, Search, Sparkles, UserRound } from "lucide-react";
+import { Building2, ChevronDown, ClipboardCheck, Menu, Search, Sparkles, UserRound } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 
@@ -30,9 +30,10 @@ export function BrandHeader({ tone = "light" }: { tone?: "light" | "dark" }) {
           <span className={`grid size-10 place-items-center rounded-full ${dark ? "bg-[#d5ae72] text-[#10211d]" : "bg-[#143a31] text-[#f8e4bd]"} transition-transform group-hover:rotate-6`}><Building2 className="size-5" /></span>
           <span className="leading-none"><span className="font-display text-[22px] tracking-tight">UrbanKey</span><span className={`mt-1 block text-[9px] font-bold uppercase tracking-[0.28em] ${dark ? "text-white/75" : "text-[#526861]"}`}>{market.countryName}</span></span>
         </Link>
-        <nav className="hidden items-center gap-7 lg:flex" aria-label="Main navigation">
+        <nav className="hidden items-center gap-5 lg:flex" aria-label="Main navigation">
           {navItems.map(item => <Link key={item.label} href={item.href} className={`text-[13px] font-semibold transition-colors ${location.startsWith(item.href.split("?")[0]) ? "text-[#b68a4c]" : dark ? "text-white/72 hover:text-white" : "text-[#18342c]/72 hover:text-[#18342c]"}`}>{item.label}</Link>)}
           <Link href="/assistants" className={`flex items-center gap-1.5 text-[13px] font-semibold ${dark ? "text-white/72 hover:text-white" : "text-[#18342c]/72 hover:text-[#18342c]"}`}><Sparkles className="size-3.5 text-[#b68a4c]" /> {t("nav.ai")}</Link>
+          <Link href="/property-agent" className={`flex items-center gap-1.5 text-[13px] font-semibold ${location.startsWith("/property-agent") ? "text-[#b68a4c]" : dark ? "text-white/72 hover:text-white" : "text-[#18342c]/72 hover:text-[#18342c]"}`}><ClipboardCheck className="size-3.5 text-[#b68a4c]" /> AI Property Agent</Link>
         </nav>
         <div className="hidden items-center gap-2 lg:flex">
           <MarketSwitcher tone={tone} />
@@ -43,7 +44,7 @@ export function BrandHeader({ tone = "light" }: { tone?: "light" | "dark" }) {
         </div>
         <button className="grid size-11 place-items-center rounded-full lg:hidden" onClick={() => setOpen(value => !value)} aria-label={t("nav.menu")}><Menu className="size-5" /></button>
       </div>
-      {open && <div className={`container border-t py-5 lg:hidden ${dark ? "border-white/10" : "border-[#18342c]/10"}`}><div className="grid gap-3"><div className="flex flex-wrap gap-2"><MarketSwitcher tone={tone} /><LanguageSwitcher tone={tone} /></div>{navItems.map(item => <Link key={item.label} href={item.href} onClick={() => setOpen(false)} className="py-2 text-sm font-semibold">{item.label}</Link>)}<Link href="/assistants" className="py-2 text-sm font-semibold">{t("nav.ai")}</Link><Link href={isAuthenticated ? "/agent/portal" : "/agent"} onClick={() => setOpen(false)} className="py-2 text-sm font-semibold text-[#b68a4c]">{t("nav.agent")}</Link><Link href="/agent/subscribe" onClick={() => setOpen(false)} className="py-2 text-sm font-semibold">{t("nav.plans")}</Link>{isAuthenticated && <Link href="/agent/payments" onClick={() => setOpen(false)} className="py-2 text-sm font-semibold">Payment history</Link>}<Link href="/dashboard" className="py-2 text-sm font-semibold">My workspace</Link></div></div>}
+      {open && <div className={`container border-t py-5 lg:hidden ${dark ? "border-white/10" : "border-[#18342c]/10"}`}><div className="grid gap-3"><div className="flex flex-wrap gap-2"><MarketSwitcher tone={tone} /><LanguageSwitcher tone={tone} /></div>{navItems.map(item => <Link key={item.label} href={item.href} onClick={() => setOpen(false)} className="py-2 text-sm font-semibold">{item.label}</Link>)}<Link href="/assistants" className="py-2 text-sm font-semibold">{t("nav.ai")}</Link><Link href="/property-agent" onClick={() => setOpen(false)} className="flex items-center gap-2 py-2 text-sm font-semibold text-[#a77c43]"><ClipboardCheck className="size-4" />AI Property Agent</Link><Link href={isAuthenticated ? "/agent/portal" : "/agent"} onClick={() => setOpen(false)} className="py-2 text-sm font-semibold text-[#b68a4c]">{t("nav.agent")}</Link><Link href="/agent/subscribe" onClick={() => setOpen(false)} className="py-2 text-sm font-semibold">{t("nav.plans")}</Link>{isAuthenticated && <Link href="/agent/payments" onClick={() => setOpen(false)} className="py-2 text-sm font-semibold">Payment history</Link>}<Link href="/dashboard" className="py-2 text-sm font-semibold">My workspace</Link></div></div>}
     </header>
   );
 }

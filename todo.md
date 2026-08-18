@@ -211,3 +211,8 @@
 - [x] Provide explicit customer authorisation, privacy, KYC, data-retention, conflict-check, legal-review, payment, and escalation boundaries for all four journeys.
 - [x] Add end-to-end regression coverage and responsive verification for Singapore integrated-agent cases, approval gates, paperwork queues, appointments, and communication records.
 - [x] Complete integration-readiness documentation, validate the foundation, and save the Singapore integrated-agent checkpoint.
+- [x] Trace the missing public discovery path for the AI Property Agent reported by the user.
+- [x] Add a prominent AI Property Agent entry to desktop and mobile global navigation.
+- [x] Add a homepage call to action that explains the controlled Singapore transaction workflow and links directly to the workspace.
+- [x] Add regression coverage that prevents the Property Agent route from being omitted from public navigation and homepage entry points.
+- [x] Verify the new entry points on desktop and mobile, run validation, and save the discoverability-fix checkpoint.

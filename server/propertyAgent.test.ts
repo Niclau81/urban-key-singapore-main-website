@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import type { TrpcContext } from "./_core/context";
 import { singaporeJourneyBlueprints } from "../shared/propertyAgent";
 
@@ -48,6 +50,15 @@ describe("Singapore AI Property Agent safeguards", () => {
       expect(blueprint.documents.length).toBeGreaterThan(2);
       expect(blueprint.handoffs.some(item => item.requiresAuthorization)).toBe(true);
     }
+  });
+
+  it("keeps the Property Agent discoverable through public desktop/mobile navigation and the homepage", () => {
+    const header = readFileSync(resolve(process.cwd(), "client/src/components/BrandHeader.tsx"), "utf8");
+    const home = readFileSync(resolve(process.cwd(), "client/src/pages/Home.tsx"), "utf8");
+    expect(header).toContain('href="/property-agent"');
+    expect(header).toContain("AI Property Agent");
+    expect(home).toContain('href="/property-agent"');
+    expect(home).toContain("From sourcing and viewings to paperwork and professional hand-offs");
   });
 
   it("creates a consent-recorded Singapore case with its selected journey", async () => {

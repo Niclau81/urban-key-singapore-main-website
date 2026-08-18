@@ -7,7 +7,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useMarket } from "@/contexts/MarketContext";
 import { trpc } from "@/lib/trpc";
 import { getAllRegionsLabel } from "@shared/marketConfig";
-import { ArrowRight, BadgeCheck, Box, Building, ChartNoAxesCombined, Map, Search, ShieldCheck, Sparkles, TrainFront } from "lucide-react";
+import { ArrowRight, BadgeCheck, Box, Building, ChartNoAxesCombined, ClipboardCheck, Map, Search, ShieldCheck, Sparkles, TrainFront } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "wouter";
 
@@ -48,6 +48,7 @@ export default function Home() {
                 <Button onClick={submit} className="h-11 rounded-xl bg-[#c99d60] px-6 text-[#10231e] hover:bg-[#d8af76]">{t("home.explore")} <ArrowRight className="ml-2 size-4" /></Button>
               </div>
             </div>
+            <Link href="/property-agent" className="group mt-4 flex max-w-[760px] items-center justify-between gap-4 rounded-2xl border border-white/18 bg-white/[.09] px-4 py-3.5 text-left backdrop-blur-sm transition hover:border-[#d5ae72]/60 hover:bg-white/[.14] sm:px-5"><span className="flex min-w-0 items-center gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#d5ae72] text-[#10231e]"><ClipboardCheck className="size-5" /></span><span><span className="block text-sm font-bold text-white">AI Property Agent</span><span className="mt-0.5 block text-xs leading-5 text-white/68">From sourcing and viewings to paperwork and professional hand-offs—always approval-controlled.</span></span></span><ArrowRight className="size-4 shrink-0 text-[#d5ae72] transition-transform group-hover:translate-x-1" /></Link>
             <div className="mt-7 flex flex-wrap gap-x-8 gap-y-3 text-xs text-white/60"><span className="flex items-center gap-2"><BadgeCheck className="size-4 text-[#d5ae72]" />{t("home.privacy")}</span><span className="flex items-center gap-2"><TrainFront className="size-4 text-[#d5ae72]" />{t("home.transitDiscovery", { transit: market.terminology.transit })}</span><span className="flex items-center gap-2"><ShieldCheck className="size-4 text-[#d5ae72]" />{t("home.context")}</span></div>
           </div>
         </div>
