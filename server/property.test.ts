@@ -231,6 +231,9 @@ describe("property intelligence procedures", () => {
     expect(panoramaSource).toContain("geometry.scale(-1, 1, 1)");
     expect(panoramaSource).toContain("TextureLoader");
     expect(panoramaSource).toContain("pointermove");
+    expect(panoramaSource).toContain("data-panorama-room-arrow");
+    expect(panoramaSource).toContain("onPointerDown={event => event.stopPropagation()}");
+    expect(panoramaSource).toContain("event.preventDefault(); event.stopPropagation(); onSelectHotspot(hotspot.id);");
     expect(panoramaSource).toContain("ArrowLeft");
     expect(panoramaSource).toContain("vector.project(activeCamera)");
     expect(panoramaSource).toContain("Panorama rendering is unavailable");

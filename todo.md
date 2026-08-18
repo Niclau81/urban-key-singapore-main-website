@@ -300,3 +300,7 @@
 - [x] Add directional door-arrow movement between connected rooms and keep the floor-plan active room position synchronized after each transition.
 - [x] Add regression coverage and desktop/mobile verification for timed panorama changes, clean Room 2/Room 3 media, arrows, and floor-plan traversal.
 - [x] Save the verified timed-panorama and directional-traversal checkpoint and report the enhanced tour.
+- [x] Reproduce the non-responsive directional panorama hotspot and identify the pointer-event or WebGL overlay interception path.
+- [x] Repair hotspot click and keyboard activation so directional nodes transition the active room, panorama, and floor-plan state reliably.
+- [x] Add focused regression coverage for directional hotspot activation and room-state transition.
+- [x] Verify interactive hotspot transitions on desktop and mobile, then save the functional hotspot repair checkpoint.
