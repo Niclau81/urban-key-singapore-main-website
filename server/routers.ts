@@ -324,6 +324,65 @@ export const appRouter = router({
       if (!removed) throw new TRPCError({ code: "NOT_FOUND", message: "Floor plan not found or unavailable to this account" });
       return { id: input.id };
     }),
+    listTourCaptures: protectedProcedure.input(z.object({ id: z.number().int().positive() }).optional()).query(({ ctx, input }) => db.listManagedTourCaptures(ctx.user.id, input?.id)),
+    uploadTourCapture: protectedProcedure.input(z.object({
+      id: z.number().int().positive(),
+      fileName: z.string().trim().min(1).max(255),
+      mimeType: z.enum(["image/jpeg", "image/webp"]),
+      base64: z.string().min(1).max(28_000_000),
+      width: z.number().int().min(1).max(20_000),
+      height: z.number().int().min(1).max(20_000),
+      horizontalCoverage: z.number().int().min(0).max(360),
+      verticalCoverage: z.number().int().min(0).max(180),
+      floorLabel: z.string().trim().min(1).max(120),
+      roomLabel: z.string().trim().min(1).max(120),
+      listingAuthorizationConfirmed: z.literal(true),
+      captureConsentConfirmed: z.literal(true),
+    })).mutation(async ({ ctx, input }) => {
+      if (!await db.isManagedPropertyOwner(ctx.user.id, input.id)) throw new TRPCError({ code: "NOT_FOUND", message: "Listing not found or unavailable to this account" });
+      const data = Buffer.from(input.base64, "base64");
+      if (!data.length || data.length > 20 * 1024 * 1024) throw new TRPCError({ code: "BAD_REQUEST", message: "A 360° capture must be a JPG or WebP smaller than 20 MB" });
+      const ratio = input.width / input.height;
+      const technicalReviewPassed = input.width >= 3000 && input.height >= 1500 && ratio >= 1.8 && ratio <= 2.2 && input.horizontalCoverage === 360 && input.verticalCoverage === 180;
+      const extension = input.mimeType === "image/webp" ? "webp" : "jpg";
+      const stored = await storagePut(`property-tour-captures/${ctx.user.id}/${input.id}/${randomUUID()}.${extension}`, data, input.mimeType);
+      const capture = await db.createManagedTourCapture(ctx.user.id, input.id, {
+        storageKey: stored.key,
+        url: stored.url,
+        fileName: input.fileName,
+        mimeType: input.mimeType,
+        fileSize: data.length,
+        width: input.width,
+        height: input.height,
+        aspectRatio: `${ratio.toFixed(2)}:1`,
+        horizontalCoverage: input.horizontalCoverage,
+        verticalCoverage: input.verticalCoverage,
+        floorLabel: input.floorLabel,
+        roomLabel: input.roomLabel,
+        technicalReviewPassed,
+        listingAuthorizationConfirmed: true,
+        captureConsentConfirmed: true,
+      });
+      return { capture, technicalReviewPassed, safeguardNotice: "Stored privately. Uploading does not publish a tour; privacy review, manual approval, and an independent publishing action are still required." };
+    }),
+    reviewTourCapture: protectedProcedure.input(z.object({
+      captureId: z.number().int().positive(),
+      privacyReviewStatus: z.enum(["review_required", "cleared", "blocked"]),
+      manualPrivacyReviewed: z.boolean(),
+      listingAuthorizationConfirmed: z.boolean(),
+      captureConsentConfirmed: z.boolean(),
+      qualityNotes: z.string().trim().max(2000).optional(),
+    })).mutation(async ({ ctx, input }) => {
+      const capture = await db.reviewManagedTourCapture(ctx.user.id, input.captureId, input);
+      if (!capture) throw new TRPCError({ code: "NOT_FOUND", message: "Capture not found or unavailable to this account" });
+      return capture;
+    }),
+    approveTourCapture: protectedProcedure.input(z.object({ captureId: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "An independent administrator must approve a reviewed capture" });
+      const capture = await db.approveManagedTourCapture(ctx.user.id, input.captureId);
+      if (!capture) throw new TRPCError({ code: "BAD_REQUEST", message: "Capture must complete technical, privacy, consent, and listing-authorisation checks before approval" });
+      return capture;
+    }),
   }),
   ai: router({
     chat: publicProcedure.input(z.object({

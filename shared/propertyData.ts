@@ -119,7 +119,7 @@ const residentialProperties: SeedProperty[] = [
     longitude: 103.8547,
     image: images.marinaInterior,
     gallery: [images.marinaInterior, images.marinaSkyline, images.luxuryInterior],
-    description: "A high-floor waterfront residence with uninterrupted bay views, a private lift lobby, and a calm, gallery-like interior designed for effortless city living.",
+    description: "Demonstration listing profile. The Virtual Property Tour media are original illustrative generated previews rather than a captured survey of this or any actual unit. A high-floor waterfront residence concept with bay views, a private lift lobby, and a calm, gallery-like interior.",
     tags: ["Bay view", "Private lift", "High floor"],
     owner: { initials: "J.L.", ownershipYears: 7, propertyCount: 2 },
     incidents: [
@@ -154,7 +154,7 @@ const residentialProperties: SeedProperty[] = [
     longitude: 103.8035,
     image: images.interlace,
     gallery: [images.interlace, images.luxuryInterior, images.marinaInterior],
-    description: "A quiet garden-facing home in an architecturally distinctive estate, pairing generous living spaces with immediate access to greenery and community facilities.",
+    description: "Demonstration listing profile. The Virtual Property Tour media are original illustrative generated previews rather than a captured survey of this or any actual unit. A quiet garden-facing home concept in an architecturally distinctive estate, pairing generous living spaces with greenery.",
     tags: ["Garden view", "Architectural icon", "Family home"],
     owner: { initials: "A.T.", ownershipYears: 11, propertyCount: 1 },
     incidents: [
@@ -395,32 +395,60 @@ const queenstownGeneratedDemoGallery = [
   "/manus-storage/queenstown-demo-window_ce0aa380.jpg",
 ];
 
+const marinaGeneratedDemoGallery = [
+  "/manus-storage/marina-cove-demo-arrival-replacement_5a18412c.jpg",
+  "/manus-storage/marina-cove-demo-living-reference_3371d2af.jpg",
+  "/manus-storage/marina-cove-demo-arrival-replacement_5a18412c.jpg",
+];
+
+const interlaceGeneratedDemoGallery = [
+  "/manus-storage/interlace-demo-arrival-replacement-two_7b559523.jpg",
+  "/manus-storage/interlace-demo-living-reference_03546037.jpg",
+  "/manus-storage/interlace-demo-arrival-replacement-two_7b559523.jpg",
+];
+
+const generatedTourDemoGalleries: Record<string, string[]> = {
+  "queenstown-skyline-demo": queenstownGeneratedDemoGallery,
+  "marina-cove-28-08": marinaGeneratedDemoGallery,
+  "interlace-garden-06-12": interlaceGeneratedDemoGallery,
+};
+
 const singaporeVirtualTours: Record<string, VirtualPropertyTour> = {
   "marina-cove-28-08": {
     badgeLabel: "Virtual Property Tour",
-    disclosure: "Guided photo-and-floor-plan tour based on the listing media. It is not a 360° survey, an as-built model, or a substitute for an in-person viewing.",
-    captureMode: "guided-photo",
+    disclosure: "Illustrative generated photo-and-panorama demonstration. This is not a real property tour, captured 360° survey, official plan, or representation of an actual unit.",
+    captureMode: "illustrative-panorama",
+    panoramaPreviewUrls: {
+      arrival: "/manus-storage/marina-cove-demo-living-panorama-replacement_30d89f1c.jpg",
+      living: "/manus-storage/marina-cove-demo-living-panorama-replacement_30d89f1c.jpg",
+      view: "/manus-storage/marina-cove-demo-window-panorama_42ed60a5.jpg",
+    },
     floors: [{ id: "main", label: "Main floor", roomIds: ["arrival", "living", "view"] }],
     rooms: [
-      { id: "arrival", label: "Arrival", imageIndex: 0, note: "Begin with the primary listing perspective.", approvedHighlights: ["Listing photo", "Timed view available where supplied"], floorPlanPosition: { x: 20, y: 58 }, viewerPosition: { x: 50, y: 66 } },
-      { id: "living", label: "Living space", imageIndex: 1, note: "Move to the shared living perspective in the published gallery.", approvedHighlights: ["Published gallery image", "Room sequence"], floorPlanPosition: { x: 50, y: 40 }, viewerPosition: { x: 68, y: 62 } },
-      { id: "view", label: "View context", imageIndex: 2, note: "Review the final published perspective before arranging an in-person viewing.", approvedHighlights: ["Published gallery image", "Follow-up viewing available"], floorPlanPosition: { x: 78, y: 58 }, viewerPosition: { x: 37, y: 70 } },
+      { id: "arrival", label: "Arrival", imageIndex: 0, note: "Illustrative generated panorama-style preview; it is not a real property capture.", approvedHighlights: ["Illustrative generated media", "Photo timing fallback"], floorPlanPosition: { x: 20, y: 58 }, viewerPosition: { x: 50, y: 66 } },
+      { id: "living", label: "Living space", imageIndex: 1, note: "Illustrative generated panorama-style preview; it is not a real property capture.", approvedHighlights: ["Illustrative generated media", "Room sequence"], floorPlanPosition: { x: 50, y: 40 }, viewerPosition: { x: 68, y: 62 } },
+      { id: "view", label: "View context", imageIndex: 2, note: "Illustrative generated panorama-style preview; request a real viewing to verify any actual property.", approvedHighlights: ["Illustrative generated media", "Viewing request available"], floorPlanPosition: { x: 78, y: 58 }, viewerPosition: { x: 37, y: 70 } },
     ],
-    aiGuide: { enabled: true, intro: "I can guide you through the approved room sequence and explain the tour controls. I only describe published listing media and do not verify property conditions or provide advice." },
+    aiGuide: { enabled: true, intro: "This is an illustrative UrbanKey product demonstration. I can explain the room sequence and controls, but no property particulars, availability, or conditions are represented as factual." },
     privacyReview: { automatedRedactionRequired: true, manualReviewRequired: true, protectedTargets: ["Faces", "Family photos", "Letters and cards", "Name cards", "Access codes", "Visible personal information"], status: "demo-review-required" },
     analytics: { scope: "on-device", events: ["tour_opened", "room_visited", "appointment_intent"] },
   },
   "interlace-garden-06-12": {
     badgeLabel: "Virtual Property Tour",
-    disclosure: "Guided photo-and-floor-plan tour based on the listing media. It is not a 360° survey, an as-built model, or a substitute for an in-person viewing.",
-    captureMode: "guided-photo",
+    disclosure: "Illustrative generated photo-and-panorama demonstration. This is not a real property tour, captured 360° survey, official plan, or representation of an actual unit.",
+    captureMode: "illustrative-panorama",
+    panoramaPreviewUrls: {
+      entry: "/manus-storage/interlace-demo-living-panorama-replacement_a9e6254a.jpg",
+      gather: "/manus-storage/interlace-demo-living-panorama-replacement_a9e6254a.jpg",
+      outlook: "/manus-storage/interlace-demo-window-panorama_00afaa99.jpg",
+    },
     floors: [{ id: "main", label: "Main floor", roomIds: ["entry", "gather", "outlook"] }],
     rooms: [
-      { id: "entry", label: "Entry", imageIndex: 0, note: "Start with the published arrival perspective.", approvedHighlights: ["Listing photo", "Guided room sequence"], floorPlanPosition: { x: 18, y: 62 }, viewerPosition: { x: 48, y: 68 } },
-      { id: "gather", label: "Gathering area", imageIndex: 1, note: "Continue to the shared-space gallery perspective.", approvedHighlights: ["Published gallery image", "Floor-plan context"], floorPlanPosition: { x: 50, y: 40 }, viewerPosition: { x: 64, y: 61 } },
-      { id: "outlook", label: "Outlook", imageIndex: 2, note: "End with a further approved gallery perspective.", approvedHighlights: ["Published gallery image", "Viewing request available"], floorPlanPosition: { x: 80, y: 62 }, viewerPosition: { x: 34, y: 72 } },
+      { id: "entry", label: "Entry", imageIndex: 0, note: "Illustrative generated panorama-style preview; it is not a real property capture.", approvedHighlights: ["Illustrative generated media", "Photo timing fallback"], floorPlanPosition: { x: 18, y: 62 }, viewerPosition: { x: 48, y: 68 } },
+      { id: "gather", label: "Gathering area", imageIndex: 1, note: "Illustrative generated panorama-style preview; it is not a real property capture.", approvedHighlights: ["Illustrative generated media", "Floor-plan context"], floorPlanPosition: { x: 50, y: 40 }, viewerPosition: { x: 64, y: 61 } },
+      { id: "outlook", label: "Outlook", imageIndex: 2, note: "Illustrative generated panorama-style preview; request a real viewing to verify any actual property.", approvedHighlights: ["Illustrative generated media", "Viewing request available"], floorPlanPosition: { x: 80, y: 62 }, viewerPosition: { x: 34, y: 72 } },
     ],
-    aiGuide: { enabled: true, intro: "I can keep the viewing sequence clear and point to approved gallery and floor-plan context. For condition, measurements, or availability, please arrange a viewing and verify with the appointed agent." },
+    aiGuide: { enabled: true, intro: "This is an illustrative UrbanKey product demonstration. I can explain the viewing controls and room sequence, but no property particulars, availability, or conditions are represented as factual." },
     privacyReview: { automatedRedactionRequired: true, manualReviewRequired: true, protectedTargets: ["Faces", "Family photos", "Letters and cards", "Name cards", "Access codes", "Visible personal information"], status: "demo-review-required" },
     analytics: { scope: "on-device", events: ["tour_opened", "room_visited", "appointment_intent"] },
   },
@@ -449,7 +477,7 @@ export const properties: Property[] = [
   ...[...residentialProperties, ...hdbProperties, ...commercialProperties]
     .map(withIllustrativeFloorPlan)
     .map(property => {
-      const gallery = property.id === "queenstown-skyline-demo" ? queenstownGeneratedDemoGallery : property.gallery;
+      const gallery = generatedTourDemoGalleries[property.id] ?? property.gallery;
       return { ...property, image: gallery[0], gallery, marketId: "singapore" as MarketId, virtualTour: singaporeVirtualTours[property.id] };
     }),
   ...southeastAsiaPlanningProperties,

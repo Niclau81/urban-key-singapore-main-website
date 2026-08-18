@@ -2,7 +2,7 @@
 
 ## Purpose and disclosure
 
-This asset set supports the **Marina Cove Residence** Virtual Property Tour as an UrbanKey product demonstration. Every generated asset is illustrative synthetic media: it is not photography of a real address, available property, owner, view, layout, or condition. No person, family image, personal document, letter, card, name card, access code, screen, licence plate, or identifying detail may appear.
+This asset set supports the **Marina Cove Residence**, **The Interlace Garden Home**, and **Queenstown Skyline Flat · Demo** Virtual Property Tours as UrbanKey product demonstrations. Every generated asset is illustrative synthetic media: it is not photography of a real address, available property, owner, view, layout, or condition. No person, family image, personal document, letter, card, name card, access code, screen, licence plate, or identifying detail may appear.
 
 ## Shot list
 
@@ -21,4 +21,4 @@ These six assets must remain labelled **Illustrative generated demo media** in t
 
 ## Implementation status
 
-The original photo trio and three wide panorama-style scenes are live only on **Queenstown Skyline Flat · Demo**. The immersive viewer identifies them as illustrative generated media and as panorama previews rather than captured 360° assets; its ordinary demo-photo control remains available. Desktop and 390 × 844 mobile checks confirmed the assets, disclosure, room markers, floor context, and photo switch render successfully.
+Original photo and panorama-style sets now support all three selected Singapore demo tours. Marina Cove and The Interlace primary generated scenes rendered successfully in the desktop check; their panorama previews are independently labelled. The immersive viewer identifies all generated media as illustrative panorama previews rather than captured 360° assets; its ordinary demo-photo control remains available. Desktop and 390 × 844 mobile checks confirmed the disclosure, room markers, floor context, capture-quality workflow, and photo-switch layout.

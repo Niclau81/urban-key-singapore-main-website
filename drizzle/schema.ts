@@ -1,4 +1,4 @@
-import { boolean, decimal, int, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import { boolean, decimal, index, int, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -134,6 +134,46 @@ export const propertyListingFloorPlans = mysqlTable("propertyListingFloorPlans",
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, table => ({ listingUnique: uniqueIndex("propertyListingFloorPlans_listing_unique").on(table.listingId) }));
 
+export const propertyTourCaptures = mysqlTable("propertyTourCaptures", {
+  id: int("id").autoincrement().primaryKey(),
+  listingId: int("listingId").notNull(),
+  userId: int("userId").notNull(),
+  storageKey: varchar("storageKey", { length: 768 }).notNull(),
+  url: text("url").notNull(),
+  fileName: varchar("fileName", { length: 255 }).notNull(),
+  mimeType: varchar("mimeType", { length: 80 }).notNull(),
+  fileSize: int("fileSize").notNull(),
+  width: int("width").notNull(),
+  height: int("height").notNull(),
+  aspectRatio: varchar("aspectRatio", { length: 24 }).notNull(),
+  horizontalCoverage: int("horizontalCoverage").notNull(),
+  verticalCoverage: int("verticalCoverage").notNull(),
+  floorLabel: varchar("floorLabel", { length: 120 }).notNull(),
+  roomLabel: varchar("roomLabel", { length: 120 }).notNull(),
+  qualityStatus: mysqlEnum("qualityStatus", ["uploaded", "quality_review", "privacy_review", "approval_required", "approved", "rejected", "published"]).default("uploaded").notNull(),
+  technicalReviewPassed: boolean("technicalReviewPassed").default(false).notNull(),
+  privacyReviewStatus: mysqlEnum("privacyReviewStatus", ["not_run", "review_required", "cleared", "blocked"]).default("not_run").notNull(),
+  manualPrivacyReviewed: boolean("manualPrivacyReviewed").default(false).notNull(),
+  listingAuthorizationConfirmed: boolean("listingAuthorizationConfirmed").default(false).notNull(),
+  captureConsentConfirmed: boolean("captureConsentConfirmed").default(false).notNull(),
+  qualityNotes: text("qualityNotes"),
+  approvedAt: timestamp("approvedAt"),
+  publishedAt: timestamp("publishedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({
+  listingUserIndex: index("propertyTourCaptures_listing_user_index").on(table.listingId, table.userId),
+}));
+
+export const propertyTourCaptureAudits = mysqlTable("propertyTourCaptureAudits", {
+  id: int("id").autoincrement().primaryKey(),
+  captureId: int("captureId").notNull(),
+  userId: int("userId").notNull(),
+  action: varchar("action", { length: 160 }).notNull(),
+  detail: text("detail").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
 export const propertyAgentCases = mysqlTable("propertyAgentCases", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
@@ -242,6 +282,8 @@ export type Enquiry = typeof enquiries.$inferSelect;
 export type PropertyListing = typeof propertyListings.$inferSelect;
 export type PropertyListingImage = typeof propertyListingImages.$inferSelect;
 export type PropertyListingFloorPlan = typeof propertyListingFloorPlans.$inferSelect;
+export type PropertyTourCapture = typeof propertyTourCaptures.$inferSelect;
+export type PropertyTourCaptureAudit = typeof propertyTourCaptureAudits.$inferSelect;
 export type PropertyAgentCase = typeof propertyAgentCases.$inferSelect;
 export type PropertyAgentTask = typeof propertyAgentTasks.$inferSelect;
 export type PropertyAgentDocument = typeof propertyAgentDocuments.$inferSelect;

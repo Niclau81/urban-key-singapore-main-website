@@ -10,6 +10,9 @@ const mocks = vi.hoisted(() => ({
   addManagedPropertyImage: vi.fn(),
   upsertManagedPropertyFloorPlan: vi.fn(),
   removeManagedPropertyFloorPlan: vi.fn(),
+  createManagedTourCapture: vi.fn(),
+  reviewManagedTourCapture: vi.fn(),
+  approveManagedTourCapture: vi.fn(),
   storagePut: vi.fn(),
 }));
 
@@ -25,6 +28,9 @@ vi.mock("./db", async () => {
     addManagedPropertyImage: mocks.addManagedPropertyImage,
     upsertManagedPropertyFloorPlan: mocks.upsertManagedPropertyFloorPlan,
     removeManagedPropertyFloorPlan: mocks.removeManagedPropertyFloorPlan,
+    createManagedTourCapture: mocks.createManagedTourCapture,
+    reviewManagedTourCapture: mocks.reviewManagedTourCapture,
+    approveManagedTourCapture: mocks.approveManagedTourCapture,
   };
 });
 
@@ -34,14 +40,14 @@ import { appRouter } from "./routers";
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
-function authenticatedContext(userId = 7): TrpcContext {
+function authenticatedContext(userId = 7, role: "user" | "admin" = "user"): TrpcContext {
   const user: AuthenticatedUser = {
     id: userId,
     openId: `agent-${userId}`,
     email: `agent-${userId}@example.com`,
     name: "Sample Property Agent",
     loginMethod: "manus",
-    role: "user",
+    role,
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
@@ -176,5 +182,44 @@ describe("agent and co-broker listing portal", () => {
 
     await expect(caller.listing.removeFloorPlan({ id: 42 })).resolves.toEqual({ id: 42 });
     expect(mocks.removeManagedPropertyFloorPlan).toHaveBeenCalledWith(7, 42);
+  });
+
+  it("blocks private 360 capture upload when the listing is not owned by the signed-in agent", async () => {
+    mocks.isManagedPropertyOwner.mockResolvedValue(false);
+    const caller = appRouter.createCaller(authenticatedContext());
+    await expect(caller.listing.uploadTourCapture({ id: 42, fileName: "pano.jpg", mimeType: "image/jpeg", base64: Buffer.from("capture").toString("base64"), width: 4000, height: 2000, horizontalCoverage: 360, verticalCoverage: 180, floorLabel: "Main floor", roomLabel: "Living", listingAuthorizationConfirmed: true, captureConsentConfirmed: true })).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(mocks.storagePut).not.toHaveBeenCalled();
+  });
+
+  it("stores valid equirectangular media privately with review gates instead of publishing it", async () => {
+    mocks.isManagedPropertyOwner.mockResolvedValue(true);
+    mocks.storagePut.mockResolvedValue({ key: "property-tour-captures/7/42/pano.jpg", url: "https://storage.example/pano.jpg" });
+    mocks.createManagedTourCapture.mockImplementation(async (userId, listingId, capture) => ({ id: 77, userId, listingId, ...capture, qualityStatus: "quality_review", privacyReviewStatus: "review_required" }));
+    const caller = appRouter.createCaller(authenticatedContext());
+    const result = await caller.listing.uploadTourCapture({ id: 42, fileName: "living-pano.jpg", mimeType: "image/jpeg", base64: Buffer.from("valid-360-capture").toString("base64"), width: 4000, height: 2000, horizontalCoverage: 360, verticalCoverage: 180, floorLabel: "Main floor", roomLabel: "Living", listingAuthorizationConfirmed: true, captureConsentConfirmed: true });
+    expect(mocks.storagePut).toHaveBeenCalledWith(expect.stringMatching(/^property-tour-captures\/7\/42\/.+\.jpg$/), Buffer.from("valid-360-capture"), "image/jpeg");
+    expect(mocks.createManagedTourCapture).toHaveBeenCalledWith(7, 42, expect.objectContaining({ technicalReviewPassed: true, listingAuthorizationConfirmed: true, captureConsentConfirmed: true, aspectRatio: "2.00:1" }));
+    expect(result).toMatchObject({ technicalReviewPassed: true, safeguardNotice: expect.stringContaining("does not publish") });
+  });
+
+  it("keeps nonconforming captures private and marks their technical baseline as failed", async () => {
+    mocks.isManagedPropertyOwner.mockResolvedValue(true);
+    mocks.storagePut.mockResolvedValue({ key: "property-tour-captures/7/42/flat.webp", url: "https://storage.example/flat.webp" });
+    mocks.createManagedTourCapture.mockImplementation(async (_userId, _listingId, capture) => ({ id: 78, ...capture, qualityStatus: "quality_review", privacyReviewStatus: "review_required" }));
+    const caller = appRouter.createCaller(authenticatedContext());
+    const result = await caller.listing.uploadTourCapture({ id: 42, fileName: "flat.webp", mimeType: "image/webp", base64: Buffer.from("flat").toString("base64"), width: 1800, height: 1200, horizontalCoverage: 280, verticalCoverage: 120, floorLabel: "Main floor", roomLabel: "Entry", listingAuthorizationConfirmed: true, captureConsentConfirmed: true });
+    expect(result.technicalReviewPassed).toBe(false);
+    expect(mocks.createManagedTourCapture).toHaveBeenCalledWith(7, 42, expect.objectContaining({ technicalReviewPassed: false }));
+  });
+
+  it("records owner quality review and reserves final approval for an independent administrator", async () => {
+    mocks.reviewManagedTourCapture.mockResolvedValue({ id: 77, qualityStatus: "approval_required" });
+    const caller = appRouter.createCaller(authenticatedContext());
+    await expect(caller.listing.reviewTourCapture({ captureId: 77, privacyReviewStatus: "cleared", manualPrivacyReviewed: true, listingAuthorizationConfirmed: true, captureConsentConfirmed: true, qualityNotes: "Personal materials redacted." })).resolves.toMatchObject({ qualityStatus: "approval_required" });
+    await expect(caller.listing.approveTourCapture({ captureId: 77 })).rejects.toMatchObject({ code: "FORBIDDEN" });
+    mocks.approveManagedTourCapture.mockResolvedValue({ id: 77, qualityStatus: "approved" });
+    const admin = appRouter.createCaller(authenticatedContext(9, "admin"));
+    await expect(admin.listing.approveTourCapture({ captureId: 77 })).resolves.toMatchObject({ qualityStatus: "approved" });
+    expect(mocks.approveManagedTourCapture).toHaveBeenCalledWith(9, 77);
   });
 });

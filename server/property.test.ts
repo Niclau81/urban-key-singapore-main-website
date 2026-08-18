@@ -152,6 +152,15 @@ describe("property intelligence procedures", () => {
     expect(generatedDemo.virtualTour).toMatchObject({ captureMode: "illustrative-panorama" });
     expect(Object.values(generatedDemo.virtualTour!.panoramaPreviewUrls ?? {})).toHaveLength(3);
     expect(Object.values(generatedDemo.virtualTour!.panoramaPreviewUrls ?? {}).every(url => url.includes("/manus-storage/queenstown-demo-") )).toBe(true);
+    for (const [listingId, assetPrefix] of [["marina-cove-28-08", "marina-cove-demo-"], ["interlace-garden-06-12", "interlace-demo-"]] as const) {
+      const generatedTour = tourListings.find(property => property.id === listingId)!;
+      expect(generatedTour.virtualTour).toMatchObject({ captureMode: "illustrative-panorama" });
+      expect(generatedTour.gallery).toHaveLength(3);
+      expect(generatedTour.gallery.every(url => url.includes(`/manus-storage/${assetPrefix}`))).toBe(true);
+      expect(Object.values(generatedTour.virtualTour!.panoramaPreviewUrls ?? {})).toHaveLength(3);
+      expect(Object.values(generatedTour.virtualTour!.panoramaPreviewUrls ?? {}).every(url => url.includes(`/manus-storage/${assetPrefix}`))).toBe(true);
+      expect(generatedTour.virtualTour!.disclosure).toContain("not a real property tour");
+    }
     expect(properties.filter(property => property.marketId === "singapore" && !property.virtualTour).length).toBeGreaterThan(0);
   });
 

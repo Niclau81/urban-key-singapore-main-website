@@ -18,6 +18,7 @@ import Checkout from "./pages/Checkout";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentHistory from "./pages/PaymentHistory";
 import PropertyAgent from "./pages/PropertyAgent";
+import TourCaptureQuality from "./pages/TourCaptureQuality";
 
 function Router() {
   return <Switch>
@@ -30,6 +31,7 @@ function Router() {
     <Route path="/property-agent" component={PropertyAgent} />
     <Route path="/agent" component={AgentLogin} />
     <Route path="/agent/portal" component={AgentPortal} />
+    <Route path="/agent/tours" component={TourCaptureQuality} />
     <Route path="/agent/signup" component={AgentSignUp} />
     <Route path="/agent/subscribe" component={SubscriptionPlans} />
     <Route path="/agent/checkout" component={Checkout} />

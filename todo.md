@@ -255,3 +255,11 @@
 - [x] Integrate demonstration panorama assets into the immersive viewer while retaining the labelled guided-photo fallback and time-aware photo selector.
 - [x] Add regression coverage and desktop/mobile visual verification for generated demo media, panorama readiness, labels, and fallback integrity.
 - [x] Save the verified demonstration-media checkpoint and deliver the generated asset package.
+- [x] Audit the existing Agent Portal, managed file storage, Virtual Property Tour contract, and publication boundaries for real 360° capture support.
+- [x] Add a consent-controlled 360° capture record with file type, dimensions, aspect ratio, coverage, redaction review, quality checklist, approval status, and immutable audit history.
+- [x] Build an agent-facing upload and quality-check screen that stores captures privately and blocks public publication until required checks and approval are complete.
+- [x] Add explicit capture-quality, privacy-redaction, room mapping, floor mapping, and listing-authorization requirements before an approved 360° capture can become a verified tour.
+- [x] Generate original privacy-safe illustrative photos and panorama-preview media for the Marina Cove and Interlace demonstration listings.
+- [x] Integrate the new illustrative assets under persistent generated-demo disclosure, without changing the semantics of real approved 360° captures.
+- [x] Add regression coverage and desktop/mobile verification for capture validation, approval gates, private storage, and all three illustrative tour listings.
+- [x] Document agent operating procedures, run final validation, and save the real-capture and multi-listing-media checkpoint.

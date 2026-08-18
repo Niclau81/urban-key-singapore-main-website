@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { agentProfiles, enquiries, InsertUser, propertyAgentAppointments, propertyAgentAuditLogs, propertyAgentCases, propertyAgentCommunications, propertyAgentDocuments, propertyAgentHandOffs, propertyAgentTasks, propertyListingFloorPlans, propertyListingImages, propertyListings, savedListings, subscriptionOrders, userProfiles, users } from "../drizzle/schema";
+import { agentProfiles, enquiries, InsertUser, propertyAgentAppointments, propertyAgentAuditLogs, propertyAgentCases, propertyAgentCommunications, propertyAgentDocuments, propertyAgentHandOffs, propertyAgentTasks, propertyListingFloorPlans, propertyListingImages, propertyListings, propertyTourCaptureAudits, propertyTourCaptures, savedListings, subscriptionOrders, userProfiles, users } from "../drizzle/schema";
 import type { MarketId } from "@shared/marketConfig";
 import { singaporeJourneyBlueprints, type PropertyAgentCaseStatus, type SingaporeJourneyId } from "@shared/propertyAgent";
 import { ENV } from "./_core/env";
@@ -322,6 +322,77 @@ export async function updateManagedPropertyStatus(userId: number, id: number, st
   if (!db) return false;
   const result = await db.update(propertyListings).set({ status }).where(and(eq(propertyListings.id, id), eq(propertyListings.userId, userId)));
   return Number(result[0].affectedRows) > 0;
+}
+
+export type TourCaptureReviewStatus = "uploaded" | "quality_review" | "privacy_review" | "approval_required" | "approved" | "rejected" | "published";
+export type TourCapturePrivacyStatus = "not_run" | "review_required" | "cleared" | "blocked";
+
+export type ManagedTourCaptureInput = {
+  storageKey: string;
+  url: string;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+  width: number;
+  height: number;
+  aspectRatio: string;
+  horizontalCoverage: number;
+  verticalCoverage: number;
+  floorLabel: string;
+  roomLabel: string;
+  technicalReviewPassed: boolean;
+  listingAuthorizationConfirmed: boolean;
+  captureConsentConfirmed: boolean;
+};
+
+export async function listManagedTourCaptures(userId: number, listingId?: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(propertyTourCaptures).where(listingId ? and(eq(propertyTourCaptures.userId, userId), eq(propertyTourCaptures.listingId, listingId)) : eq(propertyTourCaptures.userId, userId)).orderBy(desc(propertyTourCaptures.createdAt));
+}
+
+export async function addManagedTourCaptureAudit(userId: number, captureId: number, action: string, detail: string) {
+  const db = await getDb();
+  if (!db) return { id: 0, userId, captureId, action, detail, createdAt: new Date() };
+  const result = await db.insert(propertyTourCaptureAudits).values({ userId, captureId, action, detail });
+  return { id: Number(result[0].insertId), userId, captureId, action, detail, createdAt: new Date() };
+}
+
+export async function createManagedTourCapture(userId: number, listingId: number, input: ManagedTourCaptureInput) {
+  const db = await getDb();
+  if (!db) return { id: 0, userId, listingId, ...input, qualityStatus: "quality_review" as const, privacyReviewStatus: "review_required" as const, manualPrivacyReviewed: false, createdAt: new Date(), updatedAt: new Date() };
+  const result = await db.insert(propertyTourCaptures).values({ userId, listingId, ...input, qualityStatus: "quality_review", privacyReviewStatus: "review_required", manualPrivacyReviewed: false });
+  const id = Number(result[0].insertId);
+  await addManagedTourCaptureAudit(userId, id, "capture_uploaded", "Private 360° capture stored; quality and privacy review are required before any publication request.");
+  const rows = await db.select().from(propertyTourCaptures).where(eq(propertyTourCaptures.id, id)).limit(1);
+  return rows[0];
+}
+
+export async function reviewManagedTourCapture(userId: number, captureId: number, input: { privacyReviewStatus: TourCapturePrivacyStatus; manualPrivacyReviewed: boolean; listingAuthorizationConfirmed: boolean; captureConsentConfirmed: boolean; qualityNotes?: string; }) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(propertyTourCaptures).where(and(eq(propertyTourCaptures.id, captureId), eq(propertyTourCaptures.userId, userId))).limit(1);
+  const capture = rows[0];
+  if (!capture) return null;
+  const privacyBlocked = input.privacyReviewStatus === "blocked";
+  const allChecksPass = capture.technicalReviewPassed && input.privacyReviewStatus === "cleared" && input.manualPrivacyReviewed && input.listingAuthorizationConfirmed && input.captureConsentConfirmed;
+  const qualityStatus: TourCaptureReviewStatus = privacyBlocked ? "rejected" : allChecksPass ? "approval_required" : input.privacyReviewStatus === "review_required" ? "privacy_review" : "quality_review";
+  await db.update(propertyTourCaptures).set({ privacyReviewStatus: input.privacyReviewStatus, manualPrivacyReviewed: input.manualPrivacyReviewed, listingAuthorizationConfirmed: input.listingAuthorizationConfirmed, captureConsentConfirmed: input.captureConsentConfirmed, qualityNotes: input.qualityNotes || null, qualityStatus }).where(and(eq(propertyTourCaptures.id, captureId), eq(propertyTourCaptures.userId, userId)));
+  await addManagedTourCaptureAudit(userId, captureId, "quality_check_updated", `Review state set to ${qualityStatus}; publication remains blocked until independent approval.`);
+  const updated = await db.select().from(propertyTourCaptures).where(eq(propertyTourCaptures.id, captureId)).limit(1);
+  return updated[0];
+}
+
+export async function approveManagedTourCapture(adminUserId: number, captureId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(propertyTourCaptures).where(eq(propertyTourCaptures.id, captureId)).limit(1);
+  const capture = rows[0];
+  if (!capture || capture.qualityStatus !== "approval_required") return null;
+  await db.update(propertyTourCaptures).set({ qualityStatus: "approved", approvedAt: new Date() }).where(eq(propertyTourCaptures.id, captureId));
+  await addManagedTourCaptureAudit(adminUserId, captureId, "capture_approved", "Independent approval completed. Publication still requires a separate authorised action.");
+  const updated = await db.select().from(propertyTourCaptures).where(eq(propertyTourCaptures.id, captureId)).limit(1);
+  return updated[0];
 }
 
 export type PropertyAgentCaseInput = {
