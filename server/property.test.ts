@@ -170,6 +170,8 @@ describe("property intelligence procedures", () => {
     expect(Object.values(marinaTour.virtualTour!.panoramaPreviewUrls ?? {})).toHaveLength(6);
     expect(marinaTour.virtualTour!.rooms.every(room => room.floorPlanBounds && room.floorPlanBounds.width > 0 && room.floorPlanBounds.height > 0)).toBe(true);
     const marinaLiving = marinaTour.virtualTour!.rooms.find(room => room.id === "living");
+    expect(marinaTour.virtualTour!.rooms.every(room => room.timedPhotos?.map(photo => photo.id).join(",") === "morning,noon,night")).toBe(true);
+    expect(marinaTour.virtualTour!.rooms.every(room => Object.keys(room.panoramaPreviewByTiming ?? {}).join(",") === "morning,noon,night")).toBe(true);
     expect(marinaLiving?.timedPhotos?.map(photo => photo.id)).toEqual(["morning", "noon", "night"]);
     expect(Object.keys(marinaLiving?.panoramaPreviewByTiming ?? {})).toEqual(["morning", "noon", "night"]);
     expect(marinaLiving?.connections).toEqual(expect.arrayContaining([{ roomId: "kitchen", direction: "right" }, { roomId: "primary", direction: "down" }]));
@@ -220,8 +222,8 @@ describe("property intelligence procedures", () => {
     expect(guidedSource).toContain("connectedRooms");
     expect(guidedSource).toContain("Move ${room.direction}");
     expect(guidedSource).toContain("showPanoramaPreview");
-    expect(guidedSource).toContain("visible-photo-timing-choices");
-    expect(guidedSource).toContain("Photo timing · changes daylight and outlook");
+    expect(guidedSource).toContain("sidebar-photo-timing-choices");
+    expect(guidedSource).toContain("Changes the illustrative daylight and outlook treatment without covering the panorama.");
     expect(guidedSource).toContain("floorPlanBounds");
     expect(guidedSource).toContain("!isVerified360 && timingPhotos.length > 1");
     expect(guidedSource).toContain("<EquirectangularPanorama");
@@ -237,6 +239,7 @@ describe("property intelligence procedures", () => {
     expect(panoramaSource).toContain("ArrowLeft");
     expect(panoramaSource).toContain("vector.project(activeCamera)");
     expect(panoramaSource).toContain("Panorama rendering is unavailable");
+    expect(panoramaSource).toContain("data-panorama-time={timeOfDay}");
   });
 
   it("matches commercial usage text without including residential listings", async () => {

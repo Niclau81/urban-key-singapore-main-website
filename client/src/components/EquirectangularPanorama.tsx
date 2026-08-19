@@ -16,6 +16,7 @@ type Props = {
   alt: string;
   hotspots: PanoramaHotspot[];
   onSelectHotspot: (id: string) => void;
+  timeOfDay?: "morning" | "noon" | "night";
   className?: string;
 };
 
@@ -27,7 +28,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
  * Original equirectangular panorama control. Verified 2:1 captures render as a photo sphere;
  * illustrative media may use the same renderer but are always labelled by the parent as synthetic.
  */
-export function EquirectangularPanorama({ src, alt, hotspots, onSelectHotspot, className = "" }: Props) {
+export function EquirectangularPanorama({ src, alt, hotspots, onSelectHotspot, timeOfDay = "noon", className = "" }: Props) {
   const mountRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<{ adjustYaw: (amount: number) => void; adjustPitch: (amount: number) => void; adjustFov: (amount: number) => void } | null>(null);
   const [projectedHotspots, setProjectedHotspots] = useState<ProjectedHotspot[]>([]);
@@ -171,8 +172,9 @@ export function EquirectangularPanorama({ src, alt, hotspots, onSelectHotspot, c
     if (event.key === "-") { event.preventDefault(); controlsRef.current.adjustFov(6); }
   };
 
-  return <div className={`relative h-full w-full overflow-hidden bg-[#0d1110] ${className}`} tabIndex={0} onKeyDown={keyDown} aria-label="Interactive panorama. Drag to look around, use arrow keys to move the camera, and select a blue node to jump rooms." data-equirectangular-panorama data-panorama-yaw={cameraState.yaw} data-panorama-pitch={cameraState.pitch} data-panorama-fov={cameraState.fov}>
-    <div ref={mountRef} className="absolute inset-0" />
+  const timeFilter = timeOfDay === "morning" ? "sepia-[.16] saturate-110 brightness-105" : timeOfDay === "night" ? "brightness-[.56] saturate-125 hue-rotate-[8deg]" : "brightness-100";
+  return <div className={`relative h-full w-full overflow-hidden bg-[#0d1110] ${className}`} tabIndex={0} onKeyDown={keyDown} aria-label="Interactive panorama. Drag to look around, use arrow keys to move the camera, and select a blue node to jump rooms." data-equirectangular-panorama data-panorama-yaw={cameraState.yaw} data-panorama-pitch={cameraState.pitch} data-panorama-fov={cameraState.fov} data-panorama-time={timeOfDay}>
+    <div ref={mountRef} className={`absolute inset-0 transition-[filter] duration-300 ${timeFilter}`} />
     {rendererFailed && <><img src={src} alt={alt} className="absolute inset-0 h-full w-full object-cover" /><p className="absolute inset-x-4 bottom-20 rounded-lg bg-black/75 px-3 py-2 text-xs text-white">Panorama rendering is unavailable in this browser. Showing the approved flat preview instead.</p></>}
     {projectedHotspots.filter(hotspot => hotspot.visible).map(hotspot => <button key={hotspot.id} type="button" onPointerDown={event => event.stopPropagation()} onClick={event => { event.preventDefault(); event.stopPropagation(); onSelectHotspot(hotspot.id); }} style={{ left: `${hotspot.left}%`, top: `${hotspot.top}%` }} aria-label={`Move ${hotspot.direction ?? "forward"} to ${hotspot.label}`} className="pointer-events-auto absolute z-50 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full border border-white/80 bg-[#087ff5] px-2 py-1.5 text-[10px] font-bold text-white shadow-[0_6px_20px_rgba(0,0,0,.45)] transition hover:scale-105 focus-visible:ring-4 focus-visible:ring-white/60 motion-reduce:transform-none motion-reduce:transition-none" data-panorama-room-arrow={hotspot.id}><MoveHorizontal className="size-3" />{hotspot.direction === "left" ? "←" : hotspot.direction === "right" ? "→" : hotspot.direction === "up" ? "↑" : hotspot.direction === "down" ? "↓" : "→"} {hotspot.label}</button>)}
     <div className="absolute right-4 top-20 z-20 flex flex-col overflow-hidden rounded-xl border border-white/20 bg-[#17171e]/85 shadow-lg backdrop-blur">
