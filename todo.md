@@ -326,3 +326,8 @@
 - [x] Bind every room timing control to its matched panorama triplet so the source, room context, and directional exits remain synchronized.
 - [x] Verify all room triplets retain spatial consistency while changing only interior light, sky, and exterior outlook; add regression coverage.
 - [x] Verify desktop/mobile timing transitions and save the matched panorama-timing checkpoint.
+- [x] Define the locked Primary Room camera, chair, curtains, window framing, wall, floor, and doorway composition from the approved noon reference.
+- [x] Regenerate matched Primary Room Morning and Night panoramas that change only illumination, sky, and exterior lighting.
+- [x] Bind the corrected Primary Room triplet to its timing controls and preserve the room’s existing navigation context.
+- [x] Add regression coverage and desktop/mobile verification that Primary Room timing sources share one fixed composition.
+- [ ] Save the verified Primary Room timing synchronization checkpoint.
