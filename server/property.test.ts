@@ -175,6 +175,9 @@ describe("property intelligence procedures", () => {
     expect(marinaTour.virtualTour!.rooms.filter(room => room.id !== "living").every(room => room.panoramaPreviewByTiming?.night.includes("-night-panorama_"))).toBe(true);
     const utility = marinaTour.virtualTour!.rooms.find(room => room.id === "utility");
     expect(new Set(Object.values(utility?.panoramaPreviewByTiming ?? {})).size).toBe(3);
+    expect(utility?.panoramaPreviewByTiming?.morning).toContain("utility-matched-morning-panorama");
+    expect(utility?.panoramaPreviewByTiming?.noon).toContain("utility-locked-noon-panorama");
+    expect(utility?.panoramaPreviewByTiming?.night).toContain("utility-locked-night-panorama");
     expect(marinaTour.virtualTour!.rooms.every(room => new Set(Object.values(room.panoramaPreviewByTiming ?? {})).size === 3)).toBe(true);
     const primary = marinaTour.virtualTour!.rooms.find(room => room.id === "primary");
     expect(primary?.panoramaPreviewByTiming?.morning).toContain("primary-locked-morning-panorama");

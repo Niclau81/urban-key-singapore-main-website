@@ -336,3 +336,8 @@
 - [x] Bind the unified Primary Room Morning/Noon/Night sources and preserve room navigation context.
 - [x] Add regression coverage and desktop/mobile verification for identical Primary Room timing composition.
 - [x] Save the verified unified Primary Room triplet checkpoint.
+- [x] Define the locked Utility / Bath camera, tile layout, shower, vanity, window framing, and doorway composition from one approved reference.
+- [x] Regenerate matched Utility / Bath Morning, Noon, and Night panoramas that change only interior illumination, sky, and exterior lighting.
+- [x] Bind the locked Utility / Bath triplet to its timing controls and preserve its room navigation context.
+- [x] Add regression coverage and desktop/mobile verification for identical Utility / Bath timing composition.
+- [ ] Save the verified Utility / Bath locked-triplet checkpoint.
