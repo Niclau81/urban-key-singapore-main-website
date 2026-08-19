@@ -340,4 +340,4 @@
 - [x] Regenerate matched Utility / Bath Morning, Noon, and Night panoramas that change only interior illumination, sky, and exterior lighting.
 - [x] Bind the locked Utility / Bath triplet to its timing controls and preserve its room navigation context.
 - [x] Add regression coverage and desktop/mobile verification for identical Utility / Bath timing composition.
-- [ ] Save the verified Utility / Bath locked-triplet checkpoint.
+- [x] Save the verified Utility / Bath locked-triplet checkpoint.
