@@ -335,4 +335,4 @@
 - [x] Regenerate a locked-composition Noon panorama from the same Primary Room reference used for Morning and Night.
 - [x] Bind the unified Primary Room Morning/Noon/Night sources and preserve room navigation context.
 - [x] Add regression coverage and desktop/mobile verification for identical Primary Room timing composition.
-- [ ] Save the verified unified Primary Room triplet checkpoint.
+- [x] Save the verified unified Primary Room triplet checkpoint.
