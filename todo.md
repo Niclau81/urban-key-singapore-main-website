@@ -330,4 +330,4 @@
 - [x] Regenerate matched Primary Room Morning and Night panoramas that change only illumination, sky, and exterior lighting.
 - [x] Bind the corrected Primary Room triplet to its timing controls and preserve the room’s existing navigation context.
 - [x] Add regression coverage and desktop/mobile verification that Primary Room timing sources share one fixed composition.
-- [ ] Save the verified Primary Room timing synchronization checkpoint.
+- [x] Save the verified Primary Room timing synchronization checkpoint.
