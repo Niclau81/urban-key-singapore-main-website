@@ -544,6 +544,79 @@ for (const room of marinaCoveMatchedTour.rooms) {
   marinaCoveMatchedTour.panoramaPreviewUrls[room.id] = sources.noon;
 }
 
+type LockedTourSourceId = keyof typeof marinaCoveMatchedTimingSources;
+
+type IllustrativeTourRoomBlueprint = {
+  id: string;
+  label: string;
+  sourceId: LockedTourSourceId;
+  note: string;
+  highlights: string[];
+};
+
+const createLockedIllustrativeTour = (
+  floorLabel: string,
+  roomBlueprints: IllustrativeTourRoomBlueprint[],
+): VirtualPropertyTour => {
+  const roomIds = roomBlueprints.map(room => room.id);
+  const panoramaPreviewUrls = Object.fromEntries(roomBlueprints.map(room => [room.id, marinaCoveMatchedTimingSources[room.sourceId].noon]));
+
+  return {
+    badgeLabel: "Virtual Property Tour",
+    disclosure: "Illustrative generated photo-and-panorama demonstration using a locked-composition product-demo media library. This is not a real property tour, captured 360° survey, official plan, or representation of an actual unit.",
+    captureMode: "illustrative-panorama",
+    panoramaPreviewUrls,
+    floors: [{ id: "main", label: floorLabel, roomIds }],
+    rooms: roomBlueprints.map((room, index) => {
+      const sources = marinaCoveMatchedTimingSources[room.sourceId];
+      const previousRoom = roomBlueprints[index - 1];
+      const nextRoom = roomBlueprints[index + 1];
+      const x = 18 + index * (64 / Math.max(1, roomBlueprints.length - 1));
+      return {
+        id: room.id,
+        label: room.label,
+        imageIndex: Math.min(index, 2),
+        note: room.note,
+        approvedHighlights: ["Illustrative generated media", "Composition-locked photo timing", ...room.highlights],
+        floorPlanPosition: { x, y: 50 },
+        floorPlanBounds: { x: 5 + index * (90 / roomBlueprints.length), y: 24, width: 90 / roomBlueprints.length - 3, height: 52 },
+        viewerPosition: { x: 32 + index * (36 / Math.max(1, roomBlueprints.length - 1)), y: 66 },
+        connections: [
+          ...(previousRoom ? [{ roomId: previousRoom.id, direction: "left" as const }] : []),
+          ...(nextRoom ? [{ roomId: nextRoom.id, direction: "right" as const }] : []),
+        ],
+        timedPhotos: [
+          { id: "morning", label: "Morning", timeRange: "7:30 AM", description: `Matched early daylight for this illustrative ${room.label} panorama.`, src: sources.morning },
+          { id: "noon", label: "Noon", timeRange: "12:30 PM", description: `Matched neutral daylight for this illustrative ${room.label} panorama.`, src: sources.noon },
+          { id: "night", label: "Night", timeRange: "8:30 PM", description: `Matched bright interior and night outlook for this illustrative ${room.label} panorama.`, src: sources.night },
+        ],
+        panoramaPreviewByTiming: sources,
+      };
+    }),
+    aiGuide: { enabled: true, intro: "This is an illustrative UrbanKey product demonstration. I can explain the room sequence, navigation, and photo-timing controls, but no property particulars, availability, or conditions are represented as factual." },
+    privacyReview: { automatedRedactionRequired: true, manualReviewRequired: true, protectedTargets: ["Faces", "Family photos", "Letters and cards", "Name cards", "Access codes", "Visible personal information"], status: "demo-review-required" },
+    analytics: { scope: "on-device", events: ["tour_opened", "room_visited", "appointment_intent"] },
+  };
+};
+
+Object.assign(singaporeVirtualTours, {
+  "bishan-grove-demo": createLockedIllustrativeTour("Illustrative HDB layout", [
+    { id: "living", label: "Living / dining", sourceId: "living", note: "Illustrative generated panorama-style preview; it is not a real property capture.", highlights: ["HDB living sequence"] },
+    { id: "kitchen", label: "Kitchen", sourceId: "kitchen", note: "Illustrative generated panorama-style preview; it is not a real property capture.", highlights: ["Kitchen-to-living navigation"] },
+    { id: "primary", label: "Primary room", sourceId: "primary", note: "Illustrative generated panorama-style preview; request a real viewing to verify any actual property.", highlights: ["Viewing request available"] },
+  ]),
+  "tampines-verge-demo": createLockedIllustrativeTour("Illustrative HDB layout", [
+    { id: "living", label: "Living / dining", sourceId: "living", note: "Illustrative generated panorama-style preview; it is not a real property capture.", highlights: ["HDB living sequence"] },
+    { id: "kitchen", label: "Kitchen", sourceId: "kitchen", note: "Illustrative generated panorama-style preview; it is not a real property capture.", highlights: ["Kitchen-to-bedroom navigation"] },
+    { id: "bedroom", label: "Bedroom", sourceId: "room2", note: "Illustrative generated panorama-style preview; request a real viewing to verify any actual property.", highlights: ["Viewing request available"] },
+  ]),
+  "tanjong-pagar-office-18": createLockedIllustrativeTour("Illustrative office suite", [
+    { id: "reception", label: "Reception", sourceId: "living", note: "Illustrative generated panorama-style preview; it is not a real property capture.", highlights: ["Client arrival context"] },
+    { id: "workspace", label: "Open workspace", sourceId: "kitchen", note: "Illustrative generated panorama-style preview; it is not a real property capture.", highlights: ["Workplace circulation"] },
+    { id: "meeting", label: "Meeting suite", sourceId: "primary", note: "Illustrative generated panorama-style preview; request an in-person inspection to verify any actual property.", highlights: ["Inspection request available"] },
+  ]),
+});
+
 export const properties: Property[] = [
   ...[...residentialProperties, ...hdbProperties, ...commercialProperties]
     .map(withIllustrativeFloorPlan)

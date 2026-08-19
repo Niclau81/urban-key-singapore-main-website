@@ -127,8 +127,8 @@ describe("property intelligence procedures", () => {
 
   it("makes guided Virtual Property Tours optional, explicitly privacy-reviewed, and available on selected Singapore listings", () => {
     const tourListings = properties.filter(property => property.marketId === "singapore" && property.virtualTour);
-    expect(tourListings.map(property => property.id)).toEqual(expect.arrayContaining(["marina-cove-28-08", "interlace-garden-06-12", "queenstown-skyline-demo"]));
-    expect(tourListings).toHaveLength(3);
+    expect(tourListings.map(property => property.id)).toEqual(expect.arrayContaining(["marina-cove-28-08", "interlace-garden-06-12", "queenstown-skyline-demo", "bishan-grove-demo", "tampines-verge-demo", "tanjong-pagar-office-18"]));
+    expect(tourListings).toHaveLength(6);
 
     for (const property of tourListings) {
       const tour = property.virtualTour!;
@@ -196,6 +196,22 @@ describe("property intelligence procedures", () => {
     expect(Object.values(interlaceTour.virtualTour!.panoramaPreviewUrls ?? {})).toHaveLength(3);
     expect(Object.values(interlaceTour.virtualTour!.panoramaPreviewUrls ?? {}).every(url => url.includes("/manus-storage/interlace-demo-"))).toBe(true);
     expect(interlaceTour.virtualTour!.disclosure).toContain("not a real property tour");
+
+    const expandedTourIds = ["bishan-grove-demo", "tampines-verge-demo", "tanjong-pagar-office-18"];
+    const expandedTours = expandedTourIds.map(id => properties.find(property => property.id === id)!);
+    expect(expandedTours.filter(property => property.type === "HDB Flat")).toHaveLength(2);
+    expect(expandedTours.filter(property => property.isCommercial)).toHaveLength(1);
+    for (const property of expandedTours) {
+      const tour = property.virtualTour!;
+      expect(tour.captureMode).toBe("illustrative-panorama");
+      expect(tour.disclosure).toContain("locked-composition");
+      expect(tour.floors[0]?.roomIds).toEqual(tour.rooms.map(room => room.id));
+      expect(tour.rooms).toHaveLength(3);
+      expect(tour.rooms.every(room => room.timedPhotos?.map(photo => photo.id).join(",") === "morning,noon,night")).toBe(true);
+      expect(tour.rooms.every(room => Object.keys(room.panoramaPreviewByTiming ?? {}).join(",") === "morning,noon,night")).toBe(true);
+      expect(tour.rooms.every(room => new Set(Object.values(room.panoramaPreviewByTiming ?? {})).size === 3)).toBe(true);
+      expect(tour.rooms.every(room => room.connections?.every(connection => tour.rooms.some(target => target.id === connection.roomId)))).toBe(true);
+    }
     expect(properties.filter(property => property.marketId === "singapore" && !property.virtualTour).length).toBeGreaterThan(0);
   });
 

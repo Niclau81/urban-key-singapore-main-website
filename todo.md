@@ -341,3 +341,8 @@
 - [x] Bind the locked Utility / Bath triplet to its timing controls and preserve its room navigation context.
 - [x] Add regression coverage and desktop/mobile verification for identical Utility / Bath timing composition.
 - [x] Save the verified Utility / Bath locked-triplet checkpoint.
+- [x] Select two HDB listings and one commercial listing for illustrative virtual-property-tour coverage with room graphs matched to each property type.
+- [x] Configure the existing illustrative panorama library and floor-plan media for the three new tours, including Morning, Noon, and Night variants locked to one composition per room.
+- [x] Bind the optional virtual-tour badge, timing toolbar, floor navigator, and directional room arrows to all three selected listings.
+- [x] Add regression coverage confirming the HDB and commercial tour contracts, timing sources, and room connections.
+- [ ] Verify the three new tours on desktop and mobile, then save the expanded tour checkpoint.
