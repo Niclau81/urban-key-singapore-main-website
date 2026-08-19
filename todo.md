@@ -315,4 +315,4 @@
 - [x] Move the per-room Morning / Noon / Night timing control to a top viewer toolbar that remains outside room-title and navigation-hit areas.
 - [x] Map every room’s night selection to dedicated night media instead of applying a generic darkening filter.
 - [x] Add regression coverage and desktop/mobile visual verification for top control placement and true night-state media across all rooms.
-- [ ] Save the verified top-control and genuine night-media checkpoint.
+- [x] Save the verified top-control and genuine night-media checkpoint.
