@@ -320,4 +320,4 @@
 - [x] Assign distinct morning, noon, and bright-interior night panorama sources for Utility / Bath.
 - [x] Ensure Utility / Bath selection updates the active panorama source immediately for each timing state.
 - [x] Add regression coverage and desktop/mobile verification for three distinct Utility / Bath timing transitions.
-- [ ] Save the verified Utility / Bath timing synchronization checkpoint.
+- [x] Save the verified Utility / Bath timing synchronization checkpoint.
