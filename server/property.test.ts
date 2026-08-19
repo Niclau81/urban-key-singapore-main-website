@@ -172,6 +172,7 @@ describe("property intelligence procedures", () => {
     const marinaLiving = marinaTour.virtualTour!.rooms.find(room => room.id === "living");
     expect(marinaTour.virtualTour!.rooms.every(room => room.timedPhotos?.map(photo => photo.id).join(",") === "morning,noon,night")).toBe(true);
     expect(marinaTour.virtualTour!.rooms.every(room => Object.keys(room.panoramaPreviewByTiming ?? {}).join(",") === "morning,noon,night")).toBe(true);
+    expect(marinaTour.virtualTour!.rooms.filter(room => room.id !== "living").every(room => room.panoramaPreviewByTiming?.night.includes("-night-panorama_"))).toBe(true);
     expect(marinaLiving?.timedPhotos?.map(photo => photo.id)).toEqual(["morning", "noon", "night"]);
     expect(Object.keys(marinaLiving?.panoramaPreviewByTiming ?? {})).toEqual(["morning", "noon", "night"]);
     expect(marinaLiving?.connections).toEqual(expect.arrayContaining([{ roomId: "kitchen", direction: "right" }, { roomId: "primary", direction: "down" }]));
@@ -222,8 +223,8 @@ describe("property intelligence procedures", () => {
     expect(guidedSource).toContain("connectedRooms");
     expect(guidedSource).toContain("Move ${room.direction}");
     expect(guidedSource).toContain("showPanoramaPreview");
-    expect(guidedSource).toContain("sidebar-photo-timing-choices");
-    expect(guidedSource).toContain("Changes the illustrative daylight and outlook treatment without covering the panorama.");
+    expect(guidedSource).toContain("top-photo-timing-choices");
+    expect(guidedSource).toContain("Illustrative daylight and exterior outlook treatment.");
     expect(guidedSource).toContain("floorPlanBounds");
     expect(guidedSource).toContain("!isVerified360 && timingPhotos.length > 1");
     expect(guidedSource).toContain("<EquirectangularPanorama");

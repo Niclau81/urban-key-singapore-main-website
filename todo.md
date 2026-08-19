@@ -310,3 +310,9 @@
 - [x] Keep each room’s timing selection persistent and synchronize it with its panorama or guided-photo source.
 - [x] Add regression coverage and desktop/mobile verification for direct timing selection across every floor-plan room.
 - [x] Save the verified all-room timing and relocated-control checkpoint.
+- [x] Audit top-of-viewer timing-control placement and identify remaining rooms that only use a darkening filter at night.
+- [x] Generate original bright-interior, real-night-exterior illustrative panoramas for Kitchen, Utility / Bath, Primary Room, Room 2, and Room 3.
+- [x] Move the per-room Morning / Noon / Night timing control to a top viewer toolbar that remains outside room-title and navigation-hit areas.
+- [x] Map every room’s night selection to dedicated night media instead of applying a generic darkening filter.
+- [x] Add regression coverage and desktop/mobile visual verification for top control placement and true night-state media across all rooms.
+- [ ] Save the verified top-control and genuine night-media checkpoint.

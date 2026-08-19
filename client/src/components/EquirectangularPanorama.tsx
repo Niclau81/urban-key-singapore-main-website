@@ -172,7 +172,7 @@ export function EquirectangularPanorama({ src, alt, hotspots, onSelectHotspot, t
     if (event.key === "-") { event.preventDefault(); controlsRef.current.adjustFov(6); }
   };
 
-  const timeFilter = timeOfDay === "morning" ? "sepia-[.16] saturate-110 brightness-105" : timeOfDay === "night" ? "brightness-[.56] saturate-125 hue-rotate-[8deg]" : "brightness-100";
+  const timeFilter = timeOfDay === "morning" ? "sepia-[.08] saturate-105 brightness-105" : "brightness-100";
   return <div className={`relative h-full w-full overflow-hidden bg-[#0d1110] ${className}`} tabIndex={0} onKeyDown={keyDown} aria-label="Interactive panorama. Drag to look around, use arrow keys to move the camera, and select a blue node to jump rooms." data-equirectangular-panorama data-panorama-yaw={cameraState.yaw} data-panorama-pitch={cameraState.pitch} data-panorama-fov={cameraState.fov} data-panorama-time={timeOfDay}>
     <div ref={mountRef} className={`absolute inset-0 transition-[filter] duration-300 ${timeFilter}`} />
     {rendererFailed && <><img src={src} alt={alt} className="absolute inset-0 h-full w-full object-cover" /><p className="absolute inset-x-4 bottom-20 rounded-lg bg-black/75 px-3 py-2 text-xs text-white">Panorama rendering is unavailable in this browser. Showing the approved flat preview instead.</p></>}
