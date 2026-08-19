@@ -309,4 +309,4 @@
 - [x] Move the photo-timing selector from the panorama canvas into a dedicated unobstructed control area beside the floor navigator.
 - [x] Keep each room’s timing selection persistent and synchronize it with its panorama or guided-photo source.
 - [x] Add regression coverage and desktop/mobile verification for direct timing selection across every floor-plan room.
-- [ ] Save the verified all-room timing and relocated-control checkpoint.
+- [x] Save the verified all-room timing and relocated-control checkpoint.
