@@ -316,3 +316,8 @@
 - [x] Map every room’s night selection to dedicated night media instead of applying a generic darkening filter.
 - [x] Add regression coverage and desktop/mobile visual verification for top control placement and true night-state media across all rooms.
 - [x] Save the verified top-control and genuine night-media checkpoint.
+- [x] Inspect the Utility / Bath Morning, Noon, and Night source mappings and reproduce the observed single-image mismatch.
+- [x] Assign distinct morning, noon, and bright-interior night panorama sources for Utility / Bath.
+- [x] Ensure Utility / Bath selection updates the active panorama source immediately for each timing state.
+- [x] Add regression coverage and desktop/mobile verification for three distinct Utility / Bath timing transitions.
+- [ ] Save the verified Utility / Bath timing synchronization checkpoint.
