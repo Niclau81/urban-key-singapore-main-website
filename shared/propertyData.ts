@@ -497,6 +497,53 @@ const singaporeVirtualTours: Record<string, VirtualPropertyTour> = {
   },
 };
 
+const marinaCoveMatchedTimingSources = {
+  living: {
+    morning: "/manus-storage/marina-cove-living-matched-morning-panorama_8b1eec6e.jpg",
+    noon: "/manus-storage/marina-cove-living-noon-panorama-21x9_dd5467ff.jpg",
+    night: "/manus-storage/marina-cove-living-matched-night-panorama_840cbb07.jpg",
+  },
+  kitchen: {
+    morning: "/manus-storage/marina-cove-kitchen-matched-morning-panorama_689efdb9.jpg",
+    noon: "/manus-storage/marina-cove-kitchen-panorama-six-room_25b6c8a9.jpg",
+    night: "/manus-storage/marina-cove-kitchen-matched-night-panorama_895bc389.jpg",
+  },
+  utility: {
+    morning: "/manus-storage/marina-cove-utility-matched-morning-panorama_cff02a1f.jpg",
+    noon: "/manus-storage/marina-cove-utility-noon-panorama_1f9dcbbc.jpg",
+    night: "/manus-storage/marina-cove-utility-matched-night-panorama_397a304e.jpg",
+  },
+  primary: {
+    morning: "/manus-storage/marina-cove-primary-matched-morning-panorama_abe8eaf2.jpg",
+    noon: "/manus-storage/marina-cove-primary-panorama-six-room_f19cdf49.jpg",
+    night: "/manus-storage/marina-cove-primary-matched-night-panorama_308967c5.jpg",
+  },
+  room2: {
+    morning: "/manus-storage/marina-cove-room2-matched-morning-panorama_cc77710a.jpg",
+    noon: "/manus-storage/marina-cove-room2-panorama-clean-21x9_1333a966.jpg",
+    night: "/manus-storage/marina-cove-room2-matched-night-panorama_46f39bbd.jpg",
+  },
+  room3: {
+    morning: "/manus-storage/marina-cove-room3-matched-morning-panorama_1c9e4f38.jpg",
+    noon: "/manus-storage/marina-cove-room3-panorama-clean-21x9_4b746f5d.jpg",
+    night: "/manus-storage/marina-cove-room3-matched-night-panorama_fe442389.jpg",
+  },
+} as const;
+
+const marinaCoveMatchedTour = singaporeVirtualTours["marina-cove-28-08"];
+marinaCoveMatchedTour.panoramaPreviewUrls ??= {};
+for (const room of marinaCoveMatchedTour.rooms) {
+  const sources = marinaCoveMatchedTimingSources[room.id as keyof typeof marinaCoveMatchedTimingSources];
+  if (!sources) continue;
+  room.panoramaPreviewByTiming = sources;
+  room.timedPhotos = [
+    { id: "morning", label: "Morning", timeRange: "7:30 AM", description: `Matched early daylight for this illustrative ${room.label} panorama.`, src: sources.morning },
+    { id: "noon", label: "Noon", timeRange: "12:30 PM", description: `Matched neutral daylight for this illustrative ${room.label} panorama.`, src: sources.noon },
+    { id: "night", label: "Night", timeRange: "8:30 PM", description: `Matched bright interior and night outlook for this illustrative ${room.label} panorama.`, src: sources.night },
+  ];
+  marinaCoveMatchedTour.panoramaPreviewUrls[room.id] = sources.noon;
+}
+
 export const properties: Property[] = [
   ...[...residentialProperties, ...hdbProperties, ...commercialProperties]
     .map(withIllustrativeFloorPlan)

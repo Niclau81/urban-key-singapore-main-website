@@ -321,3 +321,8 @@
 - [x] Ensure Utility / Bath selection updates the active panorama source immediately for each timing state.
 - [x] Add regression coverage and desktop/mobile verification for three distinct Utility / Bath timing transitions.
 - [x] Save the verified Utility / Bath timing synchronization checkpoint.
+- [x] Define and preserve one approved camera, room geometry, fixture, window, and doorway composition for each Marina Cove room.
+- [x] Regenerate matched Morning, Noon, and Night panorama triplets for Living / Dining, Kitchen, Utility / Bath, Primary Room, Room 2, and Room 3.
+- [x] Bind every room timing control to its matched panorama triplet so the source, room context, and directional exits remain synchronized.
+- [x] Verify all room triplets retain spatial consistency while changing only interior light, sky, and exterior outlook; add regression coverage.
+- [x] Verify desktop/mobile timing transitions and save the matched panorama-timing checkpoint.
