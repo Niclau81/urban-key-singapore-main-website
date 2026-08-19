@@ -345,4 +345,4 @@
 - [x] Configure the existing illustrative panorama library and floor-plan media for the three new tours, including Morning, Noon, and Night variants locked to one composition per room.
 - [x] Bind the optional virtual-tour badge, timing toolbar, floor navigator, and directional room arrows to all three selected listings.
 - [x] Add regression coverage confirming the HDB and commercial tour contracts, timing sources, and room connections.
-- [ ] Verify the three new tours on desktop and mobile, then save the expanded tour checkpoint.
+- [x] Verify the three new tours on desktop and mobile, then save the expanded tour checkpoint.
