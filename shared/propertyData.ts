@@ -515,7 +515,7 @@ const marinaCoveMatchedTimingSources = {
   },
   primary: {
     morning: "/manus-storage/marina-cove-primary-locked-morning-panorama_f01afd5f.jpg",
-    noon: "/manus-storage/marina-cove-primary-panorama-six-room_f19cdf49.jpg",
+    noon: "/manus-storage/marina-cove-primary-locked-noon-panorama_159e79b0.jpg",
     night: "/manus-storage/marina-cove-primary-locked-night-panorama_bff0faa3.jpg",
   },
   room2: {

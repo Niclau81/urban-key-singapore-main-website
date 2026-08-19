@@ -331,3 +331,8 @@
 - [x] Bind the corrected Primary Room triplet to its timing controls and preserve the room’s existing navigation context.
 - [x] Add regression coverage and desktop/mobile verification that Primary Room timing sources share one fixed composition.
 - [x] Save the verified Primary Room timing synchronization checkpoint.
+- [x] Confirm the wider-space Primary Room Noon source and retire it from the timing triplet.
+- [x] Regenerate a locked-composition Noon panorama from the same Primary Room reference used for Morning and Night.
+- [x] Bind the unified Primary Room Morning/Noon/Night sources and preserve room navigation context.
+- [x] Add regression coverage and desktop/mobile verification for identical Primary Room timing composition.
+- [ ] Save the verified unified Primary Room triplet checkpoint.
