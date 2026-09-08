@@ -1,0 +1,18 @@
+export type Property = { id: string; title: string; district: string; address: string; category: "Buy" | "Rent" | "Commercial"; type: string; price: string; beds: number; baths: number; size: string; mrt: string; minutes: number; tags: string[]; tone: string; detail: string };
+
+/** Demonstration inventory only. It is not a claim of current availability or market fact. */
+export const properties: Property[] = [
+  { id: "marina-cove-28-08", title: "Marina Cove Residence", district: "D01 · Marina Bay", address: "Illustrative waterfront location", category: "Buy", type: "Condominium", price: "S$4.28m", beds: 3, baths: 3, size: "1,658 sq ft", mrt: "Downtown MRT", minutes: 4, tags: ["Bay view", "Private lift", "Virtual tour"], tone: "marina", detail: "Illustrative product-demo residence with a high-floor waterfront setting, gallery-style living room, and private lift lobby." },
+  { id: "interlace-garden-06-12", title: "The Interlace Garden Home", district: "D04 · Harbourfront", address: "Illustrative garden-facing location", category: "Rent", type: "Condominium", price: "S$7,800 / month", beds: 3, baths: 2, size: "1,593 sq ft", mrt: "Labrador Park MRT", minutes: 9, tags: ["Garden view", "Family home", "Virtual tour"], tone: "garden", detail: "Illustrative product-demo home set in an architectural garden estate, with a large living zone and green outlook." },
+  { id: "queenstown-skyline-demo", title: "Queenstown Skyline Flat · Demo", district: "D03 · Queenstown", address: "Illustrative address only", category: "Buy", type: "HDB Flat", price: "S$928,000", beds: 3, baths: 2, size: "969 sq ft", mrt: "Queenstown MRT", minutes: 6, tags: ["HDB demo", "Resale", "Near MRT"], tone: "city", detail: "Illustrative HDB product-demo listing. Price, availability, floor plan, and all particulars require independent verification." },
+  { id: "tampines-verge-demo", title: "Tampines Verge Flat · Demo", district: "D18 · Tampines", address: "Illustrative address only", category: "Buy", type: "HDB Flat", price: "S$786,000", beds: 4, baths: 2, size: "1,184 sq ft", mrt: "Tampines West MRT", minutes: 7, tags: ["HDB demo", "4-room", "East"], tone: "terracotta", detail: "Illustrative four-room HDB product-demo listing for journey and interface planning." },
+  { id: "anson-exchange-office", title: "Anson Exchange Office Suite", district: "D02 · Tanjong Pagar", address: "Illustrative CBD location", category: "Commercial", type: "Office", price: "S$23,800 / month", beds: 0, baths: 2, size: "3,680 sq ft", mrt: "Tanjong Pagar MRT", minutes: 3, tags: ["Office", "CBD", "Service bay"], tone: "slate", detail: "Illustrative commercial product-demo with professional-services positioning and transport access." },
+  { id: "keong-saik-conservation", title: "Keong Saik Conservation House", district: "D02 · Tanjong Pagar", address: "Illustrative conservation precinct", category: "Commercial", type: "Shophouse", price: "S$12.8m", beds: 0, baths: 4, size: "4,860 sq ft", mrt: "Outram Park MRT", minutes: 6, tags: ["Shophouse", "Conservation", "Mixed use"], tone: "ochre", detail: "Illustrative conservation shophouse product-demo with adaptable upper floors and rear service access." },
+];
+
+export const agentSteps = [
+  ["1", "Clarify", "Capture needs, target areas, budget, timeline, and consent preferences."],
+  ["2", "Source", "Compare candidate listings and prepare viewing shortlists for approval."],
+  ["3", "Coordinate", "Draft appointment, paperwork, professional hand-off, and follow-up tasks."],
+  ["4", "Confirm", "Keep approvals visible before any external communication or commitment."],
+];
