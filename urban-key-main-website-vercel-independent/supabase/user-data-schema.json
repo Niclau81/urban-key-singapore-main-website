@@ -1,0 +1,77 @@
+{
+  "format": "urban-key-user-data-schema/v1",
+  "purpose": "Portable user-data schema and safe import template for the independent Supabase deployment.",
+  "contains_private_user_records": false,
+  "why_private_records_are_excluded": "Authentication users, password hashes, magic-link tokens, sessions, and user personal data must be transferred only through approved Supabase administrative procedures and with documented user consent.",
+  "auth_user_creation": {
+    "provider": "Supabase Auth",
+    "supported_production_method": "Create invited or magic-link users through the Supabase dashboard or a protected server-side administrative function.",
+    "never_import": ["password_hash", "access_token", "refresh_token", "session", "service_role_key"]
+  },
+  "entities": {
+    "profiles": {
+      "table": "public.profiles",
+      "primary_key": "id",
+      "foreign_key": "id -> auth.users.id",
+      "columns": [
+        { "name": "id", "type": "uuid", "required": true, "description": "ID returned by Supabase Auth after a user is created." },
+        { "name": "display_name", "type": "text", "required": false, "max_length": 160 },
+        { "name": "role", "type": "customer | agent | admin", "required": true, "default": "customer" },
+        { "name": "created_at", "type": "ISO-8601 timestamp", "required": false, "server_default": "now()" }
+      ],
+      "row_level_security": "A signed-in user can read, create, and update only the profile matching auth.uid()."
+    },
+    "favourites": {
+      "table": "public.favourites",
+      "primary_key": ["user_id", "listing_id"],
+      "columns": [
+        { "name": "user_id", "type": "uuid", "required": true, "description": "Authenticated user ID." },
+        { "name": "listing_id", "type": "uuid", "required": true, "description": "Published listing ID." },
+        { "name": "created_at", "type": "ISO-8601 timestamp", "required": false, "server_default": "now()" }
+      ],
+      "row_level_security": "A signed-in user can manage only rows where user_id equals auth.uid()."
+    },
+    "enquiries": {
+      "table": "public.enquiries",
+      "primary_key": "id",
+      "columns": [
+        { "name": "id", "type": "uuid", "required": false, "server_default": "gen_random_uuid()" },
+        { "name": "listing_id", "type": "uuid | null", "required": false },
+        { "name": "user_id", "type": "uuid | null", "required": false, "description": "Set only to the signed-in sender." },
+        { "name": "enquiry_type", "type": "viewing | property_agent | general", "required": true },
+        { "name": "contact_name", "type": "text", "required": true, "max_length": 160 },
+        { "name": "contact_email", "type": "email", "required": true, "max_length": 320 },
+        { "name": "message", "type": "text", "required": true, "max_length": 4000 },
+        { "name": "status", "type": "new | reviewing | closed", "required": false, "default": "new" },
+        { "name": "created_at", "type": "ISO-8601 timestamp", "required": false, "server_default": "now()" }
+      ],
+      "row_level_security": "Anonymous entries must have a null user_id; a signed-in entry may only claim auth.uid()."
+    },
+    "agent_tasks": {
+      "table": "public.agent_tasks",
+      "primary_key": "id",
+      "columns": [
+        { "name": "id", "type": "uuid", "required": false, "server_default": "gen_random_uuid()" },
+        { "name": "owner_id", "type": "uuid", "required": true, "description": "Authenticated agent user ID." },
+        { "name": "title", "type": "text", "required": true, "max_length": 280 },
+        { "name": "status", "type": "open | in_review | complete", "required": false, "default": "open" },
+        { "name": "due_at", "type": "ISO-8601 timestamp | null", "required": false },
+        { "name": "created_at", "type": "ISO-8601 timestamp", "required": false, "server_default": "now()" }
+      ],
+      "row_level_security": "A signed-in agent can read and update only tasks where owner_id equals auth.uid()."
+    }
+  },
+  "import_sequence": [
+    "Run supabase/schema.sql in the Supabase SQL editor.",
+    "Create or invite users through Supabase Auth; record the returned auth user UUIDs.",
+    "Insert matching profiles using those UUIDs.",
+    "Import user-owned favourites, enquiries, and agent tasks only after mapping every user_id or owner_id to the newly created UUID.",
+    "Validate row counts, role assignments, and RLS access in a staging project before production import."
+  ],
+  "records_template": {
+    "profiles": [],
+    "favourites": [],
+    "enquiries": [],
+    "agent_tasks": []
+  }
+}
