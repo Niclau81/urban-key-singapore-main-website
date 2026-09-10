@@ -9,10 +9,11 @@ export const externalConfig = {
 
 export const hasSupabaseConfig = Boolean(externalConfig.supabaseUrl && externalConfig.supabasePublishableKey);
 export const hasGoogleMapsConfig = Boolean(externalConfig.googleMapsApiKey);
+export const hasGoogleMaps3DConfig = Boolean(externalConfig.googleMapsApiKey && externalConfig.googleMapsMapId);
 
 export const integrationStatus = {
   auth: hasSupabaseConfig ? "ready" : "configuration required",
   database: hasSupabaseConfig ? "ready" : "configuration required",
   storage: hasSupabaseConfig ? "ready" : "configuration required",
-  maps: hasGoogleMapsConfig ? "ready" : "configuration required",
+  maps: hasGoogleMaps3DConfig ? "3d ready" : hasGoogleMapsConfig ? "standard map ready" : "configuration required",
 };
