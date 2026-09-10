@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Singapore geographic context fallback</title>
+  <desc id="desc">A schematic, non-navigational fallback map of Singapore with central, north, east and west labels.</desc>
+  <defs><linearGradient id="sea" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#9bd1d8"/><stop offset="1" stop-color="#5f9eaa"/></linearGradient><linearGradient id="land" x1="0" x2="1"><stop stop-color="#dce9c7"/><stop offset="1" stop-color="#b9d2a0"/></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-opacity=".22"/></filter></defs>
+  <rect width="1200" height="720" fill="url(#sea)"/>
+  <g opacity=".38" stroke="#eaf6f1" stroke-width="13" fill="none"><path d="M-60 108C250 210 430 40 750 150s400 20 520 70"/><path d="M-60 480c330-220 550 160 900-40s300-5 420-100"/><path d="M50 750c210-390 430-300 720-440S1040 180 1260-40"/></g>
+  <path d="M145 333c52-89 151-116 266-101 126 16 170-75 324-40 97 22 218 47 300 124 46 43 40 105-22 126-97 32-172 93-270 83-103-10-143 52-287 17-93-23-175 4-266-45-73-39-85-96-45-164Z" fill="url(#land)" stroke="#f8f6e9" stroke-width="10" filter="url(#shadow)"/>
+  <g fill="none" stroke="#638c77" stroke-linecap="round"><path stroke-width="13" d="M240 397c130-75 237 75 364 0s245 34 345-70"/><path stroke-width="7" d="M285 328c80 35 139 85 256 48s188 68 341 4M330 440c83-60 155 20 266-14s193 43 291-23"/></g>
+  <g fill="#173d34" font-family="Arial, sans-serif" text-anchor="middle"><text x="612" y="341" font-size="35" font-weight="700">CENTRAL</text><text x="470" y="255" font-size="25" font-weight="700">NORTH</text><text x="885" y="407" font-size="25" font-weight="700">EAST</text><text x="290" y="466" font-size="25" font-weight="700">WEST</text></g>
+  <g fill="#c9934c" stroke="#fffdf6" stroke-width="6"><circle cx="615" cy="365" r="18"/><circle cx="825" cy="406" r="15"/><circle cx="408" cy="415" r="15"/></g>
+  <text x="60" y="660" fill="#fffdf6" font-family="Arial, sans-serif" font-size="25" font-weight="700">SINGAPORE · GEOGRAPHIC CONTEXT FALLBACK</text>
+</svg>
