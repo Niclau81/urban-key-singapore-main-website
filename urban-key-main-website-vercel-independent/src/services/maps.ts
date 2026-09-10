@@ -11,5 +11,8 @@ export async function renderSingaporeMap(element: HTMLElement) {
   if (!maps) throw new Error("Google Maps could not be loaded.");
   const center = { lat: 1.29027, lng: 103.851959 };
   const map = new maps.Map(element, { center, zoom: 12, streetViewControl: false, mapTypeControl: false, fullscreenControl: true });
+ const map = new maps.Map(element, { center, zoom: 12, mapId: externalConfig.googleMapsMapId, streetViewControl: false, mapTypeControl: false, fullscreenControl: true });
+  map.setTilt?.(45);
+  map.setHeading?.(20);
   new maps.Marker({ map, position: center, title: "Singapore" });
 }
