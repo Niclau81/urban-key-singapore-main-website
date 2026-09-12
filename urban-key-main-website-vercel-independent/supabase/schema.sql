@@ -28,6 +28,7 @@ create table if not exists public.listings (
   mrt_minutes integer,
   tags text[] not null default '{}',
   image_tone text not null default 'city',
+  image_url text,
   description text not null,
   is_published boolean not null default false,
   created_by uuid references auth.users(id),

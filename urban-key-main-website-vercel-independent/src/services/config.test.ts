@@ -8,6 +8,6 @@ describe("independent external service configuration", () => {
 
   it("exposes explicit configuration states for each external service", () => {
     expect(["ready", "configuration required"]).toContain(integrationStatus.auth);
-    expect(["ready", "configuration required"]).toContain(integrationStatus.maps);
+    expect(["3d ready", "standard map ready", "configuration required"]).toContain(integrationStatus.maps);
   });
 });

@@ -1,6 +1,6 @@
 import { LoaderCircle, LogOut, MapPinned, Send, UploadCloud, UserRound } from "lucide-react";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { hasGoogleMapsConfig, hasSupabaseConfig, integrationStatus } from "../services/config";
+import { hasGoogleMaps3DConfig, hasGoogleMapsConfig, hasSupabaseConfig, integrationStatus } from "../services/config";
 import { fetchAgentTasks, getCurrentUser, requestMagicLink, saveFavourite, signOut, submitEnquiry, updateAgentTaskStatus, uploadTourMedia, type AgentTask } from "../services/supabase";
 import { renderSingaporeMap } from "../services/maps";
 
@@ -53,12 +53,12 @@ export function EnquiryForm({ listingId, listingTitle }: { listingId?: string; l
 
 export function GoogleMapSurface() {
   const node = useRef<HTMLDivElement>(null);
-  const [status, setStatus] = useState(hasGoogleMapsConfig ? "Loading Google Maps…" : "Add VITE_GOOGLE_MAPS_API_KEY to enable live Google Maps.");
+  const [status, setStatus] = useState(hasGoogleMapsConfig ? hasGoogleMaps3DConfig ? "Loading 3D-capable Singapore map…" : "Loading standard Google Map. Add VITE_GOOGLE_MAPS_MAP_ID for 3D map mode." : "Add VITE_GOOGLE_MAPS_API_KEY and VITE_GOOGLE_MAPS_MAP_ID to enable the live 3D Singapore map.");
   useEffect(() => {
     if (!node.current || !hasGoogleMapsConfig) return;
-    renderSingaporeMap(node.current).then(() => setStatus("Live Google Maps loaded.")).catch(error => setStatus(showError(error)));
+    renderSingaporeMap(node.current).then(() => setStatus(hasGoogleMaps3DConfig ? "Live Singapore map loaded with 3D map configuration." : "Live standard Google Map loaded. Add VITE_GOOGLE_MAPS_MAP_ID to request 3D map mode.")).catch(error => setStatus(showError(error)));
   }, []);
-  if (!hasGoogleMapsConfig) return <div className="map-unconfigured"><MapPinned size={26}/><b>Live map not configured</b><span>{status}</span></div>;
+  if (!hasGoogleMapsConfig) return <div className="map-unconfigured"><img src="/assets/singapore-map-fallback.svg" alt="Schematic Singapore geographic context map"/><div className="map-fallback-notice"><MapPinned size={26}/><b>Live map not configured</b><span>{status}</span></div></div>;
   return <><div ref={node} className="google-map" aria-label="Interactive Google Map of Singapore"/><p className="map-status" role="status">{status}</p></>;
 }
 

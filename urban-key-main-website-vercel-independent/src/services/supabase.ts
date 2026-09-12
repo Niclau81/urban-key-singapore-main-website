@@ -16,6 +16,7 @@ export type LiveListing = {
   mrt_minutes: number | null;
   tags: string[];
   image_tone: string;
+  image_url: string | null;
   description: string;
   is_published: boolean;
 };

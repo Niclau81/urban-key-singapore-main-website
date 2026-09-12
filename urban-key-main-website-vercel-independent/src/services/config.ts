@@ -5,6 +5,7 @@ export const externalConfig = {
   supabaseUrl: readValue(import.meta.env.VITE_SUPABASE_URL),
   supabasePublishableKey: readValue(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY),
   googleMapsApiKey: readValue(import.meta.env.VITE_GOOGLE_MAPS_API_KEY),
+  googleMapsMapId: readValue(import.meta.env.VITE_GOOGLE_MAPS_MAP_ID),
 };
 
 export const hasSupabaseConfig = Boolean(externalConfig.supabaseUrl && externalConfig.supabasePublishableKey);

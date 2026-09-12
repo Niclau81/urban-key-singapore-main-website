@@ -110,6 +110,12 @@ Then add these variables in **Project → Settings → Environment Variables** f
 
 Keep `vercel.json` committed; it preserves direct SPA links such as `/explore`, `/property/...`, and `/agent/portal` after refresh.
 
+## 6A. Visual assets and user-data JSON
+
+The files under `public/assets/` are included in the ZIP and copied into Vercel’s `dist/assets/` output on every build. They cover the homepage skyline, listing photos, and `singapore-map-fallback.svg`. The fallback displays when the Google Maps key is missing, restricted incorrectly, or the Maps script cannot load. A configured `VITE_GOOGLE_MAPS_API_KEY` enables the standard interactive map; add `VITE_GOOGLE_MAPS_MAP_ID` from a Google Cloud map style configured for 3D/vector use to request the 3D-capable Singapore map mode.
+
+The package also contains `supabase/user-data-schema.json`. This is a **JSON schema and empty import template**, not an export of private people or authentication records. Create account users through Supabase Auth first, then map their returned UUIDs to the `profiles`, `favourites`, `enquiries`, and `agent_tasks` data before importing. Never place passwords, tokens, sessions, or a service-role key in JSON or source control.
+
 ## 7. Security and operations checklist
 
 | Area | Required action before public launch |
