@@ -72,6 +72,7 @@ Install Node from [nodejs.org](https://nodejs.org/) if `node --version` does not
 2. Create a browser API key.
 3. Restrict the key by HTTP referrer to your Vercel production domain, required Vercel preview domain(s), and `http://127.0.0.1:5173/*` for development.
 4. Restrict the key by API to **Maps JavaScript API**. Enable Places API only when you implement a clearly defined Places feature.
+5. For the actual 3D Singapore view, open **Google Maps Platform → Map Management**, create a JavaScript Map ID, create a cloud map style with **3D Hybrid** and light mode, associate that style with the Map ID, and publish it. The code uses the Maps JavaScript `maps3d` library only when this Map ID is present. [7] [8]
 
 The Maps key is browser configuration and therefore uses `VITE_GOOGLE_MAPS_API_KEY`. Referrer and API restrictions are required because Vite exposes all `VITE_` variables in the browser bundle. [3] [4]
 
@@ -107,6 +108,7 @@ Then add these variables in **Project → Settings → Environment Variables** f
 | `VITE_SUPABASE_URL` | Your Supabase Project URL | Public browser configuration |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Your Supabase publishable key | Public browser configuration |
 | `VITE_GOOGLE_MAPS_API_KEY` | Your restricted browser Maps key | Public, restricted by referrer and API |
+| `VITE_GOOGLE_MAPS_MAP_ID` | JavaScript Map ID associated with a published 3D Hybrid style | Public map identifier; required for photorealistic 3D mode |
 
 Keep `vercel.json` committed; it preserves direct SPA links such as `/explore`, `/property/...`, and `/agent/portal` after refresh.
 
@@ -136,6 +138,7 @@ The package also contains `supabase/user-data-schema.json`. This is a **JSON sch
 | Vercel cannot find `package.json` | Vercel is pointed at a parent directory. | Set Root Directory to the folder containing `package.json`, or place package files at repository root. |
 | Vercel shows source files | Build output is not set. | Set build to `npm run build` and output to `dist`. |
 | Maps configuration message appears | Maps key is absent, restricted incorrectly, or Maps JavaScript API is disabled. | Set `VITE_GOOGLE_MAPS_API_KEY`, enable the API, and check HTTP-referrer restrictions. |
+| Map is interactive but not 3D | The Map ID is absent, invalid, unpublished, or not associated with a 3D Hybrid style. | Set `VITE_GOOGLE_MAPS_MAP_ID`, publish the 3D Hybrid map style, then create a new Vercel deployment. |
 | Magic-link email does not return to the app | Supabase redirect URL is absent. | Add the exact Vercel and local URLs in Supabase Auth URL Configuration. |
 | “Permission denied” from Supabase | RLS policy blocks the action or the user is signed out. | Sign in, review `supabase/schema.sql`, and confirm each policy matches the expected role and table. |
 | Direct link returns 404 | SPA rewrite is missing. | Restore `vercel.json` and redeploy. |
@@ -153,3 +156,7 @@ The package also contains `supabase/user-data-schema.json`. This is a **JSON sch
 [5] [Vercel — Vite on Vercel](https://vercel.com/docs/frameworks/frontend/vite)
 
 [6] [Vercel — Environment variables](https://vercel.com/docs/environment-variables)
+
+[7] [Google Maps — 3D Maps overview](https://developers.google.com/maps/documentation/javascript/3d/overview)
+
+[8] [Google Maps — Customize 3D Maps](https://developers.google.com/maps/documentation/javascript/3d/customize-maps)

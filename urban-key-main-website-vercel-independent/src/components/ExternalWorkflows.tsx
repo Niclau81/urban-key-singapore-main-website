@@ -53,12 +53,15 @@ export function EnquiryForm({ listingId, listingTitle }: { listingId?: string; l
 
 export function GoogleMapSurface() {
   const node = useRef<HTMLDivElement>(null);
-  const [status, setStatus] = useState(hasGoogleMapsConfig ? hasGoogleMaps3DConfig ? "Loading 3D-capable Singapore map…" : "Loading standard Google Map. Add VITE_GOOGLE_MAPS_MAP_ID for 3D map mode." : "Add VITE_GOOGLE_MAPS_API_KEY and VITE_GOOGLE_MAPS_MAP_ID to enable the live 3D Singapore map.");
+  const [status, setStatus] = useState(hasGoogleMapsConfig ? hasGoogleMaps3DConfig ? "Loading photorealistic 3D Singapore map…" : "Loading standard Google Map. Add VITE_GOOGLE_MAPS_MAP_ID for 3D map mode." : "Add VITE_GOOGLE_MAPS_API_KEY and VITE_GOOGLE_MAPS_MAP_ID to enable the live 3D Singapore map.");
+  const [fallback, setFallback] = useState(!hasGoogleMapsConfig);
   useEffect(() => {
     if (!node.current || !hasGoogleMapsConfig) return;
-    renderSingaporeMap(node.current).then(() => setStatus(hasGoogleMaps3DConfig ? "Live Singapore map loaded with 3D map configuration." : "Live standard Google Map loaded. Add VITE_GOOGLE_MAPS_MAP_ID to request 3D map mode.")).catch(error => setStatus(showError(error)));
+    renderSingaporeMap(node.current)
+      .then(mode => setStatus(mode === "3d" ? "Live photorealistic 3D Singapore map loaded." : "Live standard Google Map loaded. Add VITE_GOOGLE_MAPS_MAP_ID to request 3D map mode."))
+      .catch(error => { setStatus(showError(error)); setFallback(true); });
   }, []);
-  if (!hasGoogleMapsConfig) return <div className="map-unconfigured"><img src="/assets/singapore-map-fallback.svg" alt="Schematic Singapore geographic context map"/><div className="map-fallback-notice"><MapPinned size={26}/><b>Live map not configured</b><span>{status}</span></div></div>;
+  if (fallback) return <div className="map-unconfigured"><img src="/assets/singapore-map-fallback.svg" alt="Schematic Singapore geographic context map"/><div className="map-fallback-notice"><MapPinned size={26}/><b>Singapore map fallback</b><span>{status}</span></div></div>;
   return <><div ref={node} className="google-map" aria-label="Interactive Google Map of Singapore"/><p className="map-status" role="status">{status}</p></>;
 }
 

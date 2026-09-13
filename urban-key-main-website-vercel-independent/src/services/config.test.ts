@@ -10,4 +10,9 @@ describe("independent external service configuration", () => {
     expect(["ready", "configuration required"]).toContain(integrationStatus.auth);
     expect(["3d ready", "standard map ready", "configuration required"]).toContain(integrationStatus.maps);
   });
+
+  it("keeps the 3D Maps Map ID separate from the browser API key", () => {
+    expect(Object.keys(externalConfig)).toContain("googleMapsMapId");
+    expect(Object.keys(externalConfig)).toContain("googleMapsApiKey");
+  });
 });
