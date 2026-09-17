@@ -21,4 +21,13 @@ describe("portable visual and map contracts", () => {
     expect(Object.keys(externalConfig)).toContain("googleMapsMapId");
     expect(typeof hasGoogleMaps3DConfig).toBe("boolean");
   });
+
+  it("requires a dimensioned and readiness-aware 3D map element rather than reporting a blank canvas as loaded", () => {
+    const mapSource = readFileSync(new URL("./services/maps.ts", import.meta.url), "utf8");
+    expect(mapSource).toContain('version: "beta"');
+    expect(mapSource).toContain('threeDimensionalMap.classList.add("live-map-canvas")');
+    expect(mapSource).toContain('threeDimensionalMap.style.width = "100%"');
+    expect(mapSource).toContain('"gmp-steadychange"');
+    expect(mapSource).toContain('"gmp-map-id-error"');
+  });
 });
