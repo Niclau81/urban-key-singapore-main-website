@@ -25,6 +25,8 @@ describe("portable visual and map contracts", () => {
   it("requires a dimensioned and readiness-aware 3D map element rather than reporting a blank canvas as loaded", () => {
     const mapSource = readFileSync(new URL("./services/maps.ts", import.meta.url), "utf8");
     expect(mapSource).toContain('version: "beta"');
+    expect(mapSource).toContain("const center = { lat: 1.2834, lng: 103.8518 }");
+    expect(mapSource).toContain("range: 2500");
     expect(mapSource).toContain('threeDimensionalMap.classList.add("live-map-canvas")');
     expect(mapSource).toContain('threeDimensionalMap.style.width = "100%"');
     expect(mapSource).toContain('"gmp-steadychange"');

@@ -41,14 +41,16 @@ export async function renderSingaporeMap(element: HTMLElement): Promise<"3d" | "
   await loader.load();
   const maps = (window as MapWindow).google?.maps;
   if (!maps) throw new Error("Google Maps could not be loaded.");
-  const center = { lat: 1.29027, lng: 103.851959 };
+  // Central Business District / Marina Bay: a compact, built-up Singapore context
+  // that is legible from the initial 3D camera instead of opening over open water.
+  const center = { lat: 1.2834, lng: 103.8518 };
   if (externalConfig.googleMapsMapId && maps.importLibrary) {
     const { Map3DElement } = await maps.importLibrary("maps3d");
     const threeDimensionalMap = new Map3DElement({
-      center: { ...center, altitude: 180 },
-      heading: 22,
-      tilt: 67.5,
-      range: 3600,
+      center: { ...center, altitude: 0 },
+      heading: 350,
+      tilt: 50,
+      range: 2500,
       mapId: externalConfig.googleMapsMapId,
       mode: "HYBRID",
     });
