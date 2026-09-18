@@ -22,14 +22,17 @@ describe("portable visual and map contracts", () => {
     expect(typeof hasGoogleMaps3DConfig).toBe("boolean");
   });
 
-  it("requires a dimensioned and readiness-aware 3D map element rather than reporting a blank canvas as loaded", () => {
+  it("requires a dimensioned 3D map element and direct failure fallback without timing out a valid renderer", () => {
     const mapSource = readFileSync(new URL("./services/maps.ts", import.meta.url), "utf8");
     expect(mapSource).toContain('version: "beta"');
     expect(mapSource).toContain("const center = { lat: 1.2834, lng: 103.8518 }");
     expect(mapSource).toContain("range: 2500");
     expect(mapSource).toContain('threeDimensionalMap.classList.add("live-map-canvas")');
     expect(mapSource).toContain('threeDimensionalMap.style.width = "100%"');
-    expect(mapSource).toContain('"gmp-steadychange"');
+    expect(mapSource).not.toContain("gmp-steadychange");
+    expect(mapSource).not.toContain("setTimeout");
     expect(mapSource).toContain('"gmp-map-id-error"');
+    expect(mapSource).toContain('map.removeEventListener("gmp-error", onMapError)');
+    expect(mapSource).toContain('dispose: () => { removeFailureListeners(); element.replaceChildren(); }');
   });
 });

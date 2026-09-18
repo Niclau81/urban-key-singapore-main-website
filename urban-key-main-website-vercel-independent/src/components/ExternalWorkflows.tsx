@@ -57,9 +57,24 @@ export function GoogleMapSurface() {
   const [fallback, setFallback] = useState(!hasGoogleMapsConfig);
   useEffect(() => {
     if (!node.current || !hasGoogleMapsConfig) return;
-    renderSingaporeMap(node.current)
-      .then(mode => setStatus(mode === "3d" ? "Live photorealistic 3D Singapore map loaded." : "Live standard Google Map loaded. Add VITE_GOOGLE_MAPS_MAP_ID to request 3D map mode."))
-      .catch(error => { setStatus(showError(error)); setFallback(true); });
+    let active = true;
+    let failed = false;
+    let dispose: () => void = () => undefined;
+    const showFallback = (error: Error) => {
+      if (!active || failed) return;
+      failed = true;
+      dispose();
+      setStatus(showError(error));
+      setFallback(true);
+    };
+    renderSingaporeMap(node.current, showFallback)
+      .then(result => {
+        dispose = result.dispose;
+        if (!active || failed) { dispose(); return; }
+        setStatus(result.mode === "3d" ? "Live photorealistic 3D Singapore map loaded." : "Live standard Google Map loaded. Add VITE_GOOGLE_MAPS_MAP_ID to request 3D map mode.");
+      })
+      .catch(error => showFallback(error));
+    return () => { active = false; dispose(); };
   }, []);
   if (fallback) return <div className="map-unconfigured"><img src="/assets/singapore-map-fallback.svg" alt="Schematic Singapore geographic context map"/><div className="map-fallback-notice"><MapPinned size={26}/><b>Singapore map fallback</b><span>{status}</span></div></div>;
   return <><div ref={node} className="google-map" aria-label="Interactive Google Map of Singapore"/><p className="map-status" role="status">{status}</p></>;
