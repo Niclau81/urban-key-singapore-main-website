@@ -114,7 +114,7 @@ Keep `vercel.json` committed; it preserves direct SPA links such as `/explore`, 
 
 ## 6A. Visual assets and user-data JSON
 
-The files under `public/assets/` are included in the ZIP and copied into Vercel’s `dist/assets/` output on every build. They cover the homepage skyline, listing photos, and `singapore-map-fallback.svg`. The fallback displays when the Google Maps key is missing, restricted incorrectly, or the Maps script cannot load. A configured `VITE_GOOGLE_MAPS_API_KEY` enables the standard interactive map; add `VITE_GOOGLE_MAPS_MAP_ID` from a Google Cloud map style configured for 3D/vector use to request the 3D-capable Singapore map mode.
+The files under `public/assets/` are included in the ZIP and copied into Vercel’s `dist/assets/` output on every build. They cover the homepage skyline, listing photos, and `singapore-map-fallback.svg`. The fallback displays when the Google Maps key is missing, restricted incorrectly, the Maps script cannot load, the Map ID is invalid, or Google reports that 3D initialization failed. When a 3D Map ID is configured, the application shows a visible preparation state until Google Maps emits its steady-state event; this is a progress signal only and never uses a timeout to replace a potentially valid slow renderer. A configured `VITE_GOOGLE_MAPS_API_KEY` enables the standard interactive map; add `VITE_GOOGLE_MAPS_MAP_ID` from a Google Cloud map style configured for 3D/vector use to request the 3D-capable Singapore map mode.
 
 The package also contains `supabase/user-data-schema.json`. This is a **JSON schema and empty import template**, not an export of private people or authentication records. Create account users through Supabase Auth first, then map their returned UUIDs to the `profiles`, `favourites`, `enquiries`, and `agent_tasks` data before importing. Never place passwords, tokens, sessions, or a service-role key in JSON or source control.
 
@@ -139,6 +139,7 @@ The package also contains `supabase/user-data-schema.json`. This is a **JSON sch
 | Vercel shows source files | Build output is not set. | Set build to `npm run build` and output to `dist`. |
 | Maps configuration message appears | Maps key is absent, restricted incorrectly, or Maps JavaScript API is disabled. | Set `VITE_GOOGLE_MAPS_API_KEY`, enable the API, and check HTTP-referrer restrictions. |
 | Map is interactive but not 3D | The Map ID is absent, invalid, unpublished, or not associated with a 3D Hybrid style. | Set `VITE_GOOGLE_MAPS_MAP_ID`, publish the 3D Hybrid map style, then create a new Vercel deployment. |
+| 3D preparation state stays visible | Google Maps is still preparing high-detail terrain/buildings, or the browser cannot initialise WebGL. | Keep the map visible while it prepares. Check browser WebGL support and Google Maps console events; a direct `gmp-error` automatically shows the bundled fallback. |
 | Magic-link email does not return to the app | Supabase redirect URL is absent. | Add the exact Vercel and local URLs in Supabase Auth URL Configuration. |
 | “Permission denied” from Supabase | RLS policy blocks the action or the user is signed out. | Sign in, review `supabase/schema.sql`, and confirm each policy matches the expected role and table. |
 | Direct link returns 404 | SPA rewrite is missing. | Restore `vercel.json` and redeploy. |

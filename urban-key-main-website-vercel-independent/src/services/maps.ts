@@ -6,7 +6,7 @@ type Maps3DLibrary = { Map3DElement: new (options: Record<string, unknown>) => M
 type MapWindow = Window & typeof globalThis & { google?: { maps?: { Map: new (element: HTMLElement, options: Record<string, unknown>) => { setTilt?: (tilt: number) => void; setHeading?: (heading: number) => void }; Marker: new (options: Record<string, unknown>) => unknown; importLibrary?: (library: "maps3d") => Promise<Maps3DLibrary> } } };
 type MapRender = { mode: "3d" | "standard"; dispose: () => void };
 
-function observe3DMapFailures(map: Map3DElement, onFailure?: (error: Error) => void) {
+function observe3DMapEvents(map: Map3DElement, onFailure?: (error: Error) => void, onReady?: () => void) {
   let reported = false;
   const report = (message: string) => {
     if (reported) return;
@@ -15,15 +15,22 @@ function observe3DMapFailures(map: Map3DElement, onFailure?: (error: Error) => v
   };
   const onMapError = () => report("Google Maps 3D could not initialise. The bundled Singapore map is shown instead.");
   const onMapIdError = () => report("The configured Google Maps Map ID is not valid for 3D map rendering. The bundled Singapore map is shown instead.");
+  const onSteadyChange = (event: Event) => {
+    const steady = (event as Event & { isSteady?: boolean; detail?: { isSteady?: boolean } }).isSteady
+      ?? (event as Event & { detail?: { isSteady?: boolean } }).detail?.isSteady;
+    if (steady) onReady?.();
+  };
   map.addEventListener("gmp-error", onMapError);
   map.addEventListener("gmp-map-id-error", onMapIdError);
+  map.addEventListener("gmp-steadychange", onSteadyChange);
   return () => {
     map.removeEventListener("gmp-error", onMapError);
     map.removeEventListener("gmp-map-id-error", onMapIdError);
+    map.removeEventListener("gmp-steadychange", onSteadyChange);
   };
 }
 
-export async function renderSingaporeMap(element: HTMLElement, on3DFailure?: (error: Error) => void): Promise<MapRender> {
+export async function renderSingaporeMap(element: HTMLElement, on3DFailure?: (error: Error) => void, on3DReady?: () => void): Promise<MapRender> {
   if (!hasGoogleMapsConfig) throw new Error("Google Maps is not configured. Add VITE_GOOGLE_MAPS_API_KEY.");
   const loader = new Loader({ apiKey: externalConfig.googleMapsApiKey!, version: "beta" });
   await loader.load();
@@ -46,9 +53,9 @@ export async function renderSingaporeMap(element: HTMLElement, on3DFailure?: (er
     threeDimensionalMap.style.display = "block";
     threeDimensionalMap.style.width = "100%";
     threeDimensionalMap.style.height = "100%";
-    const removeFailureListeners = observe3DMapFailures(threeDimensionalMap, on3DFailure);
+    const removeMapListeners = observe3DMapEvents(threeDimensionalMap, on3DFailure, on3DReady);
     element.replaceChildren(threeDimensionalMap);
-    return { mode: "3d", dispose: () => { removeFailureListeners(); element.replaceChildren(); } };
+    return { mode: "3d", dispose: () => { removeMapListeners(); element.replaceChildren(); } };
   }
   const map = new maps.Map(element, { center, zoom: 12, mapId: externalConfig.googleMapsMapId, streetViewControl: false, mapTypeControl: false, fullscreenControl: true });
   map.setTilt?.(45);

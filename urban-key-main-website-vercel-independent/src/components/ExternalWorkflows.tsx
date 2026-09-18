@@ -55,6 +55,7 @@ export function GoogleMapSurface() {
   const node = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState(hasGoogleMapsConfig ? hasGoogleMaps3DConfig ? "Loading photorealistic 3D Singapore map…" : "Loading standard Google Map. Add VITE_GOOGLE_MAPS_MAP_ID for 3D map mode." : "Add VITE_GOOGLE_MAPS_API_KEY and VITE_GOOGLE_MAPS_MAP_ID to enable the live 3D Singapore map.");
   const [fallback, setFallback] = useState(!hasGoogleMapsConfig);
+  const [preparing3D, setPreparing3D] = useState(hasGoogleMaps3DConfig);
   useEffect(() => {
     if (!node.current || !hasGoogleMapsConfig) return;
     let active = true;
@@ -65,19 +66,27 @@ export function GoogleMapSurface() {
       failed = true;
       dispose();
       setStatus(showError(error));
+      setPreparing3D(false);
       setFallback(true);
     };
-    renderSingaporeMap(node.current, showFallback)
+    renderSingaporeMap(node.current, showFallback, () => {
+      if (!active || failed) return;
+      setPreparing3D(false);
+      setStatus("Live photorealistic 3D Singapore map is ready.");
+    })
       .then(result => {
         dispose = result.dispose;
         if (!active || failed) { dispose(); return; }
-        setStatus(result.mode === "3d" ? "Live photorealistic 3D Singapore map loaded." : "Live standard Google Map loaded. Add VITE_GOOGLE_MAPS_MAP_ID to request 3D map mode.");
+        if (result.mode === "standard") {
+          setPreparing3D(false);
+          setStatus("Live standard Google Map loaded. Add VITE_GOOGLE_MAPS_MAP_ID to request 3D map mode.");
+        }
       })
       .catch(error => showFallback(error));
     return () => { active = false; dispose(); };
   }, []);
   if (fallback) return <div className="map-unconfigured"><img src="/assets/singapore-map-fallback.svg" alt="Schematic Singapore geographic context map"/><div className="map-fallback-notice"><MapPinned size={26}/><b>Singapore map fallback</b><span>{status}</span></div></div>;
-  return <><div ref={node} className="google-map" aria-label="Interactive Google Map of Singapore"/><p className="map-status" role="status">{status}</p></>;
+  return <><div ref={node} className="google-map" aria-label="Interactive Google Map of Singapore"/>{preparing3D ? <p className="map-loading" role="status"><LoaderCircle className="spin" size={18}/><span>Preparing photorealistic 3D Singapore map</span><small>The live terrain and buildings will appear when Google Maps reaches a ready state.</small></p> : <p className="map-status" role="status">{status}</p>}</>;
 }
 
 export function AgentTaskPanel() {

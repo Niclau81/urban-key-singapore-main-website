@@ -22,17 +22,20 @@ describe("portable visual and map contracts", () => {
     expect(typeof hasGoogleMaps3DConfig).toBe("boolean");
   });
 
-  it("requires a dimensioned 3D map element and direct failure fallback without timing out a valid renderer", () => {
+  it("requires a dimensioned 3D map element, a visible steady-state preloader, and direct failure fallback", () => {
     const mapSource = readFileSync(new URL("./services/maps.ts", import.meta.url), "utf8");
+    const workflowSource = readFileSync(new URL("./components/ExternalWorkflows.tsx", import.meta.url), "utf8");
     expect(mapSource).toContain('version: "beta"');
     expect(mapSource).toContain("const center = { lat: 1.2834, lng: 103.8518 }");
     expect(mapSource).toContain("range: 2500");
     expect(mapSource).toContain('threeDimensionalMap.classList.add("live-map-canvas")');
     expect(mapSource).toContain('threeDimensionalMap.style.width = "100%"');
-    expect(mapSource).not.toContain("gmp-steadychange");
+    expect(mapSource).toContain('map.addEventListener("gmp-steadychange", onSteadyChange)');
     expect(mapSource).not.toContain("setTimeout");
     expect(mapSource).toContain('"gmp-map-id-error"');
     expect(mapSource).toContain('map.removeEventListener("gmp-error", onMapError)');
-    expect(mapSource).toContain('dispose: () => { removeFailureListeners(); element.replaceChildren(); }');
+    expect(mapSource).toContain('dispose: () => { removeMapListeners(); element.replaceChildren(); }');
+    expect(workflowSource).toContain('Preparing photorealistic 3D Singapore map');
+    expect(workflowSource).toContain('Live photorealistic 3D Singapore map is ready.');
   });
 });
