@@ -1,8 +1,10 @@
-import { LoaderCircle, LogOut, MapPinned, Send, UploadCloud, UserRound } from "lucide-react";
+import { LoaderCircle, LogOut, MapPinned, Send, UserRound } from "lucide-react";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { hasGoogleMaps3DConfig, hasGoogleMapsConfig, hasSupabaseConfig, integrationStatus } from "../services/config";
-import { fetchAgentTasks, getCurrentUser, requestMagicLink, saveFavourite, signOut, submitEnquiry, updateAgentTaskStatus, uploadTourMedia, type AgentTask } from "../services/supabase";
-import { renderSingaporeMap } from "../services/maps";
+import { hasGoogleMaps3DConfig, hasGoogleMapsConfig, hasSupabaseConfig } from "../services/config";
+import { fetchAgentTasks, getCurrentUser, requestMagicLink, saveFavourite, signOut, submitEnquiry, updateAgentTaskStatus, type AgentTask } from "../services/supabase";
+import { renderSingaporeMap, type MapFocus } from "../services/maps";
+import type { MarketId } from "../services/market";
+import { getMarketConfig } from "../services/market";
 
 const showError = (error: unknown) => error instanceof Error ? error.message : "Something went wrong. Please try again.";
 
@@ -26,13 +28,13 @@ export function AuthStatus() {
   return <form className="header-auth" onSubmit={submit}><input required aria-label="Email address" type="email" value={input} onChange={event => setInput(event.target.value)} placeholder="Sign in by email"/><button disabled={busy}>{busy ? <LoaderCircle className="spin" size={15}/> : "Sign in"}</button>{message && <small role="status">{message}</small>}</form>;
 }
 
-export function SaveFavouriteButton({ listingId }: { listingId: string }) {
+export function SaveFavouriteButton({ listingId, className }: { listingId: string; className?: string }) {
   const [message, setMessage] = useState("");
   const save = async () => {
-    try { await saveFavourite(listingId); setMessage("Saved"); }
+    try { const saved = await saveFavourite(listingId); setMessage(saved ? "Saved" : "Removed"); }
     catch (error) { setMessage(showError(error)); }
   };
-  return <><button type="button" aria-label="Save property" onClick={save}>Save</button>{message && <small className="inline-status" role="status">{message}</small>}</>;
+  return <><button type="button" className={className} aria-label="Save property" onClick={save}>Save</button>{message && <small className="inline-status" role="status">{message}</small>}</>;
 }
 
 export function EnquiryForm({ listingId, listingTitle }: { listingId?: string; listingTitle?: string }) {
@@ -51,13 +53,16 @@ export function EnquiryForm({ listingId, listingTitle }: { listingId?: string; l
   return <form className="live-form" onSubmit={submit}><p className="eyebrow">Secure enquiry</p><h3>{listingTitle ? `Ask about ${listingTitle}` : "Start a Property Agent request"}</h3><label>Name<input required name="name" maxLength={160} placeholder="Your name"/></label><label>Email<input required name="email" type="email" maxLength={320} placeholder="name@example.com"/></label><label>Message<textarea required name="message" maxLength={4000} placeholder="Tell us what you would like to arrange or understand."/></label><button className="dark-button" disabled={busy} type="submit">{busy ? "Sending…" : "Submit for review"}<Send size={16}/></button>{status && <p className="form-status" role="status">{status}</p>}</form>;
 }
 
-export function GoogleMapSurface() {
+export function GoogleMapSurface({ focus, marketId = "singapore" }: { focus?: MapFocus; marketId?: MarketId }) {
   const node = useRef<HTMLDivElement>(null);
-  const [status, setStatus] = useState(hasGoogleMapsConfig ? hasGoogleMaps3DConfig ? "Loading photorealistic 3D Singapore map…" : "Loading standard Google Map. Add VITE_GOOGLE_MAPS_MAP_ID for 3D map mode." : "Add VITE_GOOGLE_MAPS_API_KEY and VITE_GOOGLE_MAPS_MAP_ID to enable the live 3D Singapore map.");
+  const [status, setStatus] = useState(hasGoogleMapsConfig ? marketId === "singapore" && hasGoogleMaps3DConfig ? "Loading photorealistic 3D Singapore map…" : "Loading the configured live Google Map." : "Add VITE_GOOGLE_MAPS_API_KEY and VITE_GOOGLE_MAPS_MAP_ID to enable the live Singapore map.");
   const [fallback, setFallback] = useState(!hasGoogleMapsConfig);
-  const [preparing3D, setPreparing3D] = useState(hasGoogleMaps3DConfig);
+  const [preparing3D, setPreparing3D] = useState(marketId === "singapore" && hasGoogleMaps3DConfig);
   useEffect(() => {
     if (!node.current || !hasGoogleMapsConfig) return;
+    setFallback(false);
+    setPreparing3D(marketId === "singapore" && hasGoogleMaps3DConfig);
+    setStatus(marketId === "singapore" && hasGoogleMaps3DConfig ? "Loading photorealistic 3D Singapore map…" : "Loading the configured live Google Map.");
     let active = true;
     let failed = false;
     let dispose: () => void = () => undefined;
@@ -73,19 +78,19 @@ export function GoogleMapSurface() {
       if (!active || failed) return;
       setPreparing3D(false);
       setStatus("Live photorealistic 3D Singapore map is ready.");
-    })
+    }, focus, marketId)
       .then(result => {
         dispose = result.dispose;
         if (!active || failed) { dispose(); return; }
         if (result.mode === "standard") {
           setPreparing3D(false);
-          setStatus("Live standard Google Map loaded. Add VITE_GOOGLE_MAPS_MAP_ID to request 3D map mode.");
+          setStatus(marketId === "singapore" ? "Live standard Google Map loaded. Add VITE_GOOGLE_MAPS_MAP_ID to request 3D map mode." : "Live standard Google Map loaded for the selected future market.");
         }
       })
       .catch(error => showFallback(error));
     return () => { active = false; dispose(); };
-  }, []);
-  if (fallback) return <div className="map-unconfigured"><img src="/assets/singapore-map-fallback.svg" alt="Schematic Singapore geographic context map"/><div className="map-fallback-notice"><MapPinned size={26}/><b>Singapore map fallback</b><span>{status}</span></div></div>;
+  }, [focus?.latitude, focus?.longitude, focus?.title, marketId]);
+  if (fallback) return <div className="map-unconfigured"><img src="/assets/singapore-map-fallback.svg" alt={`Schematic ${getMarketConfig(marketId).name} geographic context map`} /><div className="map-fallback-notice"><MapPinned size={26}/><b>{getMarketConfig(marketId).name} map fallback</b><span>{status}</span></div></div>;
   return <><div ref={node} className="google-map" aria-label="Interactive Google Map of Singapore"/>{preparing3D ? <p className="map-loading" role="status"><LoaderCircle className="spin" size={18}/><span>Preparing photorealistic 3D Singapore map</span><small>The live terrain and buildings will appear when Google Maps reaches a ready state.</small></p> : <p className="map-status" role="status">{status}</p>}</>;
 }
 
@@ -105,19 +110,4 @@ export function AgentTaskPanel() {
   if (!hasSupabaseConfig) return <p className="form-status">Configure Supabase to load private tasks. The agent workspace will remain empty until an authenticated agent creates tasks.</p>;
   if (!tasks.length) return <p className="form-status">No live tasks found. Sign in with an agent account and add tasks through the Supabase dashboard or your future secure administration API.</p>;
   return <>{tasks.map((task, index) => <div className="task" key={task.id}><i>{index + 1}</i><span>{task.title}</span><button type="button" onClick={() => void cycle(task)}>{task.status.replace("_", " ")}</button></div>)}{status && <p className="form-status" role="status">{status}</p>}</>;
-}
-
-export function TourMediaUpload() {
-  const [file, setFile] = useState<File>();
-  const [status, setStatus] = useState("");
-  const [busy, setBusy] = useState(false);
-  const upload = async () => {
-    if (!file) { setStatus("Choose a photo or 360° media file first."); return; }
-    if (file.size > 25 * 1024 * 1024) { setStatus("For this direct upload, choose a file smaller than 25 MB. Use signed uploads for larger 360° media."); return; }
-    setBusy(true); setStatus("");
-    try { const path = await uploadTourMedia(file); setStatus(`Uploaded securely to your private tour-media folder: ${path}`); }
-    catch (error) { setStatus(showError(error)); }
-    finally { setBusy(false); }
-  };
-  return <div className="upload-box"><p className="eyebrow">Private media upload</p><label>Tour file<input type="file" accept="image/*,video/*" onChange={event => setFile(event.target.files?.[0])}/></label><button type="button" className="outline-button" onClick={() => void upload()} disabled={busy}><UploadCloud size={16}/>{busy ? "Uploading…" : "Upload for secure review"}</button><p className="form-status" role="status">{status || `Storage: ${integrationStatus.storage}.`}</p></div>;
 }

@@ -1,63 +1,61 @@
-# UrbanKey Main Website — Portable Deployment Package
+# UrbanKey Singapore — Independent Vercel Main Website
 
-This is a **separate Vite/React code set for the whole main UrbanKey website**, intended for VS Code and Vercel. It works independently from Manus once you configure the selected external services: **Supabase** for authentication, database, and storage, plus **Google Maps JavaScript API** for map display. It does **not** contain the Coworking Design Studio, the HDB 3D model, any other 3D model function, Stripe, checkout, subscriptions, or payment history.
+This folder is the standalone **Vite + React** deployment package for UrbanKey Singapore. It is designed to run on Vercel with no Manus runtime dependency. It retains the main public marketplace experience and the independent replacements for authentication, data, maps, private workflows, and AI assistance.
 
-The package reproduces the main marketplace experience as a portable front end: the home page, listing exploration and property profiles, map-intelligence interface, AI concierge interface, AI Property Agent flow, agent portal, tour quality checklist, plans, checkout preview, payment-history preview, and customer dashboard.
+> **Deliberately excluded:** Stripe, payments, checkout, subscriptions, Coworking, the Design Studio, 3D floor-plan conversion, and every other 3D model feature. The Google Maps 3D city view is retained because it is a map, not a property-model feature.
 
-> Before external configuration, the package uses clearly labelled illustrative listing data. After configuration, it supports independent email magic-link sign-in, listings, favourites, enquiries, private tour-media uploads, private agent tasks, and Google Maps. The package does not submit payments or connect to Stripe.
+## What the package now includes
 
-## Important: use the flat package root
+| Area | Independent implementation | Runtime dependency |
+| --- | --- | --- |
+| Home and public discovery | Responsive UrbanKey home page, 23 Singapore demonstration listings, six future-market planning demonstrations, filters, commercial operational filters, direct profiles, gallery and map focus | Bundled assets + React |
+| Markets and languages | Persisted selector for Singapore, Indonesia, Malaysia, Thailand, Vietnam, and the Philippines; English, Indonesian, Malay, Thai, Vietnamese, and Simplified Chinese navigation labels | Browser local storage; local-language listing feeds remain a future data-integration step |
+| Public listing data | Clearly labelled bundled illustrative catalogue, overlaid by independently published Supabase records when available | Supabase optional for live records |
+| Property profiles | Gallery, guide pricing, residential/commercial facts, transaction context, virtual-tour disclosure, save and secure enquiry controls | Supabase for saved items and enquiries |
+| Map intelligence | Singapore listing controls and configured Google Maps JavaScript 3D surface with safe bundled fallback | Google Maps JavaScript API |
+| AI Concierge | Buyer/tenant and agent/co-broker conversational workflow with a safe server fallback | Optional Vercel server-side `OPENAI_API_KEY` |
+| Property Agent | Consent-recorded private cases, workflow checklist, documents and professional hand-off records; no unsupervised external action | Supabase |
+| Agent Portal | Magic-link sign-in, professional registration, pending verification, private draft listings and tour-capture review intake | Supabase + private Storage |
+| Personal dashboard | Private profile, persona, saved properties, enquiry and Property Agent case counts | Supabase |
 
-The corrected archive is named `urban-key-main-website-vercel-netlify-flat.zip`. Extract it before use. The resulting folder has `package.json` at its top level. Open **that folder** in VS Code and use it as the Vercel or Netlify repository root. This removes the nested-folder mistake that can cause a host to serve source files rather than the compiled website.
+All property records must be verified independently before anyone relies on availability, price, ownership, eligibility, legal information, or market conditions. The application does not send messages, file paperwork, make offers, sign documents, or take external action for a user.
 
-## Run in VS Code
+Singapore retains the configured **photorealistic 3D** Google Maps mode. The other selectable South-East Asian markets display their clearly marked planning-demo catalogue and use a live standard Google map once the browser Maps key is configured. A country-specific 3D Map ID and published map style can be introduced later without changing the public route or catalogue contract.
 
-Open this folder in VS Code and use its integrated terminal:
+## Run locally
+
+Open this exact folder in VS Code—the folder containing `package.json`—then run:
 
 ```bash
 npm ci
+cp .env.example .env.local
 npm run dev
 ```
 
-For the same production build Vercel and Netlify use:
+Do **not** open `index.html` directly or use a basic Live Server extension. Vite must compile `src/main.tsx`; otherwise a host may show source files or a non-hydrated page.
+
+Before deployment, run the same checks used by this package:
 
 ```bash
-npm run check
-npm run build
+npm run verify
 npm run preview
 ```
 
-Vite writes the deployable static output to `dist/`. Do not open `index.html` directly and do not use a basic Live Server extension on the source folder; Vite must compile the React and TypeScript entry point first. A visible loading message remains if the bundle does not start, rather than an empty page.
+## Deployment
 
-Read **[DEPLOYMENT.md](./DEPLOYMENT.md)** before deployment. It contains the exact VS Code, Vercel, Netlify, routing, Node/npm, security, and blank-page troubleshooting steps.
+This package is deployed from the nested folder:
 
-## Local validation completed
+```text
+Niclau81/urban-key-singapore-main-website/
+└── urban-key-main-website-vercel-independent/
+```
 
-The package passed `npm run check` and `npm run build` in a clean local install. The generated production preview was opened at the home route, the `/explore` marketplace route, the direct `/agent/portal` route, and the direct `/property-agent` route. The header provides the main-site routes and has no Coworking or 3D model entry point.
+In Vercel, set the **Root Directory** to `urban-key-main-website-vercel-independent`. Use the Vite preset, `npm ci`, `npm run build`, and `dist`. The committed `vercel.json` preserves direct links such as `/property/marina-cove-28-08`, `/agent/portal`, and `/dashboard`.
 
-## Deploy on Vercel
+Read [DEPLOYMENT.md](./DEPLOYMENT.md) for the complete Supabase, Google Maps, Vercel environment, AI endpoint, data-protection, and troubleshooting instructions.
 
-Create a new **private** GitHub repository and push the contents of this folder. In Vercel choose **Add New → Project**, import the repository, and deploy using the detected Vite settings. The included `vercel.json` defines `npm run build`, uses `dist`, and provides the client-side routing rewrite documented for Vite SPAs. [1]
+## Configuration boundaries
 
-## Deploy on Netlify
+Browser values are intentionally public configuration and start with `VITE_`. Restrict Maps browser keys by referrer/API and protect Supabase with the included RLS policies. Do **not** put a Supabase service-role key, model-provider key, passwords, private migration records, authentication tokens, or payment information in `VITE_*`, source code, or Git.
 
-In Netlify select **Add new site → Import an existing project**, choose the repository, and use the defaults in `netlify.toml`: build command `npm run build`, publish folder `dist`, and Node 20. Netlify documents these Vite defaults and the project also includes an SPA fallback. [2]
-
-## Service migration boundary
-
-| Existing managed capability | Portable site behaviour | Production replacement needed |
-| --- | --- | --- |
-| Authentication and roles | Demonstration navigation only | An identity provider and secure session layer |
-| Property records and saved content | Local illustrative data | Your database and server-side API |
-| Map intelligence | Static interface | Public map provider plus secure service integration |
-| AI concierge and Property Agent | Non-sending interaction preview | Server-side AI and approval workflow |
-| Uploads, tours, and documents | Quality-check layout only | Object storage and privacy-review workflow |
-| Plans and payments | No-charge demo checkout | Server-side payment integration and webhooks |
-
-Do not expose private secrets with `VITE_` variables. Browser values with this prefix are bundled into the public website. Keep all sensitive keys in your Vercel/Netlify server-side environment settings and call them only from serverless functions or a separate backend.
-
-## References
-
-[1] [Vercel — Vite on Vercel](https://vercel.com/docs/frameworks/frontend/vite)
-
-[2] [Netlify — Vite framework guide](https://docs.netlify.com/build/frameworks/framework-setup-guides/vite/)
+The optional `OPENAI_API_KEY` is server-side only: set it in Vercel without a `VITE_` prefix. The `/api/assistant` function uses it only for bounded, non-advisory responses. Without it, the website returns a transparent safe workflow response rather than representing a simulated response as live AI.

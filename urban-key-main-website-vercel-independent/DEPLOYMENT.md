@@ -11,11 +11,13 @@ The application does not link back to Manus. It is designed for **Vercel**, usin
 | Main-site capability | Independent implementation |
 | --- | --- |
 | User and agent sign-in | Supabase email magic links |
-| Listings and favourites | Supabase PostgreSQL with Row Level Security (RLS) |
-| Viewing / Property Agent enquiries | Supabase `enquiries` table for authorised review |
-| Agent work queue | Private `agent_tasks` table |
-| Tour-quality media | Private Supabase Storage `tour-media` bucket |
-| Map intelligence | Google Maps JavaScript API, using a referrer-restricted browser key |
+| Listings and favourites | Bundled labelled demo catalogue plus Supabase published listings; separate RLS-protected saves for both |
+| Viewing / Property Agent enquiries | Supabase `enquiries` table for authenticated, authorised review; packaged record IDs are stored safely as `catalog_listing_id` |
+| Property Agent workflow | Consent-recorded private cases, tasks, document checklist, hand-off records, and audit log; no external submission capability |
+| Agent workspace | Magic-link sign-in, pending professional registration, private draft listings, and account-scoped work queue |
+| Tour-quality media | Private Supabase Storage `tour-media` bucket with owner authority and consent confirmations |
+| AI concierge | Optional Vercel serverless `/api/assistant` route with server-side provider key and transparent safe fallback |
+| Map intelligence | Google Maps JavaScript API 3D surface, listing focus controls, and bundled Singapore fallback |
 | Health status | Vercel `/api/health` serverless endpoint |
 
 The app does not verify availability, property ownership, legal records, prices, identity, documents, or listings. Retain a qualified human review before external communication, commitments, or high-impact decisions.
@@ -57,12 +59,12 @@ Install Node from [nodejs.org](https://nodejs.org/) if `node --version` does not
 
 ## 4. Configure Supabase
 
-1. Create a new Supabase project owned by your organisation.
-2. Open **SQL Editor** and run the package file `supabase/schema.sql`. It creates profiles, listings, favourites, enquiries, and agent tasks and enables RLS.
-3. Open **Storage**, create a **private** bucket called `tour-media`, then run the Storage policies at the end of `supabase/schema.sql`.
+1. Create a new Supabase project owned by your organisation. For an existing project, take a database backup and review the SQL against current policies before applying it.
+2. Open **SQL Editor** and run the package file `supabase/schema.sql` once. It creates profiles, agent profiles, listings, separate published/demo favourites, enquiries, Property Agent cases and audit records, agent tasks, tour captures, private buckets, and RLS policies.
+3. The schema creates the private `tour-media`, `listing-media`, and `property-agent-documents` buckets and their owner-only policies. Verify that all three buckets are private in **Storage** after execution.
 4. Open **Authentication → URL Configuration**. Set **Site URL** to your Vercel production domain. Add `http://127.0.0.1:5173` and permitted preview URLs to **Redirect URLs**.
 5. Open **Authentication → Providers**. Enable Email and configure verified SMTP before public use.
-6. Open **Project Settings → API**. Copy only the Project URL and the **publishable key**.
+6. Open **Project Settings → API**. Copy only the Project URL and the **publishable key**. If you need initial administrators, set their `profiles.role` to `admin` only from the Supabase Dashboard or a secure service-role task—not from the browser.
 
 > Browser clients use the Supabase publishable key, so RLS is essential. The service-role key bypasses RLS and must never be placed in a browser value, in source control, or in any `VITE_` variable. [1] [2]
 
@@ -75,6 +77,8 @@ Install Node from [nodejs.org](https://nodejs.org/) if `node --version` does not
 5. For the actual 3D Singapore view, open **Google Maps Platform → Map Management**, create a JavaScript Map ID, create a cloud map style with **3D Hybrid** and light mode, associate that style with the Map ID, and publish it. The code uses the Maps JavaScript `maps3d` library only when this Map ID is present. [7] [8]
 
 The Maps key is browser configuration and therefore uses `VITE_GOOGLE_MAPS_API_KEY`. Referrer and API restrictions are required because Vite exposes all `VITE_` variables in the browser bundle. [3] [4]
+
+The public selector includes **Singapore, Indonesia, Malaysia, Thailand, Vietnam, and the Philippines**. Singapore is the configured photorealistic 3D deployment. The other selectable markets use their planning-demo catalogue and a live standard Google Map centred on the selected country. Do not reuse the Singapore 3D Map ID for another country: publish a country-specific map style and ID before enabling that market’s 3D mode.
 
 ## 6. Configure Vercel and deploy
 
@@ -109,8 +113,12 @@ Then add these variables in **Project → Settings → Environment Variables** f
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Your Supabase publishable key | Public browser configuration |
 | `VITE_GOOGLE_MAPS_API_KEY` | Your restricted browser Maps key | Public, restricted by referrer and API |
 | `VITE_GOOGLE_MAPS_MAP_ID` | JavaScript Map ID associated with a published 3D Hybrid style | Public map identifier; required for photorealistic 3D mode |
+| `OPENAI_API_KEY` | Optional model-provider key for `/api/assistant` | **Server-side only**, no `VITE_` prefix |
+| `OPENAI_MODEL` | Optional model name, default `gpt-4o-mini` | Server-side only |
 
 Keep `vercel.json` committed; it preserves direct SPA links such as `/explore`, `/property/...`, and `/agent/portal` after refresh.
+
+The assistant endpoint accepts only bounded conversation history, applies a non-advisory system guardrail, and returns a transparent workflow fallback if no provider key is configured. Do not expose a provider key in browser configuration, commit it to Git, or use it to automate messages, offers, signatures, professional advice, or government submissions.
 
 ## 6A. Visual assets and user-data JSON
 
@@ -122,12 +130,13 @@ The package also contains `supabase/user-data-schema.json`. This is a **JSON sch
 
 | Area | Required action before public launch |
 | --- | --- |
-| Enquiries | Add bot protection and rate limiting before treating the anonymous enquiry form as a public lead channel. |
-| Listings | Use an authenticated administration workflow; never grant public listing insert, update, or delete permissions. |
+| Enquiries | The package requires authenticated submissions. Add bot protection and rate limiting before public launch, and keep contact review human-controlled. |
+| Listings | Use verified agent/admin workflows; never grant public listing insert, update, or delete permissions. Demonstration catalog entries remain bundled and clearly labelled. |
 | Uploads | Keep `tour-media` private, restrict each object to its owner, scan media server-side, and use signed uploads for large 360° files. |
 | Data protection | Publish privacy, consent, retention, access, and deletion procedures before collecting personal data. |
 | Email | Use verified SMTP, configure domain authentication, and test magic-link templates. |
 | Backups | Configure backups and periodically test a documented restoration procedure. |
+| AI assistance | Keep provider keys only in Vercel non-`VITE_` variables. Audit prompts/outputs, rate-limit the endpoint, and retain the human-review and no-external-action boundary. |
 | Server secrets | Keep privileged secrets only in Vercel non-`VITE_` variables and access them only from a serverless function. |
 
 ## 8. Troubleshooting
