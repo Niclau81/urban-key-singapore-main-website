@@ -11,7 +11,7 @@ This folder is the standalone **Vite + React** deployment package for UrbanKey S
 | Home and public discovery | Responsive UrbanKey home page, 23 Singapore demonstration listings, six future-market planning demonstrations, filters, commercial operational filters, direct profiles, gallery and map focus | Bundled assets + React |
 | Markets and languages | Persisted selector for Singapore, Indonesia, Malaysia, Thailand, Vietnam, and the Philippines; English, Indonesian, Malay, Thai, Vietnamese, and Simplified Chinese navigation labels | Browser local storage; local-language listing feeds remain a future data-integration step |
 | Public listing data | Clearly labelled bundled illustrative catalogue, overlaid by independently published Supabase records when available | Supabase optional for live records |
-| Property profiles | Gallery, guide pricing, residential/commercial facts, transaction context, virtual-tour disclosure, save and secure enquiry controls | Supabase for saved items and enquiries |
+| Property profiles and tours | Gallery, guide pricing, residential/commercial facts, transaction context, save and secure enquiry controls; tour-enabled listings have an on-card badge and a full in-page room navigator, timed views, hotspots, drag-to-look, full screen, and viewing-request hand-off | Bundled assets + React; Supabase for saved items and enquiries |
 | Map intelligence | Singapore listing controls and configured Google Maps JavaScript 3D surface with safe bundled fallback | Google Maps JavaScript API |
 | AI Concierge | Buyer/tenant and agent/co-broker conversational workflow with a safe server fallback | Optional Vercel server-side `OPENAI_API_KEY` |
 | Property Agent | Consent-recorded private cases, workflow checklist, documents and professional hand-off records; no unsupervised external action | Supabase |
@@ -21,6 +21,10 @@ This folder is the standalone **Vite + React** deployment package for UrbanKey S
 All property records must be verified independently before anyone relies on availability, price, ownership, eligibility, legal information, or market conditions. The application does not send messages, file paperwork, make offers, sign documents, or take external action for a user.
 
 Singapore retains the configured **photorealistic 3D** Google Maps mode. The other selectable South-East Asian markets display their clearly marked planning-demo catalogue and use a live standard Google map once the browser Maps key is configured. A country-specific 3D Map ID and published map style can be introduced later without changing the public route or catalogue contract.
+
+### Virtual Property Tour boundary
+
+The optional listing tour is now self-contained in `public/assets/tours/`, including the illustrative Marina Cove, Interlace, and Queenstown tour media. The viewer supports **Morning / Noon / Night** presentation, room-to-room hotspots, clickable floor-layout regions, drag-to-look, previous/next room controls, and fullscreen presentation. Each tour retains a clear illustrative-media disclosure. It does **not** claim to be a captured 360° survey or a 3D floor-plan model. A real agent upload remains private and requires owner authority, capture consent, privacy review, and approval before publication.
 
 ## Run locally
 

@@ -4,6 +4,7 @@ import { commercialPropertyTypes, properties } from "./data";
 import { filterCatalog, mergeCatalog } from "./services/catalog";
 import { externalConfig, hasGoogleMaps3DConfig } from "./services/config";
 import { locales, marketConfigs, translate } from "./services/market";
+import { getPortableTour } from "./tours";
 
 describe("independent public-site parity contracts", () => {
   it("ships the complete labelled Singapore catalog with deployable local media", () => {
@@ -73,6 +74,25 @@ describe("independent public-site parity contracts", () => {
     const appSource = readFileSync(new URL("./main.tsx", import.meta.url), "utf8");
     expect(appSource).toContain("Choose active property market");
     expect(appSource).toContain("Choose display language");
+  });
+
+  it("packages the reusable virtual-tour viewer and its illustrative media without managed-runtime URLs", () => {
+    const marina = properties.find(property => property.id === "marina-cove-28-08");
+    const queenstown = properties.find(property => property.id === "queenstown-skyline-demo");
+    expect(marina).toBeDefined();
+    expect(queenstown).toBeDefined();
+    const marinaTour = getPortableTour(marina!);
+    expect(marinaTour?.rooms).toHaveLength(6);
+    expect(marinaTour?.rooms[0].media.night).toMatch(/^\/assets\/tours\/.+\.webp$/);
+    expect(queenstown && getPortableTour(queenstown)?.rooms).toHaveLength(6);
+    for (const room of marinaTour?.rooms ?? []) {
+      for (const source of Object.values(room.media)) expect(existsSync(new URL(`../public${source}`, import.meta.url))).toBe(true);
+    }
+    const component = readFileSync(new URL("./components/VirtualTour.tsx", import.meta.url), "utf8");
+    expect(component).toContain("photo timing");
+    expect(component).toContain("Drag to look around");
+    expect(component).toContain("Request a viewing");
+    expect(component).not.toContain("manus-storage");
   });
 });
 
