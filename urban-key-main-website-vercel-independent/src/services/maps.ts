@@ -2,7 +2,8 @@ import { Loader } from "@googlemaps/js-api-loader";
 import { externalConfig, hasGoogleMapsConfig } from "./config";
 import { getMarketConfig, type MarketId } from "./market";
 
-type Map3DElement = HTMLElement;
+type CameraBounds = { north: number; south: number; east: number; west: number };
+type Map3DElement = HTMLElement & { bounds?: CameraBounds; maxAltitude?: number };
 type Marker3DInteractiveElement = HTMLElement;
 type Maps3DLibrary = {
   Map3DElement: new (options: Record<string, unknown>) => Map3DElement;
@@ -22,6 +23,9 @@ type MapRender = { mode: "3d" | "standard"; dispose: () => void };
 
 export type MapFocus = { latitude: number; longitude: number; title: string };
 export type MapListing = MapFocus & { id: string; label: string; commercial?: boolean };
+
+// Country boundary including offshore islands, intentionally excluding Johor, Batam and other neighbouring territories.
+const SINGAPORE_BOUNDS: CameraBounds = { north: 1.48, south: 1.13, west: 103.58, east: 104.12 };
 
 type ListingMarkerOptions = {
   position: { lat: number; lng: number; altitude: number };
@@ -114,6 +118,8 @@ export async function renderSingaporeMap(
     threeDimensionalMap.style.display = "block";
     threeDimensionalMap.style.width = "100%";
     threeDimensionalMap.style.height = "100%";
+    threeDimensionalMap.bounds = SINGAPORE_BOUNDS;
+    threeDimensionalMap.maxAltitude = 10_000;
     const removeMapListeners = observe3DMapEvents(threeDimensionalMap, on3DFailure, on3DReady);
     createListingMarkers(threeDimensionalMap, Marker3DInteractiveElement, listings, onListingSelect);
     element.replaceChildren(threeDimensionalMap);
@@ -124,6 +130,7 @@ export async function renderSingaporeMap(
     center,
     zoom: focus ? 14 : market.zoom,
     mapId: marketId === "singapore" ? externalConfig.googleMapsMapId : undefined,
+    restriction: marketId === "singapore" ? { latLngBounds: SINGAPORE_BOUNDS, strictBounds: true } : undefined,
     streetViewControl: false,
     mapTypeControl: false,
     fullscreenControl: true,

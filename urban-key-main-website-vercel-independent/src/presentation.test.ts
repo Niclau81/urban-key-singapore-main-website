@@ -158,6 +158,10 @@ describe("portable visual and map contracts", () => {
     expect(mapSource).toContain("Marker3DInteractiveElement");
     expect(mapSource).toContain('marker.addEventListener("gmp-click"');
     expect(mapSource).toContain("createListingMarkers(threeDimensionalMap");
+    expect(mapSource).toContain("const SINGAPORE_BOUNDS");
+    expect(mapSource).toContain("threeDimensionalMap.bounds = SINGAPORE_BOUNDS");
+    expect(mapSource).toContain("threeDimensionalMap.maxAltitude = 10_000");
+    expect(mapSource).toContain("restriction: marketId === \"singapore\"");
     expect(mapSource).not.toContain("setTimeout");
     expect(mapSource).toContain('"gmp-map-id-error"');
     expect(mapSource).toContain('dispose: () => { removeMapListeners(); element.replaceChildren(); }');
