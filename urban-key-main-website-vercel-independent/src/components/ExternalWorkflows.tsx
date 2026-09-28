@@ -2,7 +2,7 @@ import { LoaderCircle, LogOut, MapPinned, Send, UserRound } from "lucide-react";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { hasGoogleMaps3DConfig, hasGoogleMapsConfig, hasSupabaseConfig } from "../services/config";
 import { fetchAgentTasks, getCurrentUser, requestMagicLink, saveFavourite, signOut, submitEnquiry, updateAgentTaskStatus, type AgentTask } from "../services/supabase";
-import { renderSingaporeMap, type MapFocus } from "../services/maps";
+import { renderSingaporeMap, type MapFocus, type MapListing } from "../services/maps";
 import type { MarketId } from "../services/market";
 import { getMarketConfig } from "../services/market";
 
@@ -53,11 +53,14 @@ export function EnquiryForm({ listingId, listingTitle }: { listingId?: string; l
   return <form className="live-form" onSubmit={submit}><p className="eyebrow">Secure enquiry</p><h3>{listingTitle ? `Ask about ${listingTitle}` : "Start a Property Agent request"}</h3><label>Name<input required name="name" maxLength={160} placeholder="Your name"/></label><label>Email<input required name="email" type="email" maxLength={320} placeholder="name@example.com"/></label><label>Message<textarea required name="message" maxLength={4000} placeholder="Tell us what you would like to arrange or understand."/></label><button className="dark-button" disabled={busy} type="submit">{busy ? "Sending…" : "Submit for review"}<Send size={16}/></button>{status && <p className="form-status" role="status">{status}</p>}</form>;
 }
 
-export function GoogleMapSurface({ focus, marketId = "singapore" }: { focus?: MapFocus; marketId?: MarketId }) {
+export function GoogleMapSurface({ focus, marketId = "singapore", listings = [], onListingSelect }: { focus?: MapFocus; marketId?: MarketId; listings?: MapListing[]; onListingSelect?: (listingId: string) => void }) {
   const node = useRef<HTMLDivElement>(null);
+  const onListingSelectRef = useRef(onListingSelect);
   const [status, setStatus] = useState(hasGoogleMapsConfig ? marketId === "singapore" && hasGoogleMaps3DConfig ? "Loading photorealistic 3D Singapore map…" : "Loading the configured live Google Map." : "Add VITE_GOOGLE_MAPS_API_KEY and VITE_GOOGLE_MAPS_MAP_ID to enable the live Singapore map.");
   const [fallback, setFallback] = useState(!hasGoogleMapsConfig);
   const [preparing3D, setPreparing3D] = useState(marketId === "singapore" && hasGoogleMaps3DConfig);
+  const listingSignature = listings.map(listing => `${listing.id}:${listing.latitude}:${listing.longitude}`).join("|");
+  useEffect(() => { onListingSelectRef.current = onListingSelect; }, [onListingSelect]);
   useEffect(() => {
     if (!node.current || !hasGoogleMapsConfig) return;
     setFallback(false);
@@ -77,21 +80,25 @@ export function GoogleMapSurface({ focus, marketId = "singapore" }: { focus?: Ma
     renderSingaporeMap(node.current, showFallback, () => {
       if (!active || failed) return;
       setPreparing3D(false);
-      setStatus("Live photorealistic 3D Singapore map is ready.");
-    }, focus, marketId)
+      setStatus(`Live photorealistic 3D Singapore map is ready with ${listings.length} selectable listing markers.`);
+    }, focus, marketId, listings, listingId => onListingSelectRef.current?.(listingId))
       .then(result => {
         dispose = result.dispose;
         if (!active || failed) { dispose(); return; }
+        // A valid 3D element is usable immediately. gmp-steadychange may arrive much later on a slow GPU,
+        // so it updates the status only and must never keep the map behind a blocking loading overlay.
+        setPreparing3D(false);
         if (result.mode === "standard") {
-          setPreparing3D(false);
           setStatus(marketId === "singapore" ? "Live standard Google Map loaded. Add VITE_GOOGLE_MAPS_MAP_ID to request 3D map mode." : "Live standard Google Map loaded for the selected future market.");
+        } else {
+          setStatus(`Live photorealistic 3D Singapore map loaded with ${listings.length} selectable listing markers.`);
         }
       })
       .catch(error => showFallback(error));
     return () => { active = false; dispose(); };
-  }, [focus?.latitude, focus?.longitude, focus?.title, marketId]);
+  }, [focus?.latitude, focus?.longitude, focus?.title, listingSignature, marketId]);
   if (fallback) return <div className="map-unconfigured"><img src="/assets/singapore-map-fallback.svg" alt={`Schematic ${getMarketConfig(marketId).name} geographic context map`} /><div className="map-fallback-notice"><MapPinned size={26}/><b>{getMarketConfig(marketId).name} map fallback</b><span>{status}</span></div></div>;
-  return <><div ref={node} className="google-map" aria-label="Interactive Google Map of Singapore"/>{preparing3D ? <p className="map-loading" role="status"><LoaderCircle className="spin" size={18}/><span>Preparing photorealistic 3D Singapore map</span><small>The live terrain and buildings will appear when Google Maps reaches a ready state.</small></p> : <p className="map-status" role="status">{status}</p>}</>;
+  return <><div ref={node} className="google-map" aria-label="Interactive Google Map of Singapore"/>{preparing3D ? <p className="map-loading" role="status"><LoaderCircle className="spin" size={18}/><span>Loading photorealistic 3D Singapore map</span><small>Listing markers will appear as the live map is mounted.</small></p> : <p className="map-status" role="status">{status}</p>}</>;
 }
 
 export function AgentTaskPanel() {

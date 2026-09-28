@@ -145,20 +145,27 @@ describe("portable visual and map contracts", () => {
     expect(typeof hasGoogleMaps3DConfig).toBe("boolean");
   });
 
-  it("requires a dimensioned 3D map element, visible preparation state, direct failure fallback, and listing focus", () => {
+  it("requires a dimensioned 3D map element, direct failure fallback, and selectable native listing markers", () => {
     const mapSource = readFileSync(new URL("./services/maps.ts", import.meta.url), "utf8");
     const workflowSource = readFileSync(new URL("./components/ExternalWorkflows.tsx", import.meta.url), "utf8");
+    const appSource = readFileSync(new URL("./main.tsx", import.meta.url), "utf8");
     expect(mapSource).toContain('version: "beta"');
     expect(mapSource).toContain("focus ? { lat: focus.latitude, lng: focus.longitude }");
-    expect(mapSource).toContain("range: focus ? 1800 : 2500");
+    expect(mapSource).toContain("range: focus ? 1800 : 4400");
     expect(mapSource).toContain('threeDimensionalMap.classList.add("live-map-canvas")');
     expect(mapSource).toContain('threeDimensionalMap.style.width = "100%"');
     expect(mapSource).toContain('map.addEventListener("gmp-steadychange", onSteadyChange)');
+    expect(mapSource).toContain("Marker3DInteractiveElement");
+    expect(mapSource).toContain('marker.addEventListener("gmp-click"');
+    expect(mapSource).toContain("createListingMarkers(threeDimensionalMap");
     expect(mapSource).not.toContain("setTimeout");
     expect(mapSource).toContain('"gmp-map-id-error"');
     expect(mapSource).toContain('dispose: () => { removeMapListeners(); element.replaceChildren(); }');
     expect(mapSource).toContain('marketId === "singapore" && externalConfig.googleMapsMapId');
-    expect(workflowSource).toContain("Preparing photorealistic 3D Singapore map");
-    expect(workflowSource).toContain("Live photorealistic 3D Singapore map is ready.");
+    expect(workflowSource).toContain("Live photorealistic 3D Singapore map loaded with");
+    expect(workflowSource).toContain("must never keep the map behind a blocking loading overlay");
+    expect(workflowSource).toContain("onListingSelectRef.current?.(listingId)");
+    expect(appSource).toContain("listings={listingPoints}");
+    expect(appSource).toContain("onListingSelect={selectListingId}");
   });
 });
