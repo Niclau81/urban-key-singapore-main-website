@@ -39,9 +39,15 @@ describe("independent public-site parity contracts", () => {
 
   it("uses the Manus-aligned full-height skyline hero rather than an isolated image card or legacy circular orb", () => {
     const appSource = readFileSync(new URL("./main.tsx", import.meta.url), "utf8");
+    const heroStyles = readFileSync(new URL("./portable-assets.css", import.meta.url), "utf8");
     expect(appSource).toContain('className="hero-skyline"');
     expect(appSource).toContain('Find the address<br /><em>fits your life.</em>');
     expect(appSource).toContain('className="hero-market-label"');
+    expect(appSource).toContain('className="hero-listings-map"');
+    expect(appSource).toContain("Live 3D listings");
+    expect(appSource).toContain("onListingSelect={listingId => navigate(`/map?marketId=${marketId}&property=${listingId}`)}");
+    expect(heroStyles).toContain("Homepage map access");
+    expect(heroStyles).toContain(".hero-map-live .google-map");
     expect(appSource).not.toContain('className="hero-media city-photo"');
     expect(appSource).not.toContain('className="city-orb city-photo"');
   });
