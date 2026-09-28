@@ -1,5 +1,5 @@
-import { ChevronLeft, ChevronRight, CircleDotDashed, Footprints, Maximize2, Minimize2, Move, ShieldCheck } from "lucide-react";
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { ChevronLeft, ChevronRight, CircleDotDashed, Maximize2, Minimize2, ShieldCheck } from "lucide-react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import type { Property } from "../data";
 import { getPortableTour, type TourTime } from "../tours";
 
@@ -11,13 +11,20 @@ const timings: Array<{ id: TourTime; label: string; caption: string }> = [
   { id: "night", label: "Night", caption: "8:30 PM" },
 ];
 
+const EquirectangularPanorama = lazy(async () => ({ default: (await import("./EquirectangularPanorama")).EquirectangularPanorama }));
+
+const panoramaNodePosition = (direction: "left" | "right" | "up" | "down") => {
+  if (direction === "left") return { x: 42, y: 60 };
+  if (direction === "right") return { x: 58, y: 60 };
+  if (direction === "up") return { x: 50, y: 37 };
+  return { x: 50, y: 65 };
+};
+
 export function VirtualTour({ property, onRequestViewing }: Props) {
   const tour = getPortableTour(property);
   const viewerRef = useRef<HTMLElement>(null);
-  const dragging = useRef<{ x: number; y: number } | null>(null);
   const [roomId, setRoomId] = useState(tour?.rooms[0]?.id ?? "");
   const [time, setTime] = useState<TourTime>("noon");
-  const [pan, setPan] = useState({ x: 0, y: 0 });
   const [fullscreen, setFullscreen] = useState(false);
 
   const room = tour?.rooms.find(item => item.id === roomId) ?? tour?.rooms[0];
@@ -25,7 +32,6 @@ export function VirtualTour({ property, onRequestViewing }: Props) {
   const showTimingChooser = availableTimings.length > 1;
   const image = room?.media[time] ?? room?.media.noon ?? room?.media.morning ?? room?.media.night;
 
-  useEffect(() => { setPan({ x: 0, y: 0 }); }, [room?.id, time]);
   useEffect(() => {
     if (!room || room.media[time]) return;
     setTime(room.media.noon ? "noon" : room.media.morning ? "morning" : "night");
@@ -48,32 +54,18 @@ export function VirtualTour({ property, onRequestViewing }: Props) {
     if (document.fullscreenElement) await document.exitFullscreen();
     else await viewerRef.current.requestFullscreen?.();
   };
-  const beginPan = (event: ReactPointerEvent<HTMLDivElement>) => {
-    dragging.current = { x: event.clientX, y: event.clientY };
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-  };
-  const movePan = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (!dragging.current) return;
-    const dx = event.clientX - dragging.current.x;
-    const dy = event.clientY - dragging.current.y;
-    dragging.current = { x: event.clientX, y: event.clientY };
-    setPan(current => ({ x: Math.max(-140, Math.min(140, current.x + dx)), y: Math.max(-75, Math.min(75, current.y + dy)) }));
-  };
-  const endPan = () => { dragging.current = null; };
 
-  return <section id="tour-viewer" ref={viewerRef} className={`virtual-tour ${fullscreen ? "tour-fullscreen" : ""}`} aria-label={`${property.title} virtual property tour`}>
-    <header className="tour-timing-bar"><div><p className="eyebrow">Virtual Property Tour</p><b>{room.label} · {showTimingChooser ? "photo timing" : "guided view"}</b><small>{showTimingChooser ? "Matched morning, noon, and night media with room-to-room navigation." : "One matched illustrative room view is available for this position."}</small></div>{showTimingChooser ? <div className="tour-time-buttons" role="group" aria-label="Choose photo timing">{availableTimings.map(item => <button key={item.id} type="button" aria-pressed={time === item.id} className={time === item.id ? "selected" : ""} onClick={() => setTime(item.id)}><b>{item.label}</b><span>{item.caption}</span></button>)}</div> : <span className="tour-as-photographed">As photographed</span>}</header>
+  return <section id="tour-viewer" ref={viewerRef} className={`virtual-tour ${fullscreen ? "tour-fullscreen" : ""}`} aria-label={`${property.title} immersive virtual property tour`} data-tour-renderer="equirectangular-panorama">
+    <header className="tour-timing-bar"><div><p className="eyebrow">Virtual Property Tour</p><b>{room.label} · {showTimingChooser ? "photo timing" : "guided view"}</b><small>{showTimingChooser ? "Matched morning, noon, and night panorama media with room-to-room navigation." : "One matched illustrative panorama view is available for this position."}</small></div>{showTimingChooser ? <div className="tour-time-buttons" role="group" aria-label="Choose photo timing">{availableTimings.map(item => <button key={item.id} type="button" aria-pressed={time === item.id} className={time === item.id ? "selected" : ""} onClick={() => setTime(item.id)}><b>{item.label}</b><span>{item.caption}</span></button>)}</div> : <span className="tour-as-photographed">As photographed</span>}</header>
     <div className="tour-stage">
-      <div className="tour-image-area" onPointerDown={beginPan} onPointerMove={movePan} onPointerUp={endPan} onPointerCancel={endPan} onPointerLeave={endPan}>
-        <img draggable={false} src={image} alt={`${property.title} illustrative ${room.label} ${time} panorama-style view`} style={{ transform: `scale(1.14) translate(${pan.x / 1.14}px, ${pan.y / 1.14}px)` }} />
+      <div className="tour-image-area">
+        <Suspense fallback={<div className="tour-panorama-loading">Loading interactive panorama…</div>}><EquirectangularPanorama src={image} alt={`${property.title} illustrative ${room.label} ${time} panorama view`} timeOfDay={time} hotspots={room.connections.map(connection => { const destination = tour.rooms.find(item => item.id === connection.roomId); const position = panoramaNodePosition(connection.direction); return destination ? { id: destination.id, label: destination.label, ...position, direction: connection.direction } : null; }).filter((destination): destination is NonNullable<typeof destination> => Boolean(destination))} onSelectHotspot={selectRoom} /></Suspense>
         <div className="tour-shade" />
         <div className="tour-title"><span><CircleDotDashed size={15} />Illustrative panorama preview</span><h3>{room.label}</h3></div>
-        <p className="tour-drag-hint"><Move size={14} />Drag to look around</p>
-        <div className="tour-hotspots">{room.connections.map(connection => { const destination = tour.rooms.find(item => item.id === connection.roomId); return destination ? <button key={connection.roomId} type="button" style={{ left: `${destination.viewerPosition.x}%`, top: `${destination.viewerPosition.y}%` }} onClick={() => selectRoom(destination.id)} aria-label={`Move ${connection.direction} to ${destination.label}`}><Footprints size={14} />{connection.direction === "left" ? "←" : connection.direction === "right" ? "→" : connection.direction === "up" ? "↑" : "↓"} {destination.label}</button> : null; })}</div>
         <div className="tour-controls"><button type="button" aria-label="Previous room" onClick={() => stepRoom(-1)}><ChevronLeft size={20} /></button><button type="button" aria-label={fullscreen ? "Exit full screen virtual tour" : "Open full screen virtual tour"} onClick={() => void toggleFullscreen()}>{fullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}</button><button type="button" aria-label="Next room" onClick={() => stepRoom(1)}><ChevronRight size={20} /></button></div>
-        <div className="tour-caption"><b>{room.note}</b><span>{showTimingChooser ? (time === "night" ? "Matched bright interior with a night exterior outlook." : `Matched ${time} composition for viewing context.`) : "Matched illustrative room media; no alternate timing has been published for this room."}</span></div>
+        <div className="tour-caption"><b>{room.note}</b><span>{showTimingChooser ? (time === "night" ? "Matched bright interior with a night exterior outlook." : `Matched ${time} panorama composition for viewing context.`) : "Matched illustrative panorama media; no alternate timing has been published for this room."}</span></div>
       </div>
-      <aside className="tour-navigator" aria-label="Tour room navigator"><div><p className="eyebrow">Room navigator</p><h3>{tour.floorLabel}</h3><p>Choose a room below or use the blue arrows in the preview.</p></div><div className="tour-floor-plan">{tour.rooms.map(item => <button key={item.id} type="button" aria-pressed={item.id === room.id} aria-label={`View ${item.label}`} className={item.id === room.id ? "active" : ""} onClick={() => selectRoom(item.id)} style={{ left: `${item.floorBounds.x}%`, top: `${item.floorBounds.y}%`, width: `${item.floorBounds.width}%`, height: `${item.floorBounds.height}%` }}><span>{item.label}</span><i /></button>)}</div><div className="tour-room-list">{tour.rooms.map(item => <button key={item.id} type="button" className={item.id === room.id ? "active" : ""} onClick={() => selectRoom(item.id)}><i />{item.label}</button>)}</div><button type="button" className="gold-button tour-request" onClick={onRequestViewing}>Request a viewing <ChevronRight size={16} /></button><p className="tour-disclosure"><ShieldCheck size={14} />{tour.disclosure}</p></aside>
+      <aside className="tour-navigator" aria-label="Tour room navigator"><div><p className="eyebrow">Room navigator</p><h3>{tour.floorLabel}</h3><p>Choose a room below, select a blue arrow, or drag across the panorama.</p></div><div className="tour-floor-plan">{tour.rooms.map(item => <button key={item.id} type="button" aria-pressed={item.id === room.id} aria-label={`View ${item.label}`} className={item.id === room.id ? "active" : ""} onClick={() => selectRoom(item.id)} style={{ left: `${item.floorBounds.x}%`, top: `${item.floorBounds.y}%`, width: `${item.floorBounds.width}%`, height: `${item.floorBounds.height}%` }}><span>{item.label}</span><i /></button>)}</div><div className="tour-room-list">{tour.rooms.map(item => <button key={item.id} type="button" className={item.id === room.id ? "active" : ""} onClick={() => selectRoom(item.id)}><i />{item.label}</button>)}</div><button type="button" className="gold-button tour-request" onClick={onRequestViewing}>Request a viewing <ChevronRight size={16} /></button><p className="tour-disclosure"><ShieldCheck size={14} />{tour.disclosure}</p></aside>
     </div>
   </section>;
 }

@@ -93,10 +93,18 @@ describe("independent public-site parity contracts", () => {
       for (const source of Object.values(room.media)) expect(existsSync(new URL(`../public${source}`, import.meta.url))).toBe(true);
     }
     const component = readFileSync(new URL("./components/VirtualTour.tsx", import.meta.url), "utf8");
+    const panorama = readFileSync(new URL("./components/EquirectangularPanorama.tsx", import.meta.url), "utf8");
     expect(component).toContain("photo timing");
-    expect(component).toContain("Drag to look around");
+    expect(component).toContain("EquirectangularPanorama");
+    expect(component).toContain('data-tour-renderer="equirectangular-panorama"');
+    expect(component).toContain("panoramaNodePosition");
     expect(component).toContain("Request a viewing");
     expect(component).not.toContain("manus-storage");
+    expect(panorama).toContain('import * as THREE from "three"');
+    expect(panorama).toContain("new THREE.WebGLRenderer");
+    expect(panorama).toContain("data-equirectangular-panorama");
+    expect(panorama).toContain("Drag, swipe, or use arrow keys to look around");
+    expect(panorama).toContain("Panorama rendering is unavailable in this browser");
   });
 
   it("keeps each Marina Cove timing on the matching room composition and only shows controls for published timings", () => {
