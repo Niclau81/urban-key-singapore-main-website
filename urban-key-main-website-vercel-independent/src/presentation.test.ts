@@ -149,6 +149,7 @@ describe("portable visual and map contracts", () => {
     const mapSource = readFileSync(new URL("./services/maps.ts", import.meta.url), "utf8");
     const workflowSource = readFileSync(new URL("./components/ExternalWorkflows.tsx", import.meta.url), "utf8");
     const appSource = readFileSync(new URL("./main.tsx", import.meta.url), "utf8");
+    const parityCss = readFileSync(new URL("./parity.css", import.meta.url), "utf8");
     expect(mapSource).toContain('version: "beta"');
     expect(mapSource).toContain("focus ? { lat: focus.latitude, lng: focus.longitude }");
     expect(mapSource).toContain("range: focus ? 1800 : 4400");
@@ -162,6 +163,11 @@ describe("portable visual and map contracts", () => {
     expect(mapSource).toContain("threeDimensionalMap.bounds = SINGAPORE_BOUNDS");
     expect(mapSource).toContain("threeDimensionalMap.maxAltitude = 10_000");
     expect(mapSource).toContain("restriction: marketId === \"singapore\"");
+    expect(appSource).toContain("future-map-page");
+    expect(appSource).toContain("future-map-corner");
+    expect(appSource).toContain("future-panel-signal");
+    expect(parityCss).toContain("Futuristic Singapore 3D map cockpit");
+    expect(parityCss).toContain("future-map-scan");
     expect(mapSource).not.toContain("setTimeout");
     expect(mapSource).toContain('"gmp-map-id-error"');
     expect(mapSource).toContain('dispose: () => { removeMapListeners(); element.replaceChildren(); }');
