@@ -36,9 +36,12 @@ describe("independent public-site parity contracts", () => {
     expect(merged.find(property => property.id === first.id)?.title).toBe("Verified replacement");
   });
 
-  it("uses the dedicated rectangular hero-media container rather than the legacy circular city-orb", () => {
+  it("uses the Manus-aligned full-height skyline hero rather than an isolated image card or legacy circular orb", () => {
     const appSource = readFileSync(new URL("./main.tsx", import.meta.url), "utf8");
-    expect(appSource).toContain('className="hero-media city-photo"');
+    expect(appSource).toContain('className="hero-skyline"');
+    expect(appSource).toContain('Find the address<br /><em>fits your life.</em>');
+    expect(appSource).toContain('className="hero-market-label"');
+    expect(appSource).not.toContain('className="hero-media city-photo"');
     expect(appSource).not.toContain('className="city-orb city-photo"');
   });
 
