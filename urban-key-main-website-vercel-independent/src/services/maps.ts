@@ -21,11 +21,20 @@ type MapWindow = Window & typeof globalThis & {
 };
 type MapRender = { mode: "3d" | "standard"; dispose: () => void };
 
-export type MapFocus = { latitude: number; longitude: number; title: string };
+export type MapFocus = {
+  latitude: number;
+  longitude: number;
+  title: string;
+  range?: number;
+  tilt?: number;
+  heading?: number;
+};
 export type MapListing = MapFocus & { id: string; label: string; commercial?: boolean };
 
 // Country boundary including offshore islands, intentionally excluding Johor, Batam and other neighbouring territories.
 const SINGAPORE_BOUNDS: CameraBounds = { north: 1.48, south: 1.13, west: 103.58, east: 104.12 };
+const SINGAPORE_OVERVIEW = { lat: 1.3521, lng: 103.8198 };
+const SINGAPORE_OVERVIEW_RANGE = 28_000;
 
 type ListingMarkerOptions = {
   position: { lat: number; lng: number; altitude: number };
@@ -60,7 +69,8 @@ function observe3DMapEvents(map: Map3DElement, onFailure?: (error: Error) => voi
 }
 
 function markerLabel(listing: MapListing) {
-  return listing.label.length > 22 ? `${listing.label.slice(0, 21)}…` : listing.label;
+  // Keep the island overview legible: the side panel carries full listing detail after marker selection.
+  return listing.commercial ? "C" : "H";
 }
 
 function createListingMarkers(
@@ -101,25 +111,27 @@ export async function renderSingaporeMap(
   const maps = (window as MapWindow).google?.maps;
   if (!maps) throw new Error("Google Maps could not be loaded.");
   const market = getMarketConfig(marketId);
-  // Central Business District / Marina Bay remains legible while the wider opening range exposes the catalog markers.
-  const center = focus ? { lat: focus.latitude, lng: focus.longitude } : marketId === "singapore" ? { lat: 1.2931, lng: 103.8364 } : market.center;
+  // Begin with the entire island rather than a CBD close-up; property and regional focus are opt-in interactions.
+  const isSingaporeOverview = marketId === "singapore" && !focus;
+  const center = focus ? { lat: focus.latitude, lng: focus.longitude } : marketId === "singapore" ? SINGAPORE_OVERVIEW : market.center;
   // The Singapore Map ID is published for Photorealistic 3D Maps. Other markets retain a standard live map until a local Map ID is published.
   if (marketId === "singapore" && externalConfig.googleMapsMapId && maps.importLibrary) {
     const { Map3DElement, Marker3DInteractiveElement } = await maps.importLibrary("maps3d");
     const threeDimensionalMap = new Map3DElement({
       center: { ...center, altitude: 0 },
-      heading: focus ? 344 : 336,
-      tilt: focus ? 60 : 58,
-      range: focus ? 1800 : 4400,
+      heading: focus?.heading ?? 0,
+      tilt: focus?.tilt ?? (isSingaporeOverview ? 28 : 52),
+      range: focus?.range ?? (isSingaporeOverview ? SINGAPORE_OVERVIEW_RANGE : 4400),
       mapId: externalConfig.googleMapsMapId,
-      mode: "HYBRID",
+      // Satellite mode keeps the full-island view calm and avoids dense road labels beneath listing signals.
+      mode: "SATELLITE",
     });
     threeDimensionalMap.classList.add("live-map-canvas");
     threeDimensionalMap.style.display = "block";
     threeDimensionalMap.style.width = "100%";
     threeDimensionalMap.style.height = "100%";
     threeDimensionalMap.bounds = SINGAPORE_BOUNDS;
-    threeDimensionalMap.maxAltitude = 10_000;
+    threeDimensionalMap.maxAltitude = 35_000;
     const removeMapListeners = observe3DMapEvents(threeDimensionalMap, on3DFailure, on3DReady);
     createListingMarkers(threeDimensionalMap, Marker3DInteractiveElement, listings, onListingSelect);
     element.replaceChildren(threeDimensionalMap);
@@ -128,12 +140,18 @@ export async function renderSingaporeMap(
 
   const map = new maps.Map(element, {
     center,
-    zoom: focus ? 14 : market.zoom,
+    zoom: focus ? 14 : marketId === "singapore" ? 11 : market.zoom,
     mapId: marketId === "singapore" ? externalConfig.googleMapsMapId : undefined,
     restriction: marketId === "singapore" ? { latLngBounds: SINGAPORE_BOUNDS, strictBounds: true } : undefined,
     streetViewControl: false,
     mapTypeControl: false,
     fullscreenControl: true,
+    styles: marketId === "singapore" ? [
+      { featureType: "road", elementType: "all", stylers: [{ visibility: "off" }] },
+      { featureType: "poi", elementType: "all", stylers: [{ visibility: "off" }] },
+      { featureType: "transit", elementType: "all", stylers: [{ visibility: "off" }] },
+      { featureType: "administrative", elementType: "labels", stylers: [{ visibility: "off" }] },
+    ] : undefined,
   });
   map.setTilt?.(45);
   map.setHeading?.(20);
