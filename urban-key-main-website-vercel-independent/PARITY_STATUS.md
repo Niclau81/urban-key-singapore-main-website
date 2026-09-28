@@ -13,8 +13,9 @@
 | Discovery | Buy, Sell, Rent, Rent-out, free-text search, district, type, tenure, area, MRT/proximity, guide-price, and commercial operational filters | Bundled illustrative catalogue plus optional published Supabase listings |
 | Listings | 23 Singapore demonstration records, commercial and industrial records, and labelled Indonesia, Malaysia, Thailand, Vietnam, and Philippines planning demonstrations | Planning demonstrations are explicitly not live inventory |
 | Market and language readiness | Persisted market selector and navigation labels in English, Indonesian, Malay, Thai, Vietnamese, and Simplified Chinese | Browser preference only; full local-language content feeds require future verified source data |
-| Property profiles | Gallery, guide price/rent, transaction context, save control, secure enquiry form, map hand-off, AI Concierge hand-off | Saves and enquiries use Supabase when configured |
-| Virtual Property Tours | Optional badge, full room navigator, clickable layout regions, room hotspots, Morning/Noon/Night media, drag-to-look, fullscreen, and viewing-request hand-off | Bundled illustrative media; captured 360° media remains private until review and approval |
+| Property profiles | Gallery, guide price/rent, transaction context, save control, secure enquiry form, map hand-off, AI Concierge hand-off, and listing-level building orientation | Saves and enquiries use Supabase when configured |
+| Virtual Property Tours | Optional badge, full room navigator, clickable layout regions, room hotspots, matching Morning/Noon/Night media where published, drag-to-look, fullscreen, and viewing-request hand-off | Bundled illustrative media; captured 360° media remains private until review and approval |
+| Building and floor level | Interactive conceptual three-tower Building and Floor plate views, drag orbit, pan, zoom, and gold listing-floor highlight | Local Three.js code; conceptual orientation only, never an actual building survey or floor plan |
 | Map Intelligence | Listing focus, context controls, standard Google Maps fallback and configured Singapore photorealistic 3D Maps element | Browser-restricted Maps key and published Singapore Map ID required |
 | AI Concierge | Buyer/tenant and agent/co-broker bounded workflow assistant with transparent server fallback | Optional Vercel-only `OPENAI_API_KEY`; no external communications or binding actions |
 | Property Agent | Consent-recorded case creation and approval-controlled workflow structure | Supabase tables/RLS after schema migration |
@@ -28,11 +29,11 @@ The existing Singapore Maps key and Map ID remain browser-visible configuration 
 
 ## Explicit exclusions
 
-The independent package deliberately excludes all Stripe or payment processing, Coworking, the Design Studio, 3D floor-plan conversion, and every property-model feature. These exclusions follow the Vercel main-site scope and do not remove the standalone Google Maps 3D city map or the approved listing-level virtual-tour viewer.
+The independent package deliberately excludes all Stripe or payment processing, Coworking, the Design Studio, and 3D floor-plan conversion. These exclusions do not remove the standalone Google Maps 3D city map, the approved listing-level virtual-tour viewer, or the conceptual listing-level building/floor orientation viewer.
 
 ## Validation record
 
-The release candidate was checked with TypeScript, 14 automated tests, a Vite production build, and browser verification of the home page, discovery, direct property profile, selected-market flow, map route, agent routes, dashboard shell, and virtual-tour controls. The virtual-tour browser test verified the packaged WebP assets return HTTP 200 with `image/webp`, that Night changes the active source, and that choosing Room 2 preserves the selected night treatment.
+The release candidate was checked with TypeScript, 16 automated tests, a Vite production build, and browser verification of the home page, discovery, direct property profile, selected-market flow, map route, agent routes, dashboard shell, virtual-tour controls, and Building/Floor plate control. The virtual-tour browser test verified the packaged WebP assets return HTTP 200 with `image/webp`, that Night changes the active source, and that choosing Utility / bath preserves the selected night treatment. The Building/Floor plate control verified the highlighted `#28-08 · Level 28` listing context.
 
 The production Maps route has a live `gmp-map-3d` element and Google 3D configuration requests. The automated environment cannot guarantee a GPU/WebGL draw, so a normal GPU-capable desktop browser is still the final visual confirmation point for terrain/buildings. The application intentionally displays a preparation state rather than replacing a potentially valid, slow 3D renderer.
 

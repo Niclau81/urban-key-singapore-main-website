@@ -5,6 +5,7 @@ import { filterCatalog, mergeCatalog } from "./services/catalog";
 import { externalConfig, hasGoogleMaps3DConfig } from "./services/config";
 import { locales, marketConfigs, translate } from "./services/market";
 import { getPortableTour } from "./tours";
+import { getListingFloorIdentity } from "./components/BuildingViewer";
 
 describe("independent public-site parity contracts", () => {
   it("ships the complete labelled Singapore catalog with deployable local media", () => {
@@ -96,6 +97,37 @@ describe("independent public-site parity contracts", () => {
     expect(component).toContain("Drag to look around");
     expect(component).toContain("Request a viewing");
     expect(component).not.toContain("manus-storage");
+  });
+
+  it("keeps each Marina Cove timing on the matching room composition and only shows controls for published timings", () => {
+    const marina = properties.find(property => property.id === "marina-cove-28-08");
+    const interlace = properties.find(property => property.id === "interlace-garden-06-12");
+    const marinaTour = getPortableTour(marina!);
+    const interlaceTour = getPortableTour(interlace!);
+    expect(marinaTour?.rooms).toHaveLength(6);
+    for (const room of marinaTour?.rooms ?? []) {
+      expect(room.media.morning).toMatch(new RegExp(`/marina-${room.id}-morning\\.webp$`));
+      expect(room.media.noon).toMatch(new RegExp(`/marina-${room.id}-noon\\.webp$`));
+      expect(room.media.night).toMatch(new RegExp(`/marina-${room.id}-night\\.webp$`));
+      expect(new Set(Object.values(room.media)).size).toBe(3);
+    }
+    expect(interlaceTour?.rooms.every(room => Object.keys(room.media).length === 1)).toBe(true);
+    const component = readFileSync(new URL("./components/VirtualTour.tsx", import.meta.url), "utf8");
+    expect(component).toContain("const showTimingChooser = availableTimings.length > 1");
+    expect(component).toContain("As photographed");
+  });
+
+  it("restores the independent 3D building and floor-plate viewer with listing-level highlighting", () => {
+    const marina = properties.find(property => property.id === "marina-cove-28-08");
+    const queenstown = properties.find(property => property.id === "queenstown-skyline-demo");
+    expect(getListingFloorIdentity(marina!)).toEqual({ floor: 28, unitLabel: "#28-08" });
+    expect(getListingFloorIdentity(queenstown!)).toEqual({ floor: 12, unitLabel: "#12-128" });
+    const viewer = readFileSync(new URL("./components/BuildingViewer.tsx", import.meta.url), "utf8");
+    const app = readFileSync(new URL("./main.tsx", import.meta.url), "utf8");
+    expect(viewer).toContain('import * as THREE from "three"');
+    expect(viewer).toContain("Floor plate");
+    expect(viewer).toContain("Gold level highlighted");
+    expect(app).toContain("<BuildingViewer propertyId={property.id}");
   });
 });
 

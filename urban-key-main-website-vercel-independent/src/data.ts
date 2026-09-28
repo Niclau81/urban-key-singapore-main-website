@@ -42,6 +42,8 @@ export type Property = {
   parkingLots?: number;
   availableFrom?: string;
   transactions: PropertyTransaction[];
+  listingFloor?: number;
+  listingUnit?: string;
 };
 
 const assets = {
@@ -68,15 +70,15 @@ const rent = (price: number, size: number, unit = "Representative unit"): Proper
 
 const singaporeResidential: Property[] = [
   {
-    id: "marina-cove-28-08", marketId: "singapore", title: "Marina Cove Residence", district: "D01 · Marina Bay", address: "18 Marina Boulevard", category: "Residential", type: "Condominium", mode: "Buy", price: 4280000, monthlyRent: 14500, beds: 3, baths: 3, size: 1658, tenure: "99-year", mrt: "Downtown MRT", minutes: 4, latitude: 1.2797, longitude: 103.8547, tags: ["Bay view", "Private lift", "High floor"], tone: "marina", image: assets.marina, gallery: galleries.residence, virtualTourAvailable: true,
+    id: "marina-cove-28-08", marketId: "singapore", title: "Marina Cove Residence", district: "D01 · Marina Bay", address: "18 Marina Boulevard", category: "Residential", type: "Condominium", mode: "Buy", price: 4280000, monthlyRent: 14500, beds: 3, baths: 3, size: 1658, tenure: "99-year", mrt: "Downtown MRT", minutes: 4, latitude: 1.2797, longitude: 103.8547, tags: ["Bay view", "Private lift", "High floor"], tone: "marina", image: "/assets/marina-listing-arrival.webp", gallery: ["/assets/marina-listing-arrival.webp", "/assets/marina-listing-living.webp", "/assets/marina-listing-arrival.webp"], virtualTourAvailable: true, listingFloor: 28, listingUnit: "#28-08",
     detail: "Illustrative product-demo residence with a high-floor waterfront setting, gallery-style living room, and private lift lobby. Availability and all particulars require independent verification.", transactions: [sale(4280000, 1658, "#28-08"), rent(14500, 1658, "#31-06")],
   },
   {
-    id: "interlace-garden-06-12", marketId: "singapore", title: "The Interlace Garden Home", district: "D04 · Harbourfront", address: "180 Depot Road", category: "Residential", type: "Condominium", mode: "Rent", price: 2480000, monthlyRent: 7800, beds: 3, baths: 2, size: 1593, tenure: "99-year", mrt: "Labrador Park MRT", minutes: 9, latitude: 1.2822, longitude: 103.8035, tags: ["Garden view", "Architectural icon", "Family home"], tone: "garden", image: assets.interlace, gallery: galleries.home, virtualTourAvailable: true,
+    id: "interlace-garden-06-12", marketId: "singapore", title: "The Interlace Garden Home", district: "D04 · Harbourfront", address: "180 Depot Road", category: "Residential", type: "Condominium", mode: "Rent", price: 2480000, monthlyRent: 7800, beds: 3, baths: 2, size: 1593, tenure: "99-year", mrt: "Labrador Park MRT", minutes: 9, latitude: 1.2822, longitude: 103.8035, tags: ["Garden view", "Architectural icon", "Family home"], tone: "garden", image: "/assets/interlace-listing-arrival.webp", gallery: ["/assets/interlace-listing-arrival.webp", "/assets/interlace-listing-living.webp", "/assets/interlace-listing-arrival.webp"], virtualTourAvailable: true, listingFloor: 6, listingUnit: "#06-12",
     detail: "Illustrative product-demo home set in an architectural garden estate, with generous living zones and a green outlook. Availability and all particulars require independent verification.", transactions: [rent(7800, 1593, "#06-12"), sale(2480000, 1593, "#09-03")],
   },
   {
-    id: "orchard-boulevard-19-02", marketId: "singapore", title: "Orchard Boulevard Atelier", district: "D10 · Tanglin", address: "9 Orchard Boulevard", category: "Residential", type: "Apartment", mode: "Buy", price: 6150000, monthlyRent: 17800, beds: 4, baths: 4, size: 2142, tenure: "Freehold", mrt: "Orchard Boulevard MRT", minutes: 2, latitude: 1.3023, longitude: 103.8238, tags: ["Freehold", "Concierge", "Prime district"], tone: "city", image: assets.skyline, gallery: galleries.residence,
+    id: "orchard-boulevard-19-02", marketId: "singapore", title: "Orchard Boulevard Atelier", district: "D10 · Tanglin", address: "9 Orchard Boulevard", category: "Residential", type: "Apartment", mode: "Buy", price: 6150000, monthlyRent: 17800, beds: 4, baths: 4, size: 2142, tenure: "Freehold", mrt: "Orchard Boulevard MRT", minutes: 2, latitude: 1.3023, longitude: 103.8238, tags: ["Freehold", "Concierge", "Prime district"], tone: "city", image: assets.skyline, gallery: galleries.residence, listingFloor: 19, listingUnit: "#19-02",
     detail: "A composed illustrative freehold residence near Orchard Boulevard, with expansive entertaining spaces and hotel-style services. Availability and all particulars require independent verification.", transactions: [sale(6150000, 2142, "#19-02"), rent(17800, 2142, "#16-01")],
   },
 ];
@@ -94,11 +96,20 @@ const hdbRows = [
   ["clementi-crest-demo", "Clementi Crest Flat · Demo", "D05 · Buona Vista", "Clementi Avenue 4 · illustrative address", "Buy", 838000, 0, 4, 2, 1119, "Clementi MRT", 6, 1.3164, 103.7653, "Recent flat", assets.interlace],
 ] as const;
 
+const hdbListingUnits = [
+  { floor: 12, unit: "#12-128" }, { floor: 9, unit: "#09-214" }, { floor: 15, unit: "#15-306" }, { floor: 11, unit: "#11-418" }, { floor: 8, unit: "#08-522" },
+  { floor: 14, unit: "#14-638" }, { floor: 7, unit: "#07-744" }, { floor: 16, unit: "#16-856" }, { floor: 10, unit: "#10-962" }, { floor: 18, unit: "#18-104" },
+] as const;
+
 const singaporeHdb: Property[] = hdbRows.map(([id, title, district, address, mode, price, monthlyRent, beds, baths, size, mrt, minutes, latitude, longitude, era, image], index) => {
   const guidePrice = price || Math.round(monthlyRent * 220);
+  const listingIdentity = hdbListingUnits[index];
+  const gallery = id === "queenstown-skyline-demo"
+    ? ["/assets/queenstown-listing-arrival.webp", "/assets/queenstown-listing-living.webp", "/assets/queenstown-listing-window.webp"]
+    : [image, assets.marina, assets.skyline];
   return {
-    id, marketId: "singapore", title, district, address, category: "Residential", type: "HDB Flat", mode, price: guidePrice, monthlyRent: monthlyRent || undefined, beds, baths, size, tenure: "99-year", mrt, minutes, latitude, longitude, tags: ["HDB demo", era, `${beds}-room layout`], tone: index % 2 ? "terracotta" : "city", image, gallery: [image, assets.marina, assets.skyline], virtualTourAvailable: ["queenstown-skyline-demo", "bishan-grove-demo", "tampines-verge-demo"].includes(id),
-    detail: `An ${era.toLowerCase()} HDB flat included as an illustrative UrbanKey demonstration listing. Layout, availability, price, and all property particulars require independent verification before any decision.`, transactions: [mode === "Rent" ? rent(monthlyRent, size) : sale(guidePrice, size)],
+    id, marketId: "singapore", title, district, address, category: "Residential", type: "HDB Flat", mode, price: guidePrice, monthlyRent: monthlyRent || undefined, beds, baths, size, tenure: "99-year", mrt, minutes, latitude, longitude, tags: ["HDB demo", era, `${beds}-room layout`], tone: index % 2 ? "terracotta" : "city", image: gallery[0], gallery, virtualTourAvailable: ["queenstown-skyline-demo", "bishan-grove-demo", "tampines-verge-demo"].includes(id), listingFloor: listingIdentity.floor, listingUnit: listingIdentity.unit,
+    detail: `An ${era.toLowerCase()} HDB flat included as an illustrative UrbanKey demonstration listing. Layout, availability, price, and all property particulars require independent verification before any decision.`, transactions: [mode === "Rent" ? rent(monthlyRent, size, listingIdentity.unit) : sale(guidePrice, size, listingIdentity.unit)],
   };
 });
 
