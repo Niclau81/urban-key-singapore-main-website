@@ -1,6 +1,7 @@
 import { Loader } from "@googlemaps/js-api-loader";
 import { externalConfig, hasGoogleMapsConfig } from "./config";
 import { getMarketConfig, type MarketId } from "./market";
+import { SINGAPORE_ISLAND_POLYGONS, type IslandCoordinate } from "../singaporeIslands";
 
 type CameraBounds = { north: number; south: number; east: number; west: number };
 type MapCenter = { lat: number; lng: number; altitude?: number };
@@ -13,9 +14,11 @@ type Map3DElement = HTMLElement & {
   heading?: number;
 };
 type Marker3DInteractiveElement = HTMLElement;
+type Polygon3DElement = HTMLElement & { path?: IslandCoordinate[] };
 type Maps3DLibrary = {
   Map3DElement: new (options: Record<string, unknown>) => Map3DElement;
   Marker3DInteractiveElement: new (options: Record<string, unknown>) => Marker3DInteractiveElement;
+  Polygon3DElement?: new (options: Record<string, unknown>) => Polygon3DElement;
 };
 type StandardMap = {
   setCenter?: (center: { lat: number; lng: number }) => void;
@@ -141,6 +144,26 @@ function createListingMarkers(
   });
 }
 
+function createGeographicIslandOverlays(
+  map: Map3DElement,
+  Polygon3DElement: Maps3DLibrary["Polygon3DElement"],
+  presentation: MapPresentation,
+) {
+  if (presentation !== "hero" || !Polygon3DElement) return [];
+  return SINGAPORE_ISLAND_POLYGONS.map((path, index) => {
+    const polygon = new Polygon3DElement({
+      strokeColor: "#67fff0e6",
+      strokeWidth: index === 0 ? 5 : 4,
+      fillColor: "#00e8d614",
+      drawsOccludedSegments: false,
+    });
+    polygon.path = path;
+    polygon.dataset.urbankeyMapLayer = "singapore-island-boundary";
+    map.append(polygon);
+    return polygon;
+  });
+}
+
 export async function renderSingaporeMap(
   element: HTMLElement,
   on3DFailure?: (error: Error) => void,
@@ -161,7 +184,7 @@ export async function renderSingaporeMap(
 
   // Singapore has a configured 3D Map ID. Other markets keep a standard map until their own Map ID is published.
   if (marketId === "singapore" && externalConfig.googleMapsMapId && maps.importLibrary) {
-    const { Map3DElement, Marker3DInteractiveElement } = await maps.importLibrary("maps3d");
+    const { Map3DElement, Marker3DInteractiveElement, Polygon3DElement } = await maps.importLibrary("maps3d");
     const threeDimensionalMap = new Map3DElement({
       center: initialCamera.center,
       heading: initialCamera.heading,
@@ -186,6 +209,7 @@ export async function renderSingaporeMap(
     threeDimensionalMap.bounds = SINGAPORE_BOUNDS;
     threeDimensionalMap.maxAltitude = 52_000;
     const removeMapListeners = observe3DMapEvents(threeDimensionalMap, on3DFailure, on3DReady);
+    createGeographicIslandOverlays(threeDimensionalMap, Polygon3DElement, presentation);
     createListingMarkers(threeDimensionalMap, Marker3DInteractiveElement, listings, onListingSelect);
     element.replaceChildren(threeDimensionalMap);
     return { mode: "3d", updateCamera, dispose: () => { removeMapListeners(); element.replaceChildren(); } };
