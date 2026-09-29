@@ -21,7 +21,7 @@ const singaporeModes: { label: string; value: ListingMode }[] = [{ label: "Buy",
 const marketNames: Record<MarketId, string> = { singapore: "Singapore", indonesia: "Indonesia", malaysia: "Malaysia", thailand: "Thailand", vietnam: "Vietnam", philippines: "Philippines" };
 const BuildingViewer = lazy(() => import("./components/BuildingViewer").then(module => ({ default: module.BuildingViewer })));
 
-type SingaporeRegionId = "island" | "central" | "north" | "east" | "west" | "north-east";
+type SingaporeRegionId = "island" | "central" | "north" | "east" | "west" | "south" | "north-east";
 type SingaporeRegion = { id: SingaporeRegionId; label: string; detail: string; focus?: { latitude: number; longitude: number; title: string; range: number; tilt: number; heading: number } };
 
 const singaporeRegions: SingaporeRegion[] = [
@@ -30,6 +30,7 @@ const singaporeRegions: SingaporeRegion[] = [
   { id: "north", label: "North", detail: "Woodlands · Yishun", focus: { latitude: 1.4254, longitude: 103.8184, title: "North Singapore", range: 9_500, tilt: 40, heading: 6 } },
   { id: "east", label: "East", detail: "Tampines · Bedok · Changi", focus: { latitude: 1.3547, longitude: 103.9352, title: "East Singapore", range: 9_800, tilt: 38, heading: 28 } },
   { id: "west", label: "West", detail: "Jurong · Clementi", focus: { latitude: 1.3417, longitude: 103.7045, title: "West Singapore", range: 10_200, tilt: 38, heading: 340 } },
+  { id: "south", label: "South", detail: "Sentosa · waterfront", focus: { latitude: 1.2518, longitude: 103.8205, title: "South Singapore", range: 8_400, tilt: 42, heading: 12 } },
   { id: "north-east", label: "North-East", detail: "Sengkang · Punggol", focus: { latitude: 1.3948, longitude: 103.8894, title: "North-East Singapore", range: 8_800, tilt: 40, heading: 24 } },
 ];
 
@@ -144,14 +145,17 @@ function GalleryModal({ property, active, onActive, onClose }: { property: Prope
 }
 
 function MapPage({ navigate, marketId }: { navigate: Navigate; marketId: MarketId }) {
-  const { catalog, status } = usePropertyCatalog();
+  const { catalog } = usePropertyCatalog();
   const params = new URLSearchParams(window.location.search);
   const initial = catalog.find(item => item.id === params.get("property")) ?? null;
   const initialRegion = params.get("region") as SingaporeRegionId | null;
+  const initialMode = params.get("view") === "regions" ? "regions" : "listings";
   const [selectedId, setSelectedId] = useState<string | null>(initial?.id ?? null);
+  const [mapMode, setMapMode] = useState<"listings" | "regions">(initial?.id ? "listings" : initialMode);
   const [activeRegionId, setActiveRegionId] = useState<SingaporeRegionId>(() => singaporeRegions.some(region => region.id === initialRegion) ? initialRegion! : "island");
   const [showDistricts, setShowDistricts] = useState(true);
   const [showMrt, setShowMrt] = useState(true);
+  const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
   const marketProperties = useMemo(() => catalog.filter(item => item.marketId === marketId), [catalog, marketId]);
   const listingPoints = useMemo(() => marketProperties.map(property => ({
     id: property.id,
@@ -165,10 +169,18 @@ function MapPage({ navigate, marketId }: { navigate: Navigate; marketId: MarketI
   const activeRegion = singaporeRegions.find(region => region.id === activeRegionId) ?? singaporeRegions[0];
   const focus = selected
     ? { latitude: selected.latitude, longitude: selected.longitude, title: selected.title, range: 2_400, tilt: 58, heading: 340 }
-    : marketId === "singapore" ? activeRegion.focus : undefined;
+    : marketId === "singapore" && mapMode === "regions" ? activeRegion.focus : undefined;
+  const setMapRoute = (next: { property?: string; region?: SingaporeRegionId; view?: "listings" | "regions" }) => {
+    const query = new URLSearchParams({ marketId });
+    if (next.property) query.set("property", next.property);
+    if (next.region) query.set("region", next.region);
+    if (next.view === "regions") query.set("view", "regions");
+    window.history.replaceState({}, "", `/map?${query.toString()}`);
+  };
   const select = (property: Property) => {
+    setMapMode("listings");
     setSelectedId(property.id);
-    window.history.replaceState({}, "", `/map?marketId=${marketId}&property=${property.id}`);
+    setMapRoute({ property: property.id, view: "listings" });
   };
   const selectListingId = (listingId: string) => {
     const property = marketProperties.find(item => item.id === listingId);
@@ -176,15 +188,23 @@ function MapPage({ navigate, marketId }: { navigate: Navigate; marketId: MarketI
   };
   const selectRegion = (region: SingaporeRegion) => {
     setSelectedId(null);
+    setMapMode("regions");
     setActiveRegionId(region.id);
-    window.history.replaceState({}, "", `/map?marketId=${marketId}&region=${region.id}`);
+    setMapRoute({ region: region.id, view: "regions" });
   };
-  const recenter = () => {
+  const openLiveListings = () => {
     setSelectedId(null);
-    setActiveRegionId("island");
-    window.history.replaceState({}, "", `/map?marketId=${marketId}`);
+    setMapMode("listings");
+    setMapRoute({ view: "listings" });
   };
-  return <section className="page map-page future-map-page"><div className="page-title future-map-title"><p className="eyebrow">Singapore spatial intelligence</p><h1>See the whole island, then focus on a place.</h1><p>A calm full-Singapore view presents regional lenses and the independently maintained listings catalog before you choose a property-level detail view.</p></div><div className="map-intelligence-shell future-map-shell"><div className="map-canvas live-map-canvas future-map-canvas"><div className="future-map-corner" aria-hidden="true"><i /><span>SG / ISLAND VIEW</span></div><div className="future-map-scan" aria-hidden="true" /><GoogleMapSurface marketId={marketId} focus={focus} listings={listingPoints} onListingSelect={selectListingId} />{marketId === "singapore" && !selected && <div className="future-map-regions" aria-hidden="true"><span className="region-north">North</span><span className="region-west">West</span><span className="region-central">Central</span><span className="region-east">East</span><span className="region-north-east">North-East</span></div>}<div className="future-map-region-key" aria-hidden="true"><i /><span>{selected ? "Listing focus" : activeRegion.label}</span><small>{selected ? "Property detail selected" : activeRegion.detail}</small></div><div className="map-overlay-legend future-map-legend"><span><i />Homes</span><span><i className="commercial" />Commercial</span><span>{marketProperties.length} catalog points</span></div></div><aside className="map-control-panel future-map-panel"><div className="future-panel-signal"><i /><span>Live spatial signal</span><b>SG-01</b></div><p className="eyebrow">{selected ? "Selected listing" : "Regional lens"}</p><h2>{selected?.title ?? (marketId === "singapore" ? activeRegion.label : marketNames[marketId])}</h2><p>{selected ? "Listing detail is shown below. Choose another marker or return to the island overview to compare regions." : "Start at the full-island view, then use a region lens to reduce visual noise and compare listing clusters."}</p>{marketId === "singapore" && <section className="map-region-lenses" aria-label="Singapore region lenses"><div><span>Singapore regions</span><small>Full-island view first</small></div><div className="map-region-grid">{singaporeRegions.map(region => <button type="button" key={region.id} className={!selected && activeRegion.id === region.id ? "selected" : ""} onClick={() => selectRegion(region)}><b>{region.label}</b><small>{region.detail}</small></button>)}</div></section>}<div className="layer-toggles"><label><span><Layers3 size={16} />{marketId === "singapore" ? "Regional boundaries" : "Market context"}</span><input type="checkbox" checked={showDistricts} onChange={event => setShowDistricts(event.target.checked)} /></label><label><span><TrainFront size={16} />{marketId === "singapore" ? "MRT travel context" : "Transit context"}</span><input type="checkbox" checked={showMrt} onChange={event => setShowMrt(event.target.checked)} /></label></div>{selected ? <div className="map-selection-card future-selection-card future-listing-detail"><img src={selected.image} alt="" /><div><p>{selected.type} · {selected.district}</p><h3>{selected.title}</h3><b className="map-selected-price">{displayPrice(selected)}</b><span>{selected.address}</span><span>{selected.category === "Commercial" ? `${selected.commercialUsage} · ${selected.size.toLocaleString("en-SG")} sq ft` : `${selected.beds} bedrooms · ${selected.baths} baths · ${selected.size.toLocaleString("en-SG")} sq ft`}</span><div className="map-selected-tags">{selected.tags.slice(0, 3).map(tag => <i key={tag}>{tag}</i>)}</div><button className="dark-button" onClick={() => navigate(`/property/${selected.id}`)}>Open full listing detail <ArrowRight size={15} /></button></div></div> : <div className="map-point-list">{marketProperties.slice(0, 8).map(property => <button key={property.id} onClick={() => select(property)}><span className={property.category === "Commercial" ? "commercial-dot" : "home-dot"} /><span><b>{property.title}</b><small>{property.district} · {displayPrice(property)}</small></span></button>)}</div>}<button className="outline-button map-recenter future-recenter" onClick={recenter}><LocateFixed size={15} />Full Singapore view</button><p className="map-disclosure future-disclosure">{showDistricts ? "Regional framing enabled. " : "Regional framing hidden. "}{showMrt ? "Transit context enabled. " : "Transit context hidden. "}Street-level labels are deliberately reduced to keep the listing and regional signals clear.</p></aside></div></section>;
+  const recenter = () => selectRegion(singaporeRegions[0]);
+  const mapTitle = selected ? selected.title : mapMode === "regions" ? activeRegion.label : "Live 3D listings";
+  const mapDescription = selected
+    ? "The familiar live-listings camera has moved to this property. Open the property profile for the complete gallery, virtual tour, and transaction context."
+    : mapMode === "regions"
+      ? "Use a region lens to move the island camera. The live-listings view remains available without replacing the original map."
+      : "This is the original live listing map: every catalogue marker is clickable, and selection opens its property detail without losing the live map.";
+  return <section className="page map-page future-map-page"><div className="page-title future-map-title"><p className="eyebrow">Singapore spatial intelligence</p><h1>Live listings and island context, together.</h1><p>Keep the established interactive listing map, then switch to a cleaner regional view whenever you want to compare North, East, South, West, Central, and North-East Singapore.</p></div><div className={`map-intelligence-shell future-map-shell${mobilePanelOpen ? " panel-open" : ""}`}><div className={`map-canvas live-map-canvas future-map-canvas map-mode-${mapMode}`}><div className="future-map-corner" aria-hidden="true"><i /><span>{mapMode === "listings" ? "LIVE 3D LISTINGS" : "SG / ISLAND REGIONS"}</span></div><div className="future-map-scan" aria-hidden="true" /><button type="button" className="map-mobile-panel-toggle" onClick={() => setMobilePanelOpen(true)}><ListFilter size={14} />Map controls</button><GoogleMapSurface marketId={marketId} focus={focus} presentation={mapMode} listings={listingPoints} onListingSelect={selectListingId} />{marketId === "singapore" && mapMode === "regions" && !selected && <div className="future-map-regions" aria-label="Interactive Singapore regional map labels">{singaporeRegions.filter(region => region.id !== "island").map(region => <button type="button" key={region.id} className={`region-${region.id}${activeRegion.id === region.id ? " active" : ""}`} onClick={() => selectRegion(region)}>{region.label}</button>)}</div>}<div className="future-map-region-key" aria-live="polite"><i /><span>{selected ? "Listing focus" : mapMode === "listings" ? "Live listing map" : activeRegion.label}</span><small>{selected ? "Property detail selected" : mapMode === "listings" ? `${listingPoints.length} listing markers` : activeRegion.detail}</small></div><div className="map-overlay-legend future-map-legend"><span><i />Homes</span><span><i className="commercial" />Commercial</span><span>{marketProperties.length} catalog points</span></div></div><aside className="map-control-panel future-map-panel"><div className="future-panel-signal"><i /><span>Live spatial signal</span><b>SG-01</b></div><button type="button" className="map-mobile-panel-close" onClick={() => setMobilePanelOpen(false)}>Hide map controls</button><p className="eyebrow">{selected ? "Selected listing" : mapMode === "listings" ? "Original live map" : "Regional lens"}</p><h2>{mapTitle}</h2><p>{mapDescription}</p>{marketId === "singapore" && <><section className="map-view-switch" aria-label="Map view"><button type="button" className={mapMode === "listings" ? "selected" : ""} onClick={openLiveListings}><Map size={15} />Live listings</button><button type="button" className={mapMode === "regions" ? "selected" : ""} onClick={() => selectRegion(activeRegion)}><Layers3 size={15} />Island regions</button></section><section className="map-region-lenses" aria-label="Singapore region lenses"><div><span>Singapore regions</span><small>Camera controls</small></div><div className="map-region-grid">{singaporeRegions.map(region => <button type="button" key={region.id} className={mapMode === "regions" && activeRegion.id === region.id ? "selected" : ""} onClick={() => selectRegion(region)}><b>{region.label}</b><small>{region.detail}</small></button>)}</div></section></>}<div className="layer-toggles"><label><span><Layers3 size={16} />{marketId === "singapore" ? "Regional boundaries" : "Market context"}</span><input type="checkbox" checked={showDistricts} onChange={event => setShowDistricts(event.target.checked)} /></label><label><span><TrainFront size={16} />{marketId === "singapore" ? "MRT travel context" : "Transit context"}</span><input type="checkbox" checked={showMrt} onChange={event => setShowMrt(event.target.checked)} /></label></div>{selected ? <div className="map-selection-card future-selection-card future-listing-detail"><img src={selected.image} alt="" /><div><p>{selected.type} · {selected.district}</p><h3>{selected.title}</h3><b className="map-selected-price">{displayPrice(selected)}</b><span>{selected.address}</span><span>{selected.category === "Commercial" ? `${selected.commercialUsage} · ${selected.size.toLocaleString("en-SG")} sq ft` : `${selected.beds} bedrooms · ${selected.baths} baths · ${selected.size.toLocaleString("en-SG")} sq ft`}</span><div className="map-selected-tags">{selected.tags.slice(0, 3).map(tag => <i key={tag}>{tag}</i>)}</div><button className="dark-button" onClick={() => navigate(`/property/${selected.id}`)}>Open full listing detail <ArrowRight size={15} /></button></div></div> : <div className="map-point-list">{marketProperties.slice(0, 8).map(property => <button key={property.id} onClick={() => select(property)}><span className={property.category === "Commercial" ? "commercial-dot" : "home-dot"} /><span><b>{property.title}</b><small>{property.district} · {displayPrice(property)}</small></span></button>)}</div>}<button className="outline-button map-recenter future-recenter" onClick={mapMode === "listings" ? openLiveListings : recenter}><LocateFixed size={15} />{mapMode === "listings" ? "Reset live listings" : "Full Singapore view"}</button><p className="map-disclosure future-disclosure">{showDistricts ? "Regional framing enabled. " : "Regional framing hidden. "}{showMrt ? "Transit context enabled. " : "Transit context hidden. "}{mapMode === "listings" ? "The original live listing map remains active." : "Street-level labels are reduced in regional mode only."}</p></aside></div></section>;
 }
 
 function AssistantsPage({ navigate }: { navigate: Navigate }) {

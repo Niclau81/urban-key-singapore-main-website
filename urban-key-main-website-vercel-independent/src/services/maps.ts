@@ -3,24 +3,40 @@ import { externalConfig, hasGoogleMapsConfig } from "./config";
 import { getMarketConfig, type MarketId } from "./market";
 
 type CameraBounds = { north: number; south: number; east: number; west: number };
-type Map3DElement = HTMLElement & { bounds?: CameraBounds; maxAltitude?: number };
+type MapCenter = { lat: number; lng: number; altitude?: number };
+type Map3DElement = HTMLElement & {
+  bounds?: CameraBounds;
+  maxAltitude?: number;
+  center?: MapCenter;
+  range?: number;
+  tilt?: number;
+  heading?: number;
+};
 type Marker3DInteractiveElement = HTMLElement;
 type Maps3DLibrary = {
   Map3DElement: new (options: Record<string, unknown>) => Map3DElement;
   Marker3DInteractiveElement: new (options: Record<string, unknown>) => Marker3DInteractiveElement;
 };
+type StandardMap = {
+  setCenter?: (center: { lat: number; lng: number }) => void;
+  setZoom?: (zoom: number) => void;
+  setTilt?: (tilt: number) => void;
+  setHeading?: (heading: number) => void;
+};
 type StandardMarker = { setMap?: (map: unknown) => void; addListener?: (event: string, handler: () => void) => void };
 type MapWindow = Window & typeof globalThis & {
   google?: {
     maps?: {
-      Map: new (element: HTMLElement, options: Record<string, unknown>) => { setTilt?: (tilt: number) => void; setHeading?: (heading: number) => void };
+      Map: new (element: HTMLElement, options: Record<string, unknown>) => StandardMap;
       Marker: new (options: Record<string, unknown>) => StandardMarker;
       importLibrary?: (library: "maps3d") => Promise<Maps3DLibrary>;
     };
   };
 };
-type MapRender = { mode: "3d" | "standard"; dispose: () => void };
 
+type MapRender = { mode: "3d" | "standard"; dispose: () => void; updateCamera: (focus?: MapFocus) => void };
+
+export type MapPresentation = "listings" | "regions";
 export type MapFocus = {
   latitude: number;
   longitude: number;
@@ -35,6 +51,7 @@ export type MapListing = MapFocus & { id: string; label: string; commercial?: bo
 const SINGAPORE_BOUNDS: CameraBounds = { north: 1.48, south: 1.13, west: 103.58, east: 104.12 };
 const SINGAPORE_OVERVIEW = { lat: 1.3521, lng: 103.8198 };
 const SINGAPORE_OVERVIEW_RANGE = 28_000;
+const SINGAPORE_LISTINGS_RANGE = 18_000;
 
 type ListingMarkerOptions = {
   position: { lat: number; lng: number; altitude: number };
@@ -43,6 +60,26 @@ type ListingMarkerOptions = {
   label: string;
   title: string;
 };
+
+type Camera = { center: MapCenter; range: number; tilt: number; heading: number };
+
+function mapCamera(focus: MapFocus | undefined, marketId: MarketId, presentation: MapPresentation): Camera {
+  const market = getMarketConfig(marketId);
+  if (focus) {
+    return {
+      center: { lat: focus.latitude, lng: focus.longitude, altitude: 0 },
+      range: focus.range ?? 2_400,
+      tilt: focus.tilt ?? 58,
+      heading: focus.heading ?? 340,
+    };
+  }
+  if (marketId === "singapore") {
+    return presentation === "regions"
+      ? { center: { ...SINGAPORE_OVERVIEW, altitude: 0 }, range: SINGAPORE_OVERVIEW_RANGE, tilt: 28, heading: 0 }
+      : { center: { ...SINGAPORE_OVERVIEW, altitude: 0 }, range: SINGAPORE_LISTINGS_RANGE, tilt: 38, heading: 336 };
+  }
+  return { center: { ...market.center, altitude: 0 }, range: 4_400, tilt: 45, heading: 20 };
+}
 
 function observe3DMapEvents(map: Map3DElement, onFailure?: (error: Error) => void, onReady?: () => void) {
   let reported = false;
@@ -69,7 +106,7 @@ function observe3DMapEvents(map: Map3DElement, onFailure?: (error: Error) => voi
 }
 
 function markerLabel(listing: MapListing) {
-  // Keep the island overview legible: the side panel carries full listing detail after marker selection.
+  // Compact labels retain the original live-listings view without covering the island at overview scale.
   return listing.commercial ? "C" : "H";
 }
 
@@ -104,28 +141,36 @@ export async function renderSingaporeMap(
   marketId: MarketId = "singapore",
   listings: MapListing[] = [],
   onListingSelect?: (listingId: string) => void,
+  presentation: MapPresentation = "listings",
 ): Promise<MapRender> {
   if (!hasGoogleMapsConfig) throw new Error("Google Maps is not configured. Add VITE_GOOGLE_MAPS_API_KEY.");
   const loader = new Loader({ apiKey: externalConfig.googleMapsApiKey!, version: "beta" });
   await loader.load();
   const maps = (window as MapWindow).google?.maps;
   if (!maps) throw new Error("Google Maps could not be loaded.");
+  const initialCamera = mapCamera(focus, marketId, presentation);
   const market = getMarketConfig(marketId);
-  // Begin with the entire island rather than a CBD close-up; property and regional focus are opt-in interactions.
-  const isSingaporeOverview = marketId === "singapore" && !focus;
-  const center = focus ? { lat: focus.latitude, lng: focus.longitude } : marketId === "singapore" ? SINGAPORE_OVERVIEW : market.center;
-  // The Singapore Map ID is published for Photorealistic 3D Maps. Other markets retain a standard live map until a local Map ID is published.
+
+  // Singapore has a configured 3D Map ID. Other markets keep a standard map until their own Map ID is published.
   if (marketId === "singapore" && externalConfig.googleMapsMapId && maps.importLibrary) {
     const { Map3DElement, Marker3DInteractiveElement } = await maps.importLibrary("maps3d");
     const threeDimensionalMap = new Map3DElement({
-      center: { ...center, altitude: 0 },
-      heading: focus?.heading ?? 0,
-      tilt: focus?.tilt ?? (isSingaporeOverview ? 28 : 52),
-      range: focus?.range ?? (isSingaporeOverview ? SINGAPORE_OVERVIEW_RANGE : 4400),
+      center: initialCamera.center,
+      heading: initialCamera.heading,
+      tilt: initialCamera.tilt,
+      range: initialCamera.range,
       mapId: externalConfig.googleMapsMapId,
-      // Satellite mode keeps the full-island view calm and avoids dense road labels beneath listing signals.
-      mode: "SATELLITE",
+      // The familiar live listing surface remains HYBRID; the regional lens deliberately simplifies into satellite imagery.
+      mode: presentation === "regions" ? "SATELLITE" : "HYBRID",
     });
+    const updateCamera = (nextFocus?: MapFocus) => {
+      const next = mapCamera(nextFocus, marketId, presentation);
+      // These properties update the existing custom element, avoiding a blank remount during a regional selection.
+      threeDimensionalMap.center = next.center;
+      threeDimensionalMap.range = next.range;
+      threeDimensionalMap.tilt = next.tilt;
+      threeDimensionalMap.heading = next.heading;
+    };
     threeDimensionalMap.classList.add("live-map-canvas");
     threeDimensionalMap.style.display = "block";
     threeDimensionalMap.style.width = "100%";
@@ -135,31 +180,37 @@ export async function renderSingaporeMap(
     const removeMapListeners = observe3DMapEvents(threeDimensionalMap, on3DFailure, on3DReady);
     createListingMarkers(threeDimensionalMap, Marker3DInteractiveElement, listings, onListingSelect);
     element.replaceChildren(threeDimensionalMap);
-    return { mode: "3d", dispose: () => { removeMapListeners(); element.replaceChildren(); } };
+    return { mode: "3d", updateCamera, dispose: () => { removeMapListeners(); element.replaceChildren(); } };
   }
 
   const map = new maps.Map(element, {
-    center,
-    zoom: focus ? 14 : marketId === "singapore" ? 11 : market.zoom,
+    center: initialCamera.center,
+    zoom: focus ? 14 : marketId === "singapore" ? presentation === "regions" ? 11 : 12 : market.zoom,
     mapId: marketId === "singapore" ? externalConfig.googleMapsMapId : undefined,
     restriction: marketId === "singapore" ? { latLngBounds: SINGAPORE_BOUNDS, strictBounds: true } : undefined,
     streetViewControl: false,
     mapTypeControl: false,
     fullscreenControl: true,
-    styles: marketId === "singapore" ? [
+    styles: marketId === "singapore" && presentation === "regions" ? [
       { featureType: "road", elementType: "all", stylers: [{ visibility: "off" }] },
       { featureType: "poi", elementType: "all", stylers: [{ visibility: "off" }] },
       { featureType: "transit", elementType: "all", stylers: [{ visibility: "off" }] },
       { featureType: "administrative", elementType: "labels", stylers: [{ visibility: "off" }] },
     ] : undefined,
   });
-  map.setTilt?.(45);
-  map.setHeading?.(20);
+  const updateCamera = (nextFocus?: MapFocus) => {
+    const next = mapCamera(nextFocus, marketId, presentation);
+    map.setCenter?.(next.center);
+    map.setZoom?.(nextFocus ? 14 : marketId === "singapore" && presentation === "regions" ? 11 : 12);
+    map.setTilt?.(next.tilt);
+    map.setHeading?.(next.heading);
+  };
+  updateCamera(focus);
   const markers = listings.map(listing => {
-    const marker = new maps.Marker({ map, position: { lat: listing.latitude, lng: listing.longitude }, title: listing.title, label: listing.label.slice(0, 1) });
+    const marker = new maps.Marker({ map, position: { lat: listing.latitude, lng: listing.longitude }, title: listing.title, label: markerLabel(listing) });
     marker.addListener?.("click", () => onListingSelect?.(listing.id));
     return marker;
   });
-  if (!markers.length) new maps.Marker({ map, position: center, title: focus?.title ?? market.name });
-  return { mode: "standard", dispose: () => { markers.forEach(marker => marker.setMap?.(null)); element.replaceChildren(); } };
+  if (!markers.length) new maps.Marker({ map, position: initialCamera.center, title: focus?.title ?? market.name });
+  return { mode: "standard", updateCamera, dispose: () => { markers.forEach(marker => marker.setMap?.(null)); element.replaceChildren(); } };
 }
