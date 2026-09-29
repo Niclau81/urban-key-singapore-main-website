@@ -157,6 +157,8 @@ describe("independent public-site parity contracts", () => {
     expect(viewer).toContain("Floor plate");
     expect(viewer).toContain("Gold level highlighted");
     expect(app).toContain("<BuildingViewer propertyId={property.id}");
+    expect(app.indexOf('className="building-model-section"')).toBeLessThan(app.indexOf('className="virtual-tour-note"'));
+    expect(app.indexOf('className="building-model-section"')).toBeLessThan(app.indexOf("<VirtualTour property={property}"));
   });
 
   it("restores property intelligence, privacy-safe owner context, transaction data, and secure enquiry on every listing", () => {
