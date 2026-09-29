@@ -50,10 +50,12 @@ export type MapListing = MapFocus & { id: string; label: string; commercial?: bo
 // Country boundary including offshore islands, intentionally excluding Johor, Batam and other neighbouring territories.
 const SINGAPORE_BOUNDS: CameraBounds = { north: 1.48, south: 1.13, west: 103.58, east: 104.12 };
 const SINGAPORE_OVERVIEW = { lat: 1.3521, lng: 103.8198 };
+// Includes Jurong Island in the west and Pulau Tekong / Ubin in the east.
+const SINGAPORE_OUTER_ISLANDS_OVERVIEW = { lat: 1.346, lng: 103.872 };
 const SINGAPORE_OVERVIEW_RANGE = 36_000;
-// The hero starts with water around the main island, so the geographic Singapore outline
-// and the complete listing distribution are visible before a visitor selects a listing.
-const SINGAPORE_HERO_RANGE = 48_000;
+// The hero starts with water around the complete island group so the geographic outline,
+// outer islands and full listing distribution remain visible at every overview zoom.
+const SINGAPORE_HERO_RANGE = 58_000;
 const SINGAPORE_LISTINGS_RANGE = 32_000;
 
 type ListingMarkerOptions = {
@@ -78,7 +80,7 @@ function mapCamera(focus: MapFocus | undefined, marketId: MarketId, presentation
   }
   if (marketId === "singapore") {
     if (presentation === "hero") {
-      return { center: { ...SINGAPORE_OVERVIEW, altitude: 0 }, range: SINGAPORE_HERO_RANGE, tilt: 0, heading: 0 };
+      return { center: { ...SINGAPORE_OUTER_ISLANDS_OVERVIEW, altitude: 0 }, range: SINGAPORE_HERO_RANGE, tilt: 0, heading: 0 };
     }
     return presentation === "regions"
       ? { center: { ...SINGAPORE_OVERVIEW, altitude: 0 }, range: SINGAPORE_OVERVIEW_RANGE, tilt: 12, heading: 0 }

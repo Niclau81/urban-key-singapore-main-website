@@ -161,12 +161,14 @@ describe("portable visual and map contracts", () => {
     const workflowSource = readFileSync(new URL("./components/ExternalWorkflows.tsx", import.meta.url), "utf8");
     const appSource = readFileSync(new URL("./main.tsx", import.meta.url), "utf8");
     const parityCss = readFileSync(new URL("./parity.css", import.meta.url), "utf8");
+    const portableAssetsCss = readFileSync(new URL("./portable-assets.css", import.meta.url), "utf8");
     expect(mapSource).toContain('version: "beta"');
     expect(mapSource).toContain("export type MapPresentation = \"hero\" | \"listings\" | \"regions\"");
     expect(mapSource).toContain("function mapCamera(focus: MapFocus | undefined, marketId: MarketId, presentation: MapPresentation)");
     expect(mapSource).toContain("const SINGAPORE_OVERVIEW = { lat: 1.3521, lng: 103.8198 }");
     expect(mapSource).toContain("const SINGAPORE_OVERVIEW_RANGE = 36_000");
-    expect(mapSource).toContain("const SINGAPORE_HERO_RANGE = 48_000");
+    expect(mapSource).toContain("const SINGAPORE_OUTER_ISLANDS_OVERVIEW");
+    expect(mapSource).toContain("const SINGAPORE_HERO_RANGE = 58_000");
     expect(mapSource).toContain("const SINGAPORE_LISTINGS_RANGE = 32_000");
     expect(mapSource).toContain('mode: presentation === "listings" ? "HYBRID" : "SATELLITE"');
     expect(mapSource).toContain("threeDimensionalMap.center = next.center");
@@ -185,6 +187,7 @@ describe("portable visual and map contracts", () => {
     expect(appSource).toContain("future-map-page");
     expect(appSource).toContain("SINGAPORE_ISLAND_CLIP_PATH");
     expect(appSource).toContain('presentation="hero" compact');
+    expect(portableAssetsCss).toContain("persistent live-map layer");
     expect(appSource).toContain("future-map-corner");
     expect(appSource).toContain("future-panel-signal");
     expect(appSource).toContain("Singapore regions");

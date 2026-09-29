@@ -33,3 +33,6 @@
 .hero-map-caption{display:none}
 @media(max-width:1080px) and (min-width:901px){.hero-map-head{top:29%;left:25%;width:166px}}
 @media(max-width:900px){.hero-map-head{top:29%;left:24%;width:166px}.hero-map-head b{font-size:8px}}
+
+/* The clip belongs to the persistent live-map layer, so user pan/zoom retains the Singapore island-group frame. */
+.hero-map-live{clip-path:url("#hero-singapore-island-shape");-webkit-clip-path:url("#hero-singapore-island-shape")}
