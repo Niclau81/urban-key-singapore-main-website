@@ -43,10 +43,14 @@ describe("independent public-site parity contracts", () => {
     expect(appSource).toContain('className="hero-skyline"');
     expect(appSource).toContain('Find the address<br /><em>fits your life.</em>');
     expect(appSource).toContain('className="hero-listings-map"');
+    expect(appSource).toContain("hero-singapore-island-shape");
+    expect(appSource).toContain("singapore-island-outline.svg");
     expect(appSource).toContain("Live 3D listings");
     expect(appSource).toContain("onListingSelect={listingId => navigate(`/map?marketId=${marketId}&property=${listingId}`)}");
     expect(heroStyles).toContain("Homepage map access");
     expect(heroStyles).toContain(".hero-map-live .google-map");
+    expect(heroStyles).toContain('clip-path:url("#hero-singapore-island-shape")');
+    expect(heroStyles).toContain("Singapore island map frame");
     expect(appSource).not.toContain('className="hero-market-label"');
     expect(heroStyles).not.toContain(".hero-market-label");
     expect(appSource).not.toContain('className="hero-media city-photo"');
