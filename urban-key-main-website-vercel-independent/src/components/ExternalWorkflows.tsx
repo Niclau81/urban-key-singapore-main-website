@@ -53,7 +53,7 @@ export function EnquiryForm({ listingId, listingTitle }: { listingId?: string; l
   return <form className="live-form" onSubmit={submit}><p className="eyebrow">Secure enquiry</p><h3>{listingTitle ? `Ask about ${listingTitle}` : "Start a Property Agent request"}</h3><label>Name<input required name="name" maxLength={160} placeholder="Your name"/></label><label>Email<input required name="email" type="email" maxLength={320} placeholder="name@example.com"/></label><label>Message<textarea required name="message" maxLength={4000} placeholder="Tell us what you would like to arrange or understand."/></label><button className="dark-button" disabled={busy} type="submit">{busy ? "Sending…" : "Submit for review"}<Send size={16}/></button>{status && <p className="form-status" role="status">{status}</p>}</form>;
 }
 
-export function GoogleMapSurface({ focus, marketId = "singapore", listings = [], onListingSelect, presentation = "listings" }: { focus?: MapFocus; marketId?: MarketId; listings?: MapListing[]; onListingSelect?: (listingId: string) => void; presentation?: MapPresentation }) {
+export function GoogleMapSurface({ focus, marketId = "singapore", listings = [], onListingSelect, presentation = "listings", compact = false }: { focus?: MapFocus; marketId?: MarketId; listings?: MapListing[]; onListingSelect?: (listingId: string) => void; presentation?: MapPresentation; compact?: boolean }) {
   const node = useRef<HTMLDivElement>(null);
   const onListingSelectRef = useRef(onListingSelect);
   const focusRef = useRef<MapFocus | undefined>(focus);
@@ -72,7 +72,7 @@ export function GoogleMapSurface({ focus, marketId = "singapore", listings = [],
     if (!node.current || !hasGoogleMapsConfig) return;
     setFallback(false);
     setPreparing3D(marketId === "singapore" && hasGoogleMaps3DConfig);
-    setStatus(marketId === "singapore" && hasGoogleMaps3DConfig ? presentation === "regions" ? "Loading the Singapore island overview…" : "Loading live 3D Singapore listings…" : "Loading the configured live Google Map.");
+    setStatus(marketId === "singapore" && hasGoogleMaps3DConfig ? presentation === "hero" || presentation === "regions" ? "Loading the Singapore island overview…" : "Loading live 3D Singapore listings…" : "Loading the configured live Google Map.");
     let active = true;
     let failed = false;
     let dispose: () => void = () => undefined;
@@ -87,7 +87,7 @@ export function GoogleMapSurface({ focus, marketId = "singapore", listings = [],
     renderSingaporeMap(node.current, showFallback, () => {
       if (!active || failed) return;
       setPreparing3D(false);
-      setStatus(presentation === "regions" ? `Singapore island overview is ready with ${listings.length} selectable listing markers.` : `Live 3D Singapore listings are ready with ${listings.length} selectable markers.`);
+      setStatus(presentation === "hero" || presentation === "regions" ? `Singapore island overview is ready with ${listings.length} selectable listing markers.` : `Live 3D Singapore listings are ready with ${listings.length} selectable markers.`);
     }, focusRef.current, marketId, listings, listingId => onListingSelectRef.current?.(listingId), presentation)
       .then(result => {
         dispose = result.dispose;
@@ -100,14 +100,14 @@ export function GoogleMapSurface({ focus, marketId = "singapore", listings = [],
         if (result.mode === "standard") {
           setStatus(marketId === "singapore" ? "Live standard Google Map loaded. Add VITE_GOOGLE_MAPS_MAP_ID to request 3D map mode." : "Live standard Google Map loaded for the selected future market.");
         } else {
-          setStatus(presentation === "regions" ? `Singapore island overview loaded with ${listings.length} selectable listing markers.` : `Live 3D Singapore listings loaded with ${listings.length} selectable markers.`);
+          setStatus(presentation === "hero" || presentation === "regions" ? `Singapore island overview loaded with ${listings.length} selectable listing markers.` : `Live 3D Singapore listings loaded with ${listings.length} selectable markers.`);
         }
       })
       .catch(error => showFallback(error));
     return () => { active = false; cameraUpdateRef.current = undefined; dispose(); };
   }, [listingSignature, marketId, presentation]);
   if (fallback) return <div className="map-unconfigured"><img src="/assets/singapore-map-fallback.svg" alt={`Schematic ${getMarketConfig(marketId).name} geographic context map`} /><div className="map-fallback-notice"><MapPinned size={26}/><b>{getMarketConfig(marketId).name} map fallback</b><span>{status}</span></div></div>;
-  return <><div ref={node} className="google-map" aria-label="Interactive Google Map of Singapore"/>{preparing3D ? <p className="map-loading" role="status"><LoaderCircle className="spin" size={18}/><span>Loading photorealistic 3D Singapore map</span><small>Listing markers will appear as the live map is mounted.</small></p> : <p className="map-status" role="status">{status}</p>}</>;
+  return <><div ref={node} className="google-map" aria-label="Interactive Google Map of Singapore"/>{preparing3D ? <p className="map-loading" role="status"><LoaderCircle className="spin" size={18}/><span>Loading photorealistic 3D Singapore map</span><small>Listing markers will appear as the live map is mounted.</small></p> : compact ? <span className="sr-only" role="status">{status}</span> : <p className="map-status" role="status">{status}</p>}</>;
 }
 
 export function AgentTaskPanel() {

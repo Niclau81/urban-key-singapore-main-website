@@ -36,7 +36,7 @@ type MapWindow = Window & typeof globalThis & {
 
 type MapRender = { mode: "3d" | "standard"; dispose: () => void; updateCamera: (focus?: MapFocus) => void };
 
-export type MapPresentation = "listings" | "regions";
+export type MapPresentation = "hero" | "listings" | "regions";
 export type MapFocus = {
   latitude: number;
   longitude: number;
@@ -50,9 +50,11 @@ export type MapListing = MapFocus & { id: string; label: string; commercial?: bo
 // Country boundary including offshore islands, intentionally excluding Johor, Batam and other neighbouring territories.
 const SINGAPORE_BOUNDS: CameraBounds = { north: 1.48, south: 1.13, west: 103.58, east: 104.12 };
 const SINGAPORE_OVERVIEW = { lat: 1.3521, lng: 103.8198 };
-const SINGAPORE_OVERVIEW_RANGE = 28_000;
-// The restored live-listings view shows the complete Singapore island rather than a Marina/CBD close-up.
-const SINGAPORE_LISTINGS_RANGE = 28_000;
+const SINGAPORE_OVERVIEW_RANGE = 36_000;
+// The hero starts with water around the main island, so the geographic Singapore outline
+// and the complete listing distribution are visible before a visitor selects a listing.
+const SINGAPORE_HERO_RANGE = 48_000;
+const SINGAPORE_LISTINGS_RANGE = 32_000;
 
 type ListingMarkerOptions = {
   position: { lat: number; lng: number; altitude: number };
@@ -75,9 +77,12 @@ function mapCamera(focus: MapFocus | undefined, marketId: MarketId, presentation
     };
   }
   if (marketId === "singapore") {
+    if (presentation === "hero") {
+      return { center: { ...SINGAPORE_OVERVIEW, altitude: 0 }, range: SINGAPORE_HERO_RANGE, tilt: 0, heading: 0 };
+    }
     return presentation === "regions"
-      ? { center: { ...SINGAPORE_OVERVIEW, altitude: 0 }, range: SINGAPORE_OVERVIEW_RANGE, tilt: 28, heading: 0 }
-      : { center: { ...SINGAPORE_OVERVIEW, altitude: 0 }, range: SINGAPORE_LISTINGS_RANGE, tilt: 38, heading: 336 };
+      ? { center: { ...SINGAPORE_OVERVIEW, altitude: 0 }, range: SINGAPORE_OVERVIEW_RANGE, tilt: 12, heading: 0 }
+      : { center: { ...SINGAPORE_OVERVIEW, altitude: 0 }, range: SINGAPORE_LISTINGS_RANGE, tilt: 24, heading: 0 };
   }
   return { center: { ...market.center, altitude: 0 }, range: 4_400, tilt: 45, heading: 20 };
 }
@@ -161,8 +166,8 @@ export async function renderSingaporeMap(
       tilt: initialCamera.tilt,
       range: initialCamera.range,
       mapId: externalConfig.googleMapsMapId,
-      // The familiar live listing surface remains HYBRID; the regional lens deliberately simplifies into satellite imagery.
-      mode: presentation === "regions" ? "SATELLITE" : "HYBRID",
+      // The home and regional lenses suppress road-label clutter; the expanded listing map retains HYBRID detail.
+      mode: presentation === "listings" ? "HYBRID" : "SATELLITE",
     });
     const updateCamera = (nextFocus?: MapFocus) => {
       const next = mapCamera(nextFocus, marketId, presentation);
@@ -177,7 +182,7 @@ export async function renderSingaporeMap(
     threeDimensionalMap.style.width = "100%";
     threeDimensionalMap.style.height = "100%";
     threeDimensionalMap.bounds = SINGAPORE_BOUNDS;
-    threeDimensionalMap.maxAltitude = 35_000;
+    threeDimensionalMap.maxAltitude = 52_000;
     const removeMapListeners = observe3DMapEvents(threeDimensionalMap, on3DFailure, on3DReady);
     createListingMarkers(threeDimensionalMap, Marker3DInteractiveElement, listings, onListingSelect);
     element.replaceChildren(threeDimensionalMap);
@@ -186,7 +191,7 @@ export async function renderSingaporeMap(
 
   const map = new maps.Map(element, {
     center: initialCamera.center,
-    zoom: focus ? 14 : marketId === "singapore" ? presentation === "regions" ? 11 : 12 : market.zoom,
+    zoom: focus ? 14 : marketId === "singapore" ? presentation === "hero" ? 10 : presentation === "regions" ? 11 : 12 : market.zoom,
     mapId: marketId === "singapore" ? externalConfig.googleMapsMapId : undefined,
     restriction: marketId === "singapore" ? { latLngBounds: SINGAPORE_BOUNDS, strictBounds: true } : undefined,
     streetViewControl: false,
@@ -202,7 +207,7 @@ export async function renderSingaporeMap(
   const updateCamera = (nextFocus?: MapFocus) => {
     const next = mapCamera(nextFocus, marketId, presentation);
     map.setCenter?.(next.center);
-    map.setZoom?.(nextFocus ? 14 : marketId === "singapore" && presentation === "regions" ? 11 : 12);
+    map.setZoom?.(nextFocus ? 14 : marketId === "singapore" ? presentation === "hero" ? 10 : presentation === "regions" ? 11 : 12 : 12);
     map.setTilt?.(next.tilt);
     map.setHeading?.(next.heading);
   };
