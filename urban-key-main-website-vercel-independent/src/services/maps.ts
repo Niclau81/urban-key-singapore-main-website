@@ -51,7 +51,8 @@ export type MapListing = MapFocus & { id: string; label: string; commercial?: bo
 const SINGAPORE_BOUNDS: CameraBounds = { north: 1.48, south: 1.13, west: 103.58, east: 104.12 };
 const SINGAPORE_OVERVIEW = { lat: 1.3521, lng: 103.8198 };
 const SINGAPORE_OVERVIEW_RANGE = 28_000;
-const SINGAPORE_LISTINGS_RANGE = 18_000;
+// The restored live-listings view shows the complete Singapore island rather than a Marina/CBD close-up.
+const SINGAPORE_LISTINGS_RANGE = 28_000;
 
 type ListingMarkerOptions = {
   position: { lat: number; lng: number; altitude: number };

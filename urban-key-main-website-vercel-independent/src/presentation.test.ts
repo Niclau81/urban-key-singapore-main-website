@@ -42,12 +42,13 @@ describe("independent public-site parity contracts", () => {
     const heroStyles = readFileSync(new URL("./portable-assets.css", import.meta.url), "utf8");
     expect(appSource).toContain('className="hero-skyline"');
     expect(appSource).toContain('Find the address<br /><em>fits your life.</em>');
-    expect(appSource).toContain('className="hero-market-label"');
     expect(appSource).toContain('className="hero-listings-map"');
     expect(appSource).toContain("Live 3D listings");
     expect(appSource).toContain("onListingSelect={listingId => navigate(`/map?marketId=${marketId}&property=${listingId}`)}");
     expect(heroStyles).toContain("Homepage map access");
     expect(heroStyles).toContain(".hero-map-live .google-map");
+    expect(appSource).not.toContain('className="hero-market-label"');
+    expect(heroStyles).not.toContain(".hero-market-label");
     expect(appSource).not.toContain('className="hero-media city-photo"');
     expect(appSource).not.toContain('className="city-orb city-photo"');
   });
@@ -161,7 +162,7 @@ describe("portable visual and map contracts", () => {
     expect(mapSource).toContain("function mapCamera(focus: MapFocus | undefined, marketId: MarketId, presentation: MapPresentation)");
     expect(mapSource).toContain("const SINGAPORE_OVERVIEW = { lat: 1.3521, lng: 103.8198 }");
     expect(mapSource).toContain("const SINGAPORE_OVERVIEW_RANGE = 28_000");
-    expect(mapSource).toContain("const SINGAPORE_LISTINGS_RANGE = 18_000");
+    expect(mapSource).toContain("const SINGAPORE_LISTINGS_RANGE = 28_000");
     expect(mapSource).toContain('mode: presentation === "regions" ? "SATELLITE" : "HYBRID"');
     expect(mapSource).toContain("threeDimensionalMap.center = next.center");
     expect(mapSource).toContain("threeDimensionalMap.range = next.range");
@@ -198,5 +199,7 @@ describe("portable visual and map contracts", () => {
     expect(workflowSource).toContain("onListingSelectRef.current?.(listingId)");
     expect(appSource).toContain("listings={listingPoints}");
     expect(appSource).toContain("onListingSelect={selectListingId}");
+    expect(appSource).toContain("hero-listings-map");
+    expect(appSource).not.toContain("hero-market-label");
   });
 });
