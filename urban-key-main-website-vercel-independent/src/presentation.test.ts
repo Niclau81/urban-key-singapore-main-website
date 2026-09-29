@@ -57,6 +57,16 @@ describe("independent public-site parity contracts", () => {
     expect(appSource).not.toContain('className="city-orb city-photo"');
   });
 
+  it("removes the redundant spatial-context panel and spaces desktop navigation after the brand", () => {
+    const appSource = readFileSync(new URL("./main.tsx", import.meta.url), "utf8");
+    const baseStyles = readFileSync(new URL("./styles.css", import.meta.url), "utf8");
+    expect(appSource).not.toContain('className="map-banner"');
+    expect(appSource).not.toContain("See where an address sits in the city.");
+    expect(baseStyles).toContain("Desktop header rhythm");
+    expect(baseStyles).toContain(".header .brand{margin-right:clamp(38px,4vw,68px)}");
+    expect(baseStyles).toContain(".header nav{gap:clamp(18px,2vw,28px)}");
+  });
+
   it("handles invalid direct detail routes with a not-found state rather than a substituted listing", () => {
     const appSource = readFileSync(new URL("./main.tsx", import.meta.url), "utf8");
     expect(appSource).toContain("Property not found.");
