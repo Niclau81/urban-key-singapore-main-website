@@ -158,6 +158,26 @@ describe("independent public-site parity contracts", () => {
     expect(viewer).toContain("Gold level highlighted");
     expect(app).toContain("<BuildingViewer propertyId={property.id}");
   });
+
+  it("restores property intelligence, privacy-safe owner context, transaction data, and secure enquiry on every listing", () => {
+    const app = readFileSync(new URL("./main.tsx", import.meta.url), "utf8");
+    const intelligence = readFileSync(new URL("./components/ListingIntelligence.tsx", import.meta.url), "utf8");
+    const styles = readFileSync(new URL("./parity.css", import.meta.url), "utf8");
+    expect(app).toContain('<ListingIntelligence property={property} />');
+    expect(app).toContain('document.getElementById("property-enquiry")');
+    expect(app).not.toContain('<EnquiryForm listingId={property.id}');
+    expect(intelligence).toContain('id="property-intelligence"');
+    expect(intelligence).toContain('id="property-enquiry"');
+    expect(intelligence).toContain("Privacy-safe owner context");
+    expect(intelligence).toContain("Verified privacy controls");
+    expect(intelligence).toContain("Transaction intelligence");
+    expect(intelligence).toContain("Send a structured enquiry without exposing the owner’s personal information.");
+    expect(intelligence).toContain("submitEnquiry");
+    expect(intelligence).toContain("Sign in from the header to send a secure enquiry.");
+    expect(intelligence).toContain("Continue the intelligence journey");
+    expect(styles).toContain("Listing-level intelligence");
+    expect(styles).toContain(".intelligence-enquiry-card");
+  });
 });
 
 describe("portable visual and map contracts", () => {
