@@ -25,7 +25,7 @@ export function AuthStatus({ compact = false }: { compact?: boolean }) {
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     setBusy(true); setMessage("");
-    try { await requestMagicLink(input); setMessage("Check your email for a secure sign-in link. New email addresses create a private customer account."); }
+    try { await requestMagicLink(input, undefined, false); setMessage("Check your email for a secure sign-in link. Need an account? Choose Create account."); }
     catch (error) { setMessage(showError(error)); }
     finally { setBusy(false); }
   };

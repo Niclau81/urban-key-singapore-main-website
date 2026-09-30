@@ -88,13 +88,23 @@ describe("independent public-site parity contracts", () => {
     expect(mapSource).toContain("preferStandardMap = false");
   });
 
-  it("creates or signs in customer accounts through an explicit passwordless workflow", () => {
+  it("separates visible customer registration from existing-account passwordless sign-in", () => {
     const authSurface = readFileSync(new URL("./components/ExternalWorkflows.tsx", import.meta.url), "utf8");
     const supabase = readFileSync(new URL("./services/supabase.ts", import.meta.url), "utf8");
-    expect(authSurface).toContain("New email addresses create a private customer account.");
+    const appSource = readFileSync(new URL("./main.tsx", import.meta.url), "utf8");
+    const registrationStyles = readFileSync(new URL("./account-registration.css", import.meta.url), "utf8");
+    expect(authSurface).toContain("Need an account? Choose Create account.");
+    expect(authSurface).toContain("requestMagicLink(input, undefined, false)");
     expect(supabase).toContain("ACCOUNT CREATION + LOGIN");
-    expect(supabase).toContain("shouldCreateUser: true");
+    expect(supabase).toContain("shouldCreateUser,");
     expect(supabase).toContain("display_name");
+    expect(appSource).toContain("function AccountRegistration");
+    expect(appSource).toContain('path === "/register"');
+    expect(appSource).toContain("requestMagicLink(email, displayName, true)");
+    expect(appSource).toContain("Create account & email link");
+    expect(appSource).toContain('className="header-register"');
+    expect(appSource).toContain('className="mobile-register-link"');
+    expect(registrationStyles).toContain("ACCOUNT REGISTRATION");
   });
 
   it("handles invalid direct detail routes with a not-found state rather than a substituted listing", () => {
@@ -105,7 +115,7 @@ describe("independent public-site parity contracts", () => {
 
   it("registers independent public and protected routes without payment, coworking, or 3D floor-plan routes", () => {
     const appSource = readFileSync(new URL("./main.tsx", import.meta.url), "utf8");
-    for (const route of ["/explore", "/property/", "/map", "/assistants", "/property-agent", "/agent/signup", "/agent/portal", "/agent/tours", "/dashboard"]) expect(appSource).toContain(route);
+    for (const route of ["/explore", "/property/", "/map", "/assistants", "/property-agent", "/register", "/agent/signup", "/agent/portal", "/agent/tours", "/dashboard"]) expect(appSource).toContain(route);
     expect(appSource).not.toContain('path === "/checkout"');
     expect(appSource).not.toContain('path === "/payment-history"');
     expect(appSource).not.toContain('path === "/coworking"');

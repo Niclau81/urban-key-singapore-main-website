@@ -108,15 +108,15 @@ export const isSupabaseReady = () => client !== null;
 export const getSession = async (): Promise<Session | null> => (await client?.auth.getSession())?.data.session ?? null;
 export const getCurrentUser = async (): Promise<User | null> => (await client?.auth.getUser())?.data.user ?? null;
 
-// ACCOUNT CREATION + LOGIN: Supabase creates a customer account for a new email,
-// and sends the same secure passwordless link to returning users.
-export async function requestMagicLink(email: string, displayName?: string) {
+// ACCOUNT CREATION + LOGIN: registration creates a customer account for a new email;
+// sign-in can be restricted to an existing account from the dedicated access page.
+export async function requestMagicLink(email: string, displayName?: string, shouldCreateUser = true) {
   const supabase = configured();
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
       emailRedirectTo: window.location.origin,
-      shouldCreateUser: true,
+      shouldCreateUser,
       data: displayName?.trim() ? { display_name: displayName.trim() } : undefined,
     },
   });

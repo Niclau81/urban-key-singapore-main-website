@@ -1,0 +1,81 @@
+/* ACCOUNT REGISTRATION: visible, passwordless customer onboarding. */
+.header-register {
+  min-height: 32px;
+  margin-left: 8px;
+  padding: 0 11px;
+  border: 1px solid rgba(221, 182, 108, .78);
+  border-radius: 999px;
+  background: #d8b56f;
+  color: #14352d;
+  font-size: 11px;
+  font-weight: 800;
+}
+.account-registration-page {
+  display: grid;
+  min-height: calc(100vh - 164px);
+  place-items: center;
+  padding: 56px 24px;
+  background: radial-gradient(circle at 78% 15%, rgba(216, 181, 111, .2), transparent 31%), linear-gradient(135deg, #edf1ec, #f9f5ed);
+}
+.account-registration-card {
+  width: min(100%, 560px);
+}
+.account-registration-card > p:not(.eyebrow):not(.form-status):not(.account-login-prompt) {
+  max-width: 48ch;
+}
+.account-registration-card label {
+  display: grid;
+  gap: 6px;
+  margin-top: 15px;
+  color: #345549;
+  font-size: 12px;
+  font-weight: 800;
+}
+.account-registration-card input {
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid #cfdccf;
+  border-radius: 10px;
+  background: #fff;
+  color: #17372e;
+  font: inherit;
+}
+.account-registration-card .dark-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+}
+.account-login-prompt {
+  margin: 18px 0 0;
+  color: #5c6b62;
+  font-size: 13px;
+}
+.text-button {
+  border: 0;
+  background: transparent;
+  color: #174437;
+  font: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.mobile-register-link { display: none; }
+
+@media (max-width: 1120px) {
+  .header-register { display: none; }
+}
+@media (max-width: 900px) {
+  .header nav .mobile-register-link {
+    display: block;
+    min-height: 38px;
+    border: 1px solid rgba(221, 182, 108, .65);
+    border-radius: 9px;
+    background: rgba(216, 181, 111, .16);
+    color: #f8deaa;
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .account-registration-page { min-height: calc(100vh - 68px); padding: 30px 16px; }
+  .account-registration-card { padding: 24px 20px; }
+}
