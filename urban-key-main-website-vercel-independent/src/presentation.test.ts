@@ -73,9 +73,11 @@ describe("independent public-site parity contracts", () => {
     const mapSurface = readFileSync(new URL("./components/ExternalWorkflows.tsx", import.meta.url), "utf8");
     const mapSource = readFileSync(new URL("./services/maps.ts", import.meta.url), "utf8");
     expect(mobileStyles).toContain("MOBILE PARITY FUNCTIONS");
+    expect(mobileStyles).toContain("MOBILE ACCOUNT ACCESS");
     expect(mobileStyles).toContain("Match Manus mobile header rhythm");
     expect(mobileStyles).toContain("controls hidden until the user asks for them");
     expect(appSource).toContain('className="mobile-market-language"');
+    expect(appSource).toContain('<AuthStatus compact />');
     expect(appSource).toContain("Back to properties");
     expect(appSource).toContain("Properties, seen in context.");
     expect(appSource).toContain("A controlled property workflow, not an unchecked autopilot.");
@@ -84,6 +86,15 @@ describe("independent public-site parity contracts", () => {
     expect(mapSurface).toContain("Live standard Google Map loaded for compact touch view.");
     expect(mapSource).toContain("MOBILE PARITY: Singapore has a configured 3D Map ID on desktop");
     expect(mapSource).toContain("preferStandardMap = false");
+  });
+
+  it("creates or signs in customer accounts through an explicit passwordless workflow", () => {
+    const authSurface = readFileSync(new URL("./components/ExternalWorkflows.tsx", import.meta.url), "utf8");
+    const supabase = readFileSync(new URL("./services/supabase.ts", import.meta.url), "utf8");
+    expect(authSurface).toContain("New email addresses create a private customer account.");
+    expect(supabase).toContain("ACCOUNT CREATION + LOGIN");
+    expect(supabase).toContain("shouldCreateUser: true");
+    expect(supabase).toContain("display_name");
   });
 
   it("handles invalid direct detail routes with a not-found state rather than a substituted listing", () => {
@@ -174,6 +185,9 @@ describe("independent public-site parity contracts", () => {
     const app = readFileSync(new URL("./main.tsx", import.meta.url), "utf8");
     expect(viewer).toContain('import * as THREE from "three"');
     expect(viewer).toContain("Floor plate");
+    expect(viewer).toContain("MOBILE MODEL FIT");
+    expect(viewer).toContain('camera.fov = compact ? (currentView === "floor" ? 52 : 48) : 38');
+    expect(viewer).toContain("Fit model");
     expect(viewer).toContain("Gold level highlighted");
     expect(app).toContain("<BuildingViewer propertyId={property.id}");
     expect(app.indexOf('className="building-model-section"')).toBeLessThan(app.indexOf('className="virtual-tour-note"'));

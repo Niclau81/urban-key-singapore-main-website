@@ -108,9 +108,18 @@ export const isSupabaseReady = () => client !== null;
 export const getSession = async (): Promise<Session | null> => (await client?.auth.getSession())?.data.session ?? null;
 export const getCurrentUser = async (): Promise<User | null> => (await client?.auth.getUser())?.data.user ?? null;
 
-export async function requestMagicLink(email: string) {
+// ACCOUNT CREATION + LOGIN: Supabase creates a customer account for a new email,
+// and sends the same secure passwordless link to returning users.
+export async function requestMagicLink(email: string, displayName?: string) {
   const supabase = configured();
-  const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: window.location.origin,
+      shouldCreateUser: true,
+      data: displayName?.trim() ? { display_name: displayName.trim() } : undefined,
+    },
+  });
   if (error) throw error;
 }
 

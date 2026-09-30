@@ -12,7 +12,7 @@ const showError = (error: unknown) => error instanceof Error ? error.message : "
 // Desktop retains the photorealistic 3D renderer, while a user can still open its listing detail.
 const usesCompactMapViewport = () => typeof window !== "undefined" && window.matchMedia("(max-width: 620px)").matches;
 
-export function AuthStatus() {
+export function AuthStatus({ compact = false }: { compact?: boolean }) {
   const [email, setEmail] = useState<string>();
   const [input, setInput] = useState("");
   const [message, setMessage] = useState("");
@@ -25,11 +25,11 @@ export function AuthStatus() {
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     setBusy(true); setMessage("");
-    try { await requestMagicLink(input); setMessage("Check your email for the secure sign-in link."); }
+    try { await requestMagicLink(input); setMessage("Check your email for a secure sign-in link. New email addresses create a private customer account."); }
     catch (error) { setMessage(showError(error)); }
     finally { setBusy(false); }
   };
-  return <form className="header-auth" onSubmit={submit}><input required aria-label="Email address" type="email" value={input} onChange={event => setInput(event.target.value)} placeholder="Sign in by email"/><button disabled={busy}>{busy ? <LoaderCircle className="spin" size={15}/> : "Sign in"}</button>{message && <small role="status">{message}</small>}</form>;
+  return <form className={`header-auth${compact ? " mobile-account-auth" : ""}`} onSubmit={submit}><input required aria-label="Email address" type="email" value={input} onChange={event => setInput(event.target.value)} placeholder={compact ? "Email to sign in or join" : "Sign in or create account"}/><button disabled={busy}>{busy ? <LoaderCircle className="spin" size={15}/> : compact ? "Sign in / join" : "Sign in"}</button>{message && <small role="status">{message}</small>}</form>;
 }
 
 export function SaveFavouriteButton({ listingId, className }: { listingId: string; className?: string }) {

@@ -1,11 +1,11 @@
-import { Box, Layers3, MousePointer2, Rotate3D } from "lucide-react";
+import { Box, Layers3, Maximize2, MousePointer2, Rotate3D } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
 export type BuildingView = "tower" | "floor";
 
 type FloorIdentity = { floor: number; unitLabel: string };
-type Runtime = { applyView: (view: BuildingView) => void };
+type Runtime = { applyView: (view: BuildingView) => void; fit: () => void };
 
 const WHOLE_PROPERTY_TYPES = ["shophouse", "warehouse", "office building", "factory building", "landed", "bungalow", "detached", "semi-detached", "terrace house"];
 
@@ -126,7 +126,13 @@ export function BuildingViewer({ propertyId, propertyType, transactionUnit, list
       const size = bounds.getSize(new THREE.Vector3());
       bounds.getCenter(frameCenter);
       target.copy(frameCenter);
-      const config = currentView === "floor" ? { scaleY: 0.23, direction: [0.82, 1.28, 1] as const, padding: 1.38, pan: 0.42 } : { scaleY: 1, direction: [0.9, 0.68, 1] as const, padding: 1.28, pan: 0.48 };
+      // MOBILE MODEL FIT: a phone viewport is short and near-square, so use a wider lens
+      // and extra headroom. This prevents tall towers from being cropped on first render.
+      const compact = mount.clientWidth <= 620;
+      camera.fov = compact ? (currentView === "floor" ? 52 : 48) : 38;
+      const config = currentView === "floor"
+        ? { scaleY: 0.23, direction: [0.82, 1.28, 1] as const, padding: compact ? 1.72 : 1.38, pan: compact ? 0.36 : 0.42 }
+        : { scaleY: 1, direction: [0.9, 0.68, 1] as const, padding: compact ? 1.72 : 1.28, pan: compact ? 0.4 : 0.48 };
       const fov = THREE.MathUtils.degToRad(camera.fov);
       const distance = Math.max(size.y / (2 * Math.tan(fov / 2)), size.x / (2 * Math.tan(fov / 2) * camera.aspect), size.z) * config.padding;
       camera.position.copy(target).add(new THREE.Vector3(...config.direction).normalize().multiplyScalar(distance));
@@ -146,7 +152,13 @@ export function BuildingViewer({ propertyId, propertyType, transactionUnit, list
       resize();
       frame();
     };
-    runtimeRef.current = { applyView };
+    const fit = () => {
+      // Restore the calculated bounds after a mobile zoom or pan gesture.
+      group.position.set(0, 0, 0);
+      resize();
+      frame();
+    };
+    runtimeRef.current = { applyView, fit };
     applyView("tower");
 
     let dragging = false;
@@ -246,6 +258,7 @@ export function BuildingViewer({ propertyId, propertyType, transactionUnit, list
     <div className="building-view-switch" role="group" aria-label="Building model view">
       <button type="button" className={view === "tower" ? "selected" : ""} onClick={() => setView("tower")}><Box size={16} />Building</button>
       <button type="button" className={view === "floor" ? "selected" : ""} onClick={() => setView("floor")}><Layers3 size={16} />Floor plate</button>
+      <button type="button" onClick={() => runtimeRef.current?.fit()}><Maximize2 size={16} />Fit model</button>
     </div>
     <p className="building-model-hint">{interactive ? <><Rotate3D size={16} />Drag to orbit · Shift/right-drag to pan · Scroll to zoom · Esc to release</> : <><MousePointer2 size={16} />Click the model to enable orbit, pan and zoom</>}</p>
     {floorIdentity && <div className="building-floor-identity"><p>Listed unit floor</p><b>{floorIdentity.unitLabel} · Level {floorIdentity.floor}</b><span>Gold level highlighted</span></div>}
