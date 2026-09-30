@@ -173,6 +173,7 @@ export async function renderSingaporeMap(
   listings: MapListing[] = [],
   onListingSelect?: (listingId: string) => void,
   presentation: MapPresentation = "listings",
+  preferStandardMap = false,
 ): Promise<MapRender> {
   if (!hasGoogleMapsConfig) throw new Error("Google Maps is not configured. Add VITE_GOOGLE_MAPS_API_KEY.");
   const loader = new Loader({ apiKey: externalConfig.googleMapsApiKey!, version: "beta" });
@@ -182,8 +183,9 @@ export async function renderSingaporeMap(
   const initialCamera = mapCamera(focus, marketId, presentation);
   const market = getMarketConfig(marketId);
 
-  // Singapore has a configured 3D Map ID. Other markets keep a standard map until their own Map ID is published.
-  if (marketId === "singapore" && externalConfig.googleMapsMapId && maps.importLibrary) {
+  // MOBILE PARITY: Singapore has a configured 3D Map ID on desktop, while compact touch views
+  // intentionally use the responsive standard Google Maps surface used by the Manus mobile app.
+  if (marketId === "singapore" && externalConfig.googleMapsMapId && maps.importLibrary && !preferStandardMap) {
     const { Map3DElement, Marker3DInteractiveElement, Polygon3DElement } = await maps.importLibrary("maps3d");
     const threeDimensionalMap = new Map3DElement({
       center: initialCamera.center,
@@ -217,7 +219,7 @@ export async function renderSingaporeMap(
 
   const map = new maps.Map(element, {
     center: initialCamera.center,
-    zoom: focus ? 14 : marketId === "singapore" ? presentation === "hero" ? 10 : presentation === "regions" ? 11 : 12 : market.zoom,
+    zoom: focus ? 14 : marketId === "singapore" ? presentation === "hero" ? 10 : presentation === "regions" ? 11 : 11 : market.zoom,
     mapId: marketId === "singapore" ? externalConfig.googleMapsMapId : undefined,
     restriction: marketId === "singapore" ? { latLngBounds: SINGAPORE_BOUNDS, strictBounds: true } : undefined,
     streetViewControl: false,
@@ -233,7 +235,7 @@ export async function renderSingaporeMap(
   const updateCamera = (nextFocus?: MapFocus) => {
     const next = mapCamera(nextFocus, marketId, presentation);
     map.setCenter?.(next.center);
-    map.setZoom?.(nextFocus ? 14 : marketId === "singapore" ? presentation === "hero" ? 10 : presentation === "regions" ? 11 : 12 : 12);
+    map.setZoom?.(nextFocus ? 14 : marketId === "singapore" ? presentation === "hero" ? 10 : presentation === "regions" ? 11 : 11 : 12);
     map.setTilt?.(next.tilt);
     map.setHeading?.(next.heading);
   };

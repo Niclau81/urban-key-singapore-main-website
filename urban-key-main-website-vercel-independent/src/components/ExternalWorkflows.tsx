@@ -8,6 +8,10 @@ import { getMarketConfig } from "../services/market";
 
 const showError = (error: unknown) => error instanceof Error ? error.message : "Something went wrong. Please try again.";
 
+// MOBILE PARITY: the Manus mobile map opens as a fast, touch-friendly standard Google Map.
+// Desktop retains the photorealistic 3D renderer, while a user can still open its listing detail.
+const usesCompactMapViewport = () => typeof window !== "undefined" && window.matchMedia("(max-width: 620px)").matches;
+
 export function AuthStatus() {
   const [email, setEmail] = useState<string>();
   const [input, setInput] = useState("");
@@ -58,9 +62,10 @@ export function GoogleMapSurface({ focus, marketId = "singapore", listings = [],
   const onListingSelectRef = useRef(onListingSelect);
   const focusRef = useRef<MapFocus | undefined>(focus);
   const cameraUpdateRef = useRef<((nextFocus?: MapFocus) => void) | undefined>(undefined);
-  const [status, setStatus] = useState(hasGoogleMapsConfig ? marketId === "singapore" && hasGoogleMaps3DConfig ? "Loading photorealistic 3D Singapore map…" : "Loading the configured live Google Map." : "Add VITE_GOOGLE_MAPS_API_KEY and VITE_GOOGLE_MAPS_MAP_ID to enable the live Singapore map.");
+  const [standardMobileMap, setStandardMobileMap] = useState(usesCompactMapViewport);
+  const [status, setStatus] = useState(hasGoogleMapsConfig ? marketId === "singapore" && hasGoogleMaps3DConfig && !usesCompactMapViewport() ? "Loading photorealistic 3D Singapore map…" : "Loading the configured live Google Map." : "Add VITE_GOOGLE_MAPS_API_KEY and VITE_GOOGLE_MAPS_MAP_ID to enable the live Singapore map.");
   const [fallback, setFallback] = useState(!hasGoogleMapsConfig);
-  const [preparing3D, setPreparing3D] = useState(marketId === "singapore" && hasGoogleMaps3DConfig);
+  const [preparing3D, setPreparing3D] = useState(marketId === "singapore" && hasGoogleMaps3DConfig && !usesCompactMapViewport());
   const listingSignature = listings.map(listing => `${listing.id}:${listing.latitude}:${listing.longitude}`).join("|");
   useEffect(() => { onListingSelectRef.current = onListingSelect; }, [onListingSelect]);
   useEffect(() => {
@@ -69,10 +74,18 @@ export function GoogleMapSurface({ focus, marketId = "singapore", listings = [],
     cameraUpdateRef.current?.(focus);
   }, [focus?.latitude, focus?.longitude, focus?.title, focus?.range, focus?.tilt, focus?.heading]);
   useEffect(() => {
+    const query = window.matchMedia("(max-width: 620px)");
+    const updateMode = () => setStandardMobileMap(query.matches);
+    updateMode();
+    query.addEventListener("change", updateMode);
+    return () => query.removeEventListener("change", updateMode);
+  }, []);
+  useEffect(() => {
     if (!node.current || !hasGoogleMapsConfig) return;
     setFallback(false);
-    setPreparing3D(marketId === "singapore" && hasGoogleMaps3DConfig);
-    setStatus(marketId === "singapore" && hasGoogleMaps3DConfig ? presentation === "hero" || presentation === "regions" ? "Loading the Singapore island overview…" : "Loading live 3D Singapore listings…" : "Loading the configured live Google Map.");
+    const request3D = marketId === "singapore" && hasGoogleMaps3DConfig && !standardMobileMap;
+    setPreparing3D(request3D);
+    setStatus(request3D ? presentation === "hero" || presentation === "regions" ? "Loading the Singapore island overview…" : "Loading live 3D Singapore listings…" : "Loading the configured live Google Map.");
     let active = true;
     let failed = false;
     let dispose: () => void = () => undefined;
@@ -88,7 +101,7 @@ export function GoogleMapSurface({ focus, marketId = "singapore", listings = [],
       if (!active || failed) return;
       setPreparing3D(false);
       setStatus(presentation === "hero" || presentation === "regions" ? `Singapore island overview is ready with ${listings.length} selectable listing markers.` : `Live 3D Singapore listings are ready with ${listings.length} selectable markers.`);
-    }, focusRef.current, marketId, listings, listingId => onListingSelectRef.current?.(listingId), presentation)
+    }, focusRef.current, marketId, listings, listingId => onListingSelectRef.current?.(listingId), presentation, standardMobileMap)
       .then(result => {
         dispose = result.dispose;
         if (!active || failed) { dispose(); return; }
@@ -105,7 +118,7 @@ export function GoogleMapSurface({ focus, marketId = "singapore", listings = [],
       })
       .catch(error => showFallback(error));
     return () => { active = false; cameraUpdateRef.current = undefined; dispose(); };
-  }, [listingSignature, marketId, presentation]);
+  }, [listingSignature, marketId, presentation, standardMobileMap]);
   if (fallback) return <div className="map-unconfigured"><img src="/assets/singapore-map-fallback.svg" alt={`Schematic ${getMarketConfig(marketId).name} geographic context map`} /><div className="map-fallback-notice"><MapPinned size={26}/><b>{getMarketConfig(marketId).name} map fallback</b><span>{status}</span></div></div>;
   return <><div ref={node} className="google-map" aria-label="Interactive Google Map of Singapore"/>{preparing3D ? <p className="map-loading" role="status"><LoaderCircle className="spin" size={18}/><span>Loading photorealistic 3D Singapore map</span><small>Listing markers will appear as the live map is mounted.</small></p> : compact ? <span className="sr-only" role="status">{status}</span> : <p className="map-status" role="status">{status}</p>}</>;
 }

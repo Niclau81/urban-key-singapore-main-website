@@ -67,6 +67,24 @@ describe("independent public-site parity contracts", () => {
     expect(baseStyles).toContain(".header nav{gap:clamp(18px,2vw,28px)}");
   });
 
+  it("labels and preserves Manus-aligned mobile navigation, panels, property actions, and workflow summaries", () => {
+    const appSource = readFileSync(new URL("./main.tsx", import.meta.url), "utf8");
+    const mobileStyles = readFileSync(new URL("./mobile-parity.css", import.meta.url), "utf8");
+    const mapSurface = readFileSync(new URL("./components/ExternalWorkflows.tsx", import.meta.url), "utf8");
+    const mapSource = readFileSync(new URL("./services/maps.ts", import.meta.url), "utf8");
+    expect(mobileStyles).toContain("MOBILE PARITY FUNCTIONS");
+    expect(mobileStyles).toContain("Match Manus mobile header rhythm");
+    expect(mobileStyles).toContain("controls hidden until the user asks for them");
+    expect(appSource).toContain('className="mobile-market-language"');
+    expect(appSource).toContain("Back to properties");
+    expect(appSource).toContain("Properties, seen in context.");
+    expect(appSource).toContain("A controlled property workflow, not an unchecked autopilot.");
+    expect(appSource).toContain("Intelligence for every side of the move.");
+    expect(mapSurface).toContain("MOBILE PARITY: the Manus mobile map opens as a fast, touch-friendly standard Google Map.");
+    expect(mapSource).toContain("MOBILE PARITY: Singapore has a configured 3D Map ID on desktop");
+    expect(mapSource).toContain("preferStandardMap = false");
+  });
+
   it("handles invalid direct detail routes with a not-found state rather than a substituted listing", () => {
     const appSource = readFileSync(new URL("./main.tsx", import.meta.url), "utf8");
     expect(appSource).toContain("Property not found.");

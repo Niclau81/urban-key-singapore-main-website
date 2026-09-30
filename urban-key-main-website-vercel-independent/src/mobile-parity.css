@@ -1,0 +1,93 @@
+/*
+ * MOBILE PARITY FUNCTIONS
+ * 1. Match Manus mobile header rhythm: brand + menu only; locale controls move into the opened menu.
+ * 2. Keep panels out of the way on narrow screens and expose map controls only after a deliberate tap.
+ * 3. Preserve full-width media, readable property actions, and touch-sized controls at 390px.
+ */
+
+.mobile-market-language,
+.mobile-copy,
+.mobile-explore-map,
+.mobile-agent-intro { display: none; }
+
+/* MOBILE PARITY: Vercel retains compact selectors on desktop, then places them in the opened menu on mobile. */
+@media (max-width: 900px) {
+  .header .market-language { display: none; }
+  .header .service-status,
+  .header .auth-status,
+  .header .header-auth { display: none; }
+  .header .menu { margin-left: auto; }
+  .header nav .mobile-market-language { display: grid; gap: 10px; margin-top: 8px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.14); }
+  .header nav .mobile-market-language label { display: grid; gap: 5px; color: #dce8e0; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+  .header nav .mobile-market-language select { min-height: 42px; border: 1px solid rgba(221,182,108,.36); border-radius: 10px; background: #143a31; color: #fffdf8; padding: 0 10px; font-size: 13px; }
+}
+
+/* MOBILE PARITY: property header actions form one compact row rather than stacking above the gallery. */
+@media (max-width: 620px) {
+  html,
+  body { overflow-x: clip; }
+  .property-detail { padding: 28px 20px 56px; }
+  .property-detail .detail-actions { align-items: center; flex-direction: row; justify-content: space-between; gap: 8px; margin-bottom: 16px; }
+  .property-detail .detail-actions > div { display: flex; width: auto; gap: 7px; }
+  .property-detail .back { margin: 0; white-space: nowrap; font-size: 12px; }
+  .property-detail .icon-text { min-height: 37px; padding: 7px 11px; font-size: 11px; }
+  .property-detail .gallery-grid { min-height: 360px; grid-template-rows: 360px; margin-bottom: 42px; }
+  .property-detail .gallery-primary { min-height: 360px; }
+  .property-detail .price-panel b { font-size: 29px; letter-spacing: -.035em; }
+
+  /* MOBILE PARITY: concise Manus-like mobile discovery title and direct map entry. */
+  .desktop-copy { display: none !important; }
+  .mobile-copy { display: inline; }
+  .explore-mobile-title { margin-bottom: 26px; }
+  .explore-mobile-title h1 { max-width: 330px; }
+  .explore-description { display: none; }
+  .mobile-explore-map { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; margin-top: 18px; border: 0; border-radius: 999px; background: #17372e; color: #fff; padding: 0 16px; font-size: 12px; font-weight: 800; }
+
+  /* MOBILE PARITY: map becomes a full mobile viewport, with controls hidden until the user asks for them. */
+  .future-map-page { width: 100%; max-width: none; min-height: calc(100svh - 67px); margin: 0; padding: 0; }
+  .future-map-page .future-map-title { display: none; }
+  .future-map-page .future-map-shell { min-height: calc(100svh - 67px); border: 0; border-radius: 0; box-shadow: none; }
+  .future-map-page .future-map-shell::before { display: none; }
+  .future-map-page .future-map-canvas,
+  .future-map-page .map-intelligence-shell .map-canvas { min-height: calc(100svh - 67px) !important; }
+  .future-map-page .future-map-canvas::before,
+  .future-map-page .future-map-scan,
+  .future-map-page .future-map-corner,
+  .future-map-page .future-map-region-key,
+  .future-map-page .future-map-legend { display: none; }
+  .future-map-page .map-mobile-panel-toggle { top: 12px; right: 12px; bottom: auto; min-height: 42px; padding: 0 14px; }
+  .future-map-page .future-map-shell.panel-open .map-canvas { min-height: 285px !important; }
+  .future-map-page .future-map-panel { border-top: 1px solid rgba(121,255,247,.25); }
+
+  /* MOBILE PARITY: Manus-style assistant workspaces prioritise role and catalog context before the chat. */
+  .assistant-page { padding: 34px 20px 56px; }
+  .assistant-shell { border-radius: 24px; }
+  .assistant-shell > aside { padding: 26px 24px; }
+  .assistant-shell aside h2 { font-size: 35px; }
+  .assistant-shell .assistant-modes { gap: 9px; margin: 22px 0 16px; }
+  .assistant-shell aside .assistant-modes button { display: grid; justify-content: start; gap: 4px; min-height: 74px; padding: 13px; text-align: left; }
+  .assistant-shell .assistant-modes button b { font-size: 12px; }
+  .assistant-shell .assistant-modes button small { color: rgba(255,255,255,.64); font-size: 9px; }
+  .assistant-catalog-context { display: flex; gap: 10px; border: 1px solid rgba(255,255,255,.12); border-radius: 16px; background: rgba(0,0,0,.11); padding: 14px; color: #f5fbf6; }
+  .assistant-catalog-context svg { flex: 0 0 auto; color: #d8b56f; }
+  .assistant-catalog-context b,
+  .assistant-catalog-context span { display: block; }
+  .assistant-catalog-context b { font-size: 12px; }
+  .assistant-catalog-context span { margin-top: 5px; color: rgba(255,255,255,.67); font-size: 10px; line-height: 1.45; }
+  .assistant-quick-prompts { display: none; }
+
+  /* MOBILE PARITY: the operations-agent route begins with the Manus approval-first summary. */
+  .property-agent-page { padding: 34px 20px 56px; }
+  .property-agent-page > .agent-title { display: none; }
+  .mobile-agent-intro { display: block; overflow: hidden; margin-bottom: 28px; border-radius: 26px; background: #12382f; padding: 26px 24px; color: #fff; }
+  .mobile-agent-intro .eyebrow { color: #d8b56f; }
+  .mobile-agent-intro h1 { margin: 0; font: 600 37px/.97 "Playfair Display",serif; letter-spacing: -.05em; }
+  .mobile-agent-intro > p:not(.eyebrow) { margin: 18px 0 0; color: rgba(255,255,255,.76); font-size: 13px; line-height: 1.65; }
+  .mobile-agent-intro > div { margin-top: 26px; border: 1px solid rgba(255,255,255,.16); border-radius: 18px; background: rgba(255,255,255,.07); padding: 18px; }
+  .mobile-agent-intro svg { color: #d8b56f; }
+  .mobile-agent-intro h2 { margin: 14px 0 6px; font-size: 15px; }
+  .mobile-agent-intro div p { margin: 0; color: rgba(255,255,255,.7); font-size: 12px; line-height: 1.58; }
+  .property-agent-page .agent-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .property-agent-page .agent-steps article { min-width: 0; padding: 20px 16px; }
+  .property-agent-page .agent-steps h2 { font-size: 22px; }
+}
