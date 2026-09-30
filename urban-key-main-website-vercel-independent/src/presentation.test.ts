@@ -81,6 +81,7 @@ describe("independent public-site parity contracts", () => {
     expect(appSource).toContain("A controlled property workflow, not an unchecked autopilot.");
     expect(appSource).toContain("Intelligence for every side of the move.");
     expect(mapSurface).toContain("MOBILE PARITY: the Manus mobile map opens as a fast, touch-friendly standard Google Map.");
+    expect(mapSurface).toContain("Live standard Google Map loaded for compact touch view.");
     expect(mapSource).toContain("MOBILE PARITY: Singapore has a configured 3D Map ID on desktop");
     expect(mapSource).toContain("preferStandardMap = false");
   });

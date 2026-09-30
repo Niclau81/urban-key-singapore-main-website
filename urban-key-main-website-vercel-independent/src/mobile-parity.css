@@ -55,6 +55,7 @@
   .future-map-page .future-map-corner,
   .future-map-page .future-map-region-key,
   .future-map-page .future-map-legend { display: none; }
+  .future-map-page .map-status { display: none; }
   .future-map-page .map-mobile-panel-toggle { top: 12px; right: 12px; bottom: auto; min-height: 42px; padding: 0 14px; }
   .future-map-page .future-map-shell.panel-open .map-canvas { min-height: 285px !important; }
   .future-map-page .future-map-panel { border-top: 1px solid rgba(121,255,247,.25); }

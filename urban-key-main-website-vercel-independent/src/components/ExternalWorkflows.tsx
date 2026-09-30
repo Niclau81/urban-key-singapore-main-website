@@ -111,7 +111,7 @@ export function GoogleMapSurface({ focus, marketId = "singapore", listings = [],
         // so it updates the status only and must never keep the map behind a blocking loading overlay.
         setPreparing3D(false);
         if (result.mode === "standard") {
-          setStatus(marketId === "singapore" ? "Live standard Google Map loaded. Add VITE_GOOGLE_MAPS_MAP_ID to request 3D map mode." : "Live standard Google Map loaded for the selected future market.");
+          setStatus(marketId === "singapore" && standardMobileMap ? "Live standard Google Map loaded for compact touch view." : marketId === "singapore" ? "Live standard Google Map loaded. Add VITE_GOOGLE_MAPS_MAP_ID to request 3D map mode." : "Live standard Google Map loaded for the selected future market.");
         } else {
           setStatus(presentation === "hero" || presentation === "regions" ? `Singapore island overview loaded with ${listings.length} selectable listing markers.` : `Live 3D Singapore listings loaded with ${listings.length} selectable markers.`);
         }
